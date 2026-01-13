@@ -1,0 +1,569 @@
+// 高校教学就业平台 - 全局样式
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--text-muted);
+  }
+}
+
+// 链接样式
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--primary-hover);
+  }
+}
+
+// Element Plus 组件样式覆盖
+.el-button--primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+
+  &:hover,
+  &:focus {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.el-button--default {
+  color: var(--text-primary);
+  border-color: var(--border);
+  background: var(--card);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+}
+
+.el-button--success {
+  background-color: var(--success);
+  border-color: var(--success);
+  border-radius: var(--radius-md);
+
+  &:hover,
+  &:focus {
+    background-color: oklch(0.55 0.16 150);
+    border-color: oklch(0.55 0.16 150);
+  }
+}
+
+.el-button--warning {
+  background-color: var(--warning);
+  border-color: var(--warning);
+  border-radius: var(--radius-md);
+
+  &:hover,
+  &:focus {
+    background-color: oklch(0.65 0.16 85);
+    border-color: oklch(0.65 0.16 85);
+  }
+}
+
+.el-button--danger {
+  background-color: var(--danger);
+  border-color: var(--danger);
+  border-radius: var(--radius-md);
+
+  &:hover,
+  &:focus {
+    background-color: oklch(0.50 0.23 25);
+    border-color: oklch(0.50 0.23 25);
+  }
+}
+
+.el-button--info {
+  background-color: var(--info);
+  border-color: var(--info);
+  border-radius: var(--radius-md);
+
+  &:hover,
+  &:focus {
+    background-color: oklch(0.50 0.16 220);
+    border-color: oklch(0.50 0.16 220);
+  }
+}
+
+// 输入框样式
+.el-input__wrapper {
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--input) inset;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 0 0 1px var(--border) inset;
+  }
+
+  &.is-focus {
+    box-shadow: 0 0 0 2px var(--ring) inset;
+  }
+}
+
+.el-input__inner {
+  color: var(--foreground);
+
+  &::placeholder {
+    color: var(--muted-foreground);
+  }
+}
+
+// 标签样式
+.el-tag {
+  border-radius: 9999px;
+  font-weight: 500;
+  border: none;
+  padding: 0.25rem 0.75rem;
+}
+
+.el-tag--success {
+  background-color: var(--success-light);
+  color: var(--success);
+}
+
+.el-tag--warning {
+  background-color: var(--warning-light);
+  color: var(--warning);
+}
+
+.el-tag--danger {
+  background-color: var(--danger-light);
+  color: var(--danger);
+}
+
+.el-tag--info {
+  background-color: var(--info-light);
+  color: var(--info);
+}
+
+// 卡片样式
+.el-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .el-card__header {
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .el-card__body {
+    padding: 1.5rem;
+  }
+}
+
+// 对话框样式
+.el-dialog {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+
+  .el-dialog__header {
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+  }
+
+  .el-dialog__title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .el-dialog__body {
+    padding: 1.5rem;
+  }
+
+  .el-dialog__footer {
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+  }
+}
+
+// 表格样式
+.el-table {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  th.el-table__cell {
+    background: var(--secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  td.el-table__cell {
+    color: var(--text-secondary);
+  }
+
+  .el-table__row {
+    &:hover > td {
+      background: var(--primary-light) !important;
+    }
+  }
+}
+
+// 分页样式
+.el-pagination {
+  .el-pager li {
+    border-radius: var(--radius-sm);
+    margin: 0 2px;
+    font-weight: 500;
+
+    &.is-active {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+  }
+
+  .btn-prev,
+  .btn-next {
+    border-radius: var(--radius-sm);
+  }
+}
+
+// 消息提示样式
+.el-message {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: none;
+  padding: 1rem 1.25rem;
+
+  .el-message__content {
+    font-weight: 500;
+  }
+}
+
+.el-message--success {
+  background-color: var(--success-light);
+  color: var(--success);
+}
+
+.el-message--warning {
+  background-color: var(--warning-light);
+  color: var(--warning);
+}
+
+.el-message--error {
+  background-color: var(--danger-light);
+  color: var(--danger);
+}
+
+// MessageBox 确认对话框样式 - 修复居中问题
+// Element Plus 使用 .el-overlay-message-box 作为居中容器
+.el-overlay-message-box {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: 10vh !important; // 将对话框向下移动10%的视口高度
+}
+
+.el-message-box {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0; // 移除内边距,使用header/content/footer布局
+  max-width: 420px;
+  margin: 0 !important; // 移除margin,让父容器的padding-top控制位置
+
+  // 头部
+  .el-message-box__header {
+    padding: 1rem 1.5rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .el-message-box__title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .el-message-box__headerbtn {
+      top: 0;
+      right: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+
+      &:hover {
+        background: var(--secondary);
+      }
+
+      .el-message-box__close {
+        color: var(--text-secondary);
+        font-size: 18px;
+      }
+    }
+  }
+
+  // 内容区域
+  .el-message-box__content {
+    padding: 1.5rem;
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+
+    .el-message-box__container {
+      padding: 0;
+    }
+
+    .el-message-box__message {
+      color: var(--text-primary);
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    // 如果有图标
+    .el-icon {
+      font-size: 24px;
+      margin-right: 0.75rem;
+    }
+  }
+
+  // 底部按钮
+  .el-message-box__btns {
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border);
+
+    .el-button {
+      min-width: 80px;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.875rem;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+    }
+  }
+}
+
+// 通知样式
+.el-notification {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border);
+}
+
+// 加载样式
+.el-loading-mask {
+  background-color: oklch(0.98 0.005 240 / 0.8);
+  border-radius: var(--radius-md);
+}
+
+.el-loading-spinner {
+  .circular {
+    stroke: var(--primary);
+  }
+
+  .el-loading-text {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+}
+
+// Tabs 样式
+.el-tabs__nav-wrap::after {
+  background-color: var(--border);
+}
+
+.el-tabs__item {
+  color: var(--muted-foreground);
+  font-weight: 500;
+
+  &.is-active {
+    color: var(--primary);
+  }
+}
+
+.el-tabs__active-bar {
+  background-color: var(--primary);
+}
+
+// Menu 样式
+.el-menu {
+  border-right: 1px solid var(--border);
+
+  .el-menu-item,
+  .el-sub-menu__title {
+    &:hover {
+      background-color: var(--primary-light);
+    }
+  }
+
+  .el-menu-item.is-active {
+    color: var(--primary);
+    background-color: var(--primary-light);
+    border-right: 3px solid var(--primary);
+  }
+}
+
+// Dropdown 样式
+.el-dropdown-menu {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  padding: 0.5rem;
+
+  .el-dropdown-menu__item {
+    border-radius: var(--radius-sm);
+    margin: 0.25rem 0;
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+
+    &:hover {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+  }
+}
+
+// 工具类
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.text-info {
+  color: var(--info);
+}
+
+// 过渡动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}

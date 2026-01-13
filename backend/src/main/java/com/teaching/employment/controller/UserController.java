@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 用户管理控制器
  *
@@ -70,6 +72,32 @@ public class UserController {
     }
 
     /**
+     * 更新个人资料
+     */
+    @PutMapping("/profile")
+    @ApiOperation("更新个人资料")
+    public Result<Void> updateProfile(HttpServletRequest request, @RequestBody UpdateProfileRequest req) {
+        // 从request attribute中获取当前用户ID(JwtInterceptor已设置)
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error("未登录");
+        }
+
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        // 只允许更新特定字段
+        user.setRealName(req.getRealName());
+        user.setPhone(req.getPhone());
+        user.setEmail(req.getEmail());
+
+        boolean success = userService.updateById(user);
+        return success ? Result.ok("保存成功") : Result.error("保存失败");
+    }
+
+    /**
      * 删除用户
      */
     @DeleteMapping("/{id}")
@@ -77,5 +105,78 @@ public class UserController {
     public Result<Void> deleteUser(@PathVariable Long id) {
         boolean success = userService.removeById(id);
         return success ? Result.ok("删除成功") : Result.error("删除失败");
+    }
+
+    /**
+     * 修改密码
+     */
+    @PutMapping("/password")
+    @ApiOperation("修改密码")
+    public Result<Void> changePassword(HttpServletRequest request, @RequestBody ChangePasswordRequest req) {
+        // 从request attribute中获取当前用户ID(JwtInterceptor已设置)
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error("未登录");
+        }
+
+        boolean success = userService.changePassword(userId, req.getOldPassword(), req.getNewPassword());
+        return success ? Result.ok("密码修改成功") : Result.error("密码修改失败");
+    }
+
+    /**
+     * 修改密码请求体
+     */
+    public static class ChangePasswordRequest {
+        private String oldPassword;
+        private String newPassword;
+
+        public String getOldPassword() {
+            return oldPassword;
+        }
+
+        public void setOldPassword(String oldPassword) {
+            this.oldPassword = oldPassword;
+        }
+
+        public String getNewPassword() {
+            return newPassword;
+        }
+
+        public void setNewPassword(String newPassword) {
+            this.newPassword = newPassword;
+        }
+    }
+
+    /**
+     * 更新个人资料请求体
+     */
+    public static class UpdateProfileRequest {
+        private String realName;
+        private String phone;
+        private String email;
+
+        public String getRealName() {
+            return realName;
+        }
+
+        public void setRealName(String realName) {
+            this.realName = realName;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public void setPhone(String phone) {
+            this.phone = phone;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
     }
 }

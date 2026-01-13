@@ -173,17 +173,18 @@ public class StatisticsController {
     @GetMapping("/monthly-trend")
     @ApiOperation("获取月度就业趋势数据")
     public Result<Map<String, Object>> getMonthlyTrend(
-            @RequestParam(required = false, defaultValue = "12") Integer months) {
-        Map<String, Object> data = new HashMap<>();
+            @ApiParam("返回最近N个月") @RequestParam(required = false, defaultValue = "6") Integer months) {
+        Map<String, Object> data = statisticsService.getMonthlyTrend(months);
+        return Result.ok(data);
+    }
 
-        // 获取最近N个月的就业数据
-        // 这里简化处理,实际应该使用DATE_FORMAT和GROUP BY
-        // TODO: 实现完整的月度趋势查询
-
-        for (int i = months - 1; i >= 0; i--) {
-            // 简化示例,实际需要正确的SQL查询
-        }
-
+    /**
+     * 获取就业状态分布数据
+     */
+    @GetMapping("/employment-status-distribution")
+    @ApiOperation("获取就业状态分布数据")
+    public Result<Map<String, Object>> getEmploymentStatusDistribution() {
+        Map<String, Object> data = statisticsService.getEmploymentStatusDistribution();
         return Result.ok(data);
     }
 
@@ -215,6 +216,38 @@ public class StatisticsController {
     @ApiOperation("获取课程就业率统计")
     public Result<List<Map<String, Object>>> getCourseEmploymentRate() {
         List<Map<String, Object>> data = statisticsService.getCourseEmploymentRate();
+        return Result.ok(data);
+    }
+
+    /**
+     * 获取热门课程列表
+     */
+    @GetMapping("/popular-courses")
+    @ApiOperation("获取热门课程列表")
+    public Result<List<Map<String, Object>>> getPopularCourses(
+            @ApiParam("返回前N名") @RequestParam(required = false, defaultValue = "10") Integer limit) {
+        List<Map<String, Object>> data = statisticsService.getPopularCourses(limit);
+        return Result.ok(data);
+    }
+
+    /**
+     * 获取公告列表
+     */
+    @GetMapping("/announcements")
+    @ApiOperation("获取公告列表")
+    public Result<List<Map<String, Object>>> getAnnouncements(
+            @ApiParam("返回前N条") @RequestParam(required = false, defaultValue = "10") Integer limit) {
+        List<Map<String, Object>> data = statisticsService.getAnnouncements(limit);
+        return Result.ok(data);
+    }
+
+    /**
+     * 获取企业统计数据
+     */
+    @GetMapping("/company-stats")
+    @ApiOperation("获取企业统计数据")
+    public Result<List<Map<String, Object>>> getCompanyStats() {
+        List<Map<String, Object>> data = statisticsService.getCompanyStats();
         return Result.ok(data);
     }
 }

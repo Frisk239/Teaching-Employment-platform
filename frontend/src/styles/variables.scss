@@ -1,0 +1,130 @@
+// 高校教学就业平台 - 全局样式变量
+// 基于 OKLCH 颜色系统
+
+:root {
+  // 核心颜色系统
+  --background: oklch(0.98 0.005 240);
+  --foreground: oklch(0.20 0.02 240);
+
+  // 卡片和容器
+  --card: oklch(1.00 0 0);
+  --card-foreground: oklch(0.20 0.02 240);
+  --popover: oklch(1.00 0 0);
+  --popover-foreground: oklch(0.20 0.02 240);
+
+  // 主色调 - 温暖的橙色系
+  --primary: oklch(0.65 0.18 45);
+  --primary-foreground: oklch(1.00 0 0);
+  --primary-hover: oklch(0.60 0.19 45);
+  --primary-light: oklch(0.92 0.03 45);
+
+  // 次要色调
+  --secondary: oklch(0.95 0.01 240);
+  --secondary-foreground: oklch(0.25 0.02 240);
+
+  // 静音状态
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.50 0.01 240);
+
+  // 强调色
+  --accent: oklch(0.92 0.03 45);
+  --accent-foreground: oklch(0.25 0.02 240);
+
+  // 功能色
+  --success: oklch(0.60 0.15 150);
+  --success-light: oklch(0.94 0.04 150);
+  --warning: oklch(0.70 0.15 85);
+  --warning-light: oklch(0.96 0.04 85);
+  --danger: oklch(0.55 0.22 25);
+  --danger-light: oklch(0.94 0.06 25);
+  --info: oklch(0.55 0.15 220);
+  --info-light: oklch(0.93 0.04 220);
+
+  // 危险/错误
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(1.00 0 0);
+
+  // 边框和输入
+  --border: oklch(0.90 0.01 240);
+  --border-light: oklch(0.94 0.005 240);
+  --input: oklch(0.90 0.01 240);
+  --ring: oklch(0.65 0.18 45);
+
+  // 文字颜色
+  --text-primary: oklch(0.20 0.02 240);
+  --text-secondary: oklch(0.45 0.015 240);
+  --text-muted: oklch(0.60 0.01 240);
+
+  // 图表颜色
+  --chart-1: oklch(0.65 0.18 45);
+  --chart-2: oklch(0.55 0.15 220);
+  --chart-3: oklch(0.60 0.15 150);
+  --chart-4: oklch(0.70 0.15 85);
+  --chart-5: oklch(0.55 0.22 25);
+
+  // 渐变背景
+  --gradient-orange: linear-gradient(135deg, oklch(0.92 0.03 45) 0%, oklch(0.88 0.04 45) 100%);
+  --gradient-blue: linear-gradient(135deg, oklch(0.90 0.03 220) 0%, oklch(0.85 0.04 220) 100%);
+  --gradient-green: linear-gradient(135deg, oklch(0.92 0.04 150) 0%, oklch(0.88 0.05 150) 100%);
+  --gradient-purple: linear-gradient(135deg, oklch(0.88 0.04 280) 0%, oklch(0.83 0.05 280) 100%);
+
+  // 侧边栏
+  --sidebar: oklch(0.97 0.01 240);
+  --sidebar-foreground: oklch(0.20 0.02 240);
+  --sidebar-primary: oklch(0.65 0.18 45);
+  --sidebar-primary-foreground: oklch(1.00 0 0);
+  --sidebar-accent: oklch(0.95 0.01 240);
+  --sidebar-accent-foreground: oklch(0.25 0.02 240);
+  --sidebar-border: oklch(0.90 0.01 240);
+  --sidebar-ring: oklch(0.65 0.18 45);
+
+  // 字体系统
+  --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-serif: 'Merriweather', 'Songti SC', serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+  // 圆角系统
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  // 阴影系统
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --shadow-sm: 0 2px 4px -1px rgb(0 0 0 / 0.08), 0 1px 2px -2px rgb(0 0 0 / 0.08);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -2px rgb(0 0 0 / 0.10);
+  --shadow-md: 0 6px 12px -2px rgb(0 0 0 / 0.12), 0 3px 6px -3px rgb(0 0 0 / 0.12);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.15), 0 6px 12px -6px rgb(0 0 0 / 0.15);
+  --shadow-xl: 0 20px 40px -8px rgb(0 0 0 / 0.18), 0 10px 20px -10px rgb(0 0 0 / 0.18);
+  --shadow-2xl: 0 32px 64px -8px rgb(0 0 0 / 0.22);
+
+  // 间距系统
+  --spacing: 0.25rem;
+  --tracking-normal: 0em;
+
+  // 卡片样式
+  --card-bg: oklch(1.00 0 0);
+  --card-border: oklch(0.90 0.01 240);
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.10), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+}
+
+// SCSS 变量（用于组件内部使用）
+$primary: var(--primary);
+$primary-hover: var(--primary-hover);
+$success: var(--success);
+$warning: var(--warning);
+$danger: var(--danger);
+$info: var(--info);
+
+$border-radius-sm: var(--radius-sm);
+$border-radius-md: var(--radius-md);
+$border-radius-lg: var(--radius-lg);
+$border-radius-xl: var(--radius-xl);
+
+$shadow-sm: var(--shadow-sm);
+$shadow-md: var(--shadow-md);
+$shadow-lg: var(--shadow-lg);
+$shadow-xl: var(--shadow-xl);

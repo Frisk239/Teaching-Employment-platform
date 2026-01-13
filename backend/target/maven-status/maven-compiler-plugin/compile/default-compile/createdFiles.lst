@@ -12,6 +12,7 @@ com\teaching\employment\constants\RoleConstants.class
 com\teaching\employment\enums\CourseTypeEnum.class
 com\teaching\employment\mapper\RoleMapper.class
 com\teaching\employment\service\PermissionService.class
+com\teaching\employment\controller\UserController$UpdateProfileRequest.class
 com\teaching\employment\service\impl\TeacherServiceImpl.class
 com\teaching\employment\entity\Question.class
 com\teaching\employment\entity\User.class
@@ -122,6 +123,7 @@ com\teaching\employment\entity\RolePermissionRelation.class
 com\teaching\employment\entity\Exam.class
 com\teaching\employment\config\MyMetaObjectHandler.class
 com\teaching\employment\controller\CourseRecordController.class
+com\teaching\employment\controller\UserController$ChangePasswordRequest.class
 com\teaching\employment\entity\JobApplication.class
 com\teaching\employment\service\impl\ExamServiceImpl.class
 com\teaching\employment\service\NotificationService.class

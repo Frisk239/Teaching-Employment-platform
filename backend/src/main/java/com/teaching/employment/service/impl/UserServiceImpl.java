@@ -82,4 +82,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         return userMapper.insert(user) > 0;
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+        // 获取用户信息
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        // 验证旧密码
+        if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
+            throw new BusinessException("原密码错误");
+        }
+
+        // 加密新密码
+        String encodedPassword = PasswordUtil.encode(newPassword);
+        user.setPassword(encodedPassword);
+
+        return userMapper.updateById(user) > 0;
+    }
 }

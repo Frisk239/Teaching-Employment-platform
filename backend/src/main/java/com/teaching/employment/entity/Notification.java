@@ -46,6 +46,7 @@ public class Notification implements Serializable {
 
     @ApiModelProperty(value = "阅读时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @TableField(exist = false)
     private LocalDateTime readTime;
 
     @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
