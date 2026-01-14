@@ -55,7 +55,80 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
 
         wrapper.orderByDesc(Student::getCreateTime);
-        return studentMapper.selectPage(page, wrapper);
+        IPage<Student> result = studentMapper.selectPage(page, wrapper);
+
+        System.out.println("========== DEBUG: 查询到 " + result.getRecords().size() + " 条学员记录 ==========");
+
+        // 填充学校名称和用户姓名
+        fillRelatedData(result.getRecords());
+
+        // 打印第一条数据看看realName是否填充成功
+        if (!result.getRecords().isEmpty()) {
+            Student first = result.getRecords().get(0);
+            System.out.println("========== DEBUG: 第一条数据: studentNo=" + first.getStudentNo() +
+                             ", realName=" + first.getRealName() +
+                             ", schoolName=" + first.getSchoolName() + " ==========");
+        }
+
+        return result;
+    }
+
+    /**
+     * 填充学员的关联数据(学校名称、用户姓名)
+     */
+    private void fillRelatedData(List<Student> students) {
+        if (students == null || students.isEmpty()) {
+            System.out.println("========== DEBUG: fillRelatedData - students为空 ==========");
+            return;
+        }
+
+        System.out.println("========== DEBUG: fillRelatedData - 开始处理 " + students.size() + " 条记录 ==========");
+
+        // 收集所有需要查询的学校ID
+        List<Long> schoolIds = students.stream()
+                .map(Student::getSchoolId)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        // 收集所有需要查询的用户ID
+        List<Long> userIds = students.stream()
+                .map(Student::getUserId)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        System.out.println("========== DEBUG: schoolIds=" + schoolIds + ", userIds=" + userIds + " ==========");
+
+        // 批量查询学校信息
+        final java.util.Map<Long, String> schoolMap;
+        if (!schoolIds.isEmpty()) {
+            List<School> schools = schoolService.listByIds(schoolIds);
+            System.out.println("========== DEBUG: 查询到 " + schools.size() + " 条学校记录 ==========");
+            schoolMap = schools.stream()
+                    .collect(java.util.stream.Collectors.toMap(School::getId, School::getSchoolName));
+        } else {
+            schoolMap = java.util.Map.of();
+        }
+
+        // 批量查询用户信息
+        final java.util.Map<Long, String> userMap;
+        if (!userIds.isEmpty()) {
+            List<User> users = userService.listByIds(userIds);
+            System.out.println("========== DEBUG: 查询到 " + users.size() + " 条用户记录 ==========");
+            userMap = users.stream()
+                    .collect(java.util.stream.Collectors.toMap(User::getId, User::getRealName));
+        } else {
+            userMap = java.util.Map.of();
+        }
+
+        System.out.println("========== DEBUG: schoolMap=" + schoolMap + ", userMap=" + userMap + " ==========");
+
+        // 填充数据到学员对象
+        students.forEach(student -> {
+            student.setSchoolName(schoolMap.get(student.getSchoolId()));
+            student.setRealName(userMap.get(student.getUserId()));
+        });
+
+        System.out.println("========== DEBUG: 填充完成 ==========");
     }
 
     @Override
@@ -182,5 +255,14 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
     @Override
     public Student getStudentByStudentNo(String studentNo) {
         return studentMapper.selectStudentWithDetailsByStudentNo(studentNo);
+    }
+
+    @Override
+    public Student getStudentWithDetails(Long id) {
+        Student student = studentMapper.selectById(id);
+        if (student != null) {
+            fillRelatedData(java.util.Collections.singletonList(student));
+        }
+        return student;
     }
 }

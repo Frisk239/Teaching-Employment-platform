@@ -48,7 +48,7 @@ public class StudentController {
     @GetMapping("/{id}")
     @ApiOperation("根据ID查询学员")
     public Result<Student> getStudentById(@PathVariable Long id) {
-        Student student = studentService.getById(id);
+        Student student = studentService.getStudentWithDetails(id);
         return Result.ok(student);
     }
 

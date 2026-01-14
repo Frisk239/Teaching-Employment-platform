@@ -50,4 +50,12 @@ public interface StudentService extends IService<Student> {
      * @return 学员信息
      */
     Student getStudentByStudentNo(String studentNo);
+
+    /**
+     * 根据ID查询学员详情(包含关联信息)
+     *
+     * @param id 学员ID
+     * @return 学员详情
+     */
+    Student getStudentWithDetails(Long id);
 }

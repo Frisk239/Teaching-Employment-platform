@@ -1,5 +1,5 @@
-import request from '@/utils/request'
-import type { Result, IPage } from './types'
+import { http } from '@/utils/request'
+import type { IPage } from './types'
 
 // 学生接口类型定义
 export interface Student {
@@ -34,64 +34,43 @@ export interface StudentPageParams {
 /**
  * 获取学生分页列表
  */
-export function getStudentPageApi(params: StudentPageParams): Promise<IPage<Student>> {
-  return request({
-    url: '/student/page',
-    method: 'get',
-    params
-  }) as Promise<IPage<Student>>
+export function getStudentPageApi(params: StudentPageParams) {
+  return http.get<IPage<Student>>('/student/page', { params })
 }
 
 /**
  * 获取所有学生列表
  */
-export function getStudentListApi(): Promise<Student[]> {
-  return request({
-    url: '/student/list',
-    method: 'get'
-  }) as Promise<Student[]>
+export function getStudentListApi() {
+  return http.get<Student[]>('/student/list')
 }
 
 /**
  * 根据ID获取学生详情
  */
-export function getStudentByIdApi(id: number): Promise<Student> {
-  return request({
-    url: `/student/${id}`,
-    method: 'get'
-  }) as Promise<Student>
+export function getStudentByIdApi(id: number) {
+  return http.get<Student>(`/student/${id}`)
 }
 
 /**
  * 创建学生
  */
 export function createStudentApi(data: Student) {
-  return request<Result<void>>({
-    url: '/student',
-    method: 'post',
-    data
-  })
+  return http.post<void>('/student', data)
 }
 
 /**
  * 更新学生
  */
 export function updateStudentApi(data: Student) {
-  return request<Result<void>>({
-    url: '/student',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/student', data)
 }
 
 /**
  * 删除学生
  */
 export function deleteStudentApi(id: number) {
-  return request<Result<void>>({
-    url: `/student/${id}`,
-    method: 'delete'
-  })
+  return http.delete<void>(`/student/${id}`)
 }
 
 /**
@@ -100,23 +79,14 @@ export function deleteStudentApi(id: number) {
 export function importStudentsApi(file: File) {
   const formData = new FormData()
   formData.append('file', file)
-  return request<Result<Map<string, number>>>({
-    url: '/student/import',
-    method: 'post',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
+  return http.post<string>('/student/import', formData)
 }
 
 /**
  * Excel导出学生
  */
 export function exportStudentsApi(params: StudentPageParams) {
-  return request({
-    url: '/student/export',
-    method: 'get',
+  return http.get('/student/export', {
     params,
     responseType: 'blob'
   })

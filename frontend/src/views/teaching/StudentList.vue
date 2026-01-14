@@ -21,7 +21,7 @@
             <el-option
               v-for="school in schoolList"
               :key="school.id"
-              :label="school.name"
+              :label="school.schoolName"
               :value="school.id"
             />
           </el-select>
@@ -104,7 +104,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="realName" label="姓名" width="120" />
-        <el-table-column prop="username" label="学号" width="120" />
+        <el-table-column prop="studentNo" label="学号" width="120" />
         <el-table-column prop="schoolName" label="学校" width="180" />
         <el-table-column prop="grade" label="年级" width="100" />
         <el-table-column prop="major" label="专业" min-width="150" />
@@ -112,17 +112,6 @@
         <el-table-column prop="phone" label="手机号" width="140" />
         <el-table-column prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
         <el-table-column prop="enrollmentDate" label="入学日期" width="120" />
-        <el-table-column label="状态" width="100" align="center">
-          <template #default="{ row }">
-            <el-switch
-              v-permission="'teaching:student:edit'"
-              v-model="row.status"
-              :active-value="1"
-              :inactive-value="0"
-              @change="handleStatusChange(row)"
-            />
-          </template>
-        </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-button
@@ -196,7 +185,7 @@
                 <el-option
                   v-for="school in schoolList"
                   :key="school.id"
-                  :label="school.name"
+                  :label="school.schoolName"
                   :value="school.id"
                 />
               </el-select>
@@ -344,20 +333,20 @@ const pagination = reactive({
 
 // 表格数据
 const loading = ref(false)
-const tableData = ref([])
+const tableData = ref<any[]>([])
 
 // 学校列表
-const schoolList = ref([])
+const schoolList = ref<any[]>([])
 
 // 对话框
 const dialogVisible = ref(false)
 const dialogTitle = computed(() => (formData.id ? '编辑学生' : '新增学生'))
 const formRef = ref<FormInstance>()
 const formData = reactive({
-  id: undefined,
+  id: undefined as number | undefined,
   username: '',
   realName: '',
-  schoolId: undefined,
+  schoolId: undefined as number | undefined,
   grade: '',
   major: '',
   className: '',
@@ -408,9 +397,8 @@ const formRules: FormRules = {
 const fetchSchoolList = async () => {
   try {
     const response = await getSchoolListApi()
-    if (response.code === 200) {
-      schoolList.value = response.data
-    }
+    // http工具已经自动提取了data
+    schoolList.value = response || []
   } catch (error) {
     console.error('获取学校列表失败:', error)
   }
@@ -430,12 +418,9 @@ const fetchData = async () => {
       status: searchForm.status
     }
     const response = await getStudentPageApi(params)
-    if (response.code === 200) {
-      tableData.value = response.data.records
-      pagination.total = response.data.total
-    } else {
-      ElMessage.error(response.message || '获取学生列表失败')
-    }
+    // http工具已经自动提取了data,所以response直接就是分页数据
+    tableData.value = response.records || []
+    pagination.total = response.total || 0
   } catch (error) {
     console.error('获取学生列表失败:', error)
     ElMessage.error('获取学生列表失败')
@@ -484,12 +469,14 @@ const handleAdd = () => {
 const handleEdit = async (row: any) => {
   try {
     const response = await getStudentByIdApi(row.id)
-    if (response.code === 200) {
-      Object.assign(formData, response.data)
-      dialogVisible.value = true
-    } else {
-      ElMessage.error(response.message || '获取学生信息失败')
+    // http工具已经自动提取了data
+    // 映射字段: studentNo -> username
+    const editData = {
+      ...response,
+      username: response.studentNo
     }
+    Object.assign(formData, editData)
+    dialogVisible.value = true
   } catch (error) {
     console.error('获取学生信息失败:', error)
     ElMessage.error('获取学生信息失败')
@@ -505,13 +492,9 @@ const handleDelete = (row: any) => {
   })
     .then(async () => {
       try {
-        const response = await deleteStudentApi(row.id)
-        if (response.code === 200) {
-          ElMessage.success('删除成功')
-          fetchData()
-        } else {
-          ElMessage.error(response.message || '删除失败')
-        }
+        await deleteStudentApi(row.id)
+        ElMessage.success('删除成功')
+        fetchData()
       } catch (error) {
         console.error('删除失败:', error)
         ElMessage.error('删除失败')
@@ -523,14 +506,9 @@ const handleDelete = (row: any) => {
 // 状态变更
 const handleStatusChange = async (row: any) => {
   try {
-    const response = await updateStudentApi(row)
-    if (response.code === 200) {
-      ElMessage.success('状态更新成功')
-      fetchData()
-    } else {
-      ElMessage.error(response.message || '状态更新失败')
-      row.status = row.status === 1 ? 0 : 1 // 回滚
-    }
+    await updateStudentApi(row)
+    ElMessage.success('状态更新成功')
+    fetchData()
   } catch (error) {
     console.error('状态更新失败:', error)
     ElMessage.error('状态更新失败')
@@ -545,14 +523,12 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         const api = formData.id ? updateStudentApi : createStudentApi
-        const response = await api(formData)
-        if (response.code === 200) {
-          ElMessage.success(formData.id ? '更新成功' : '新增成功')
-          dialogVisible.value = false
-          fetchData()
-        } else {
-          ElMessage.error(response.message || '操作失败')
-        }
+        // 构建提交数据,移除undefined字段
+        const submitData: any = { ...formData }
+        await api(submitData)
+        ElMessage.success(formData.id ? '更新成功' : '新增成功')
+        dialogVisible.value = false
+        fetchData()
       } catch (error) {
         console.error('操作失败:', error)
         ElMessage.error('操作失败')
