@@ -131,6 +131,15 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     }
 
     @Override
+    public Course getCourseWithDetails(Long id) {
+        Course course = courseMapper.selectById(id);
+        if (course != null) {
+            fillRelatedData(java.util.Collections.singletonList(course));
+        }
+        return course;
+    }
+
+    @Override
     public List<Course> getCoursesByStudentId(Long studentId) {
         List<CourseStudent> courseStudents = courseStudentService.getCoursesByStudentId(studentId);
         return courseStudents.stream()
