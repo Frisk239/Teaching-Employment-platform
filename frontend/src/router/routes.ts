@@ -176,7 +176,7 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head'],
             },
           },
-          // 作业批改（管理员、学院负责人、教师、学员）
+          // 作业批改（学院负责人、教师、学员）
           {
             path: '/teaching/homework-grading',
             name: 'TeachingHomeworkGrading',
@@ -184,10 +184,10 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '作业批改',
               icon: 'Checked',
-              roles: ['admin', 'college_head', 'teacher', 'user'],
+              roles: ['college_head', 'teacher', 'user'],
             },
           },
-          // 作业发布（管理员、学院负责人、教师）
+          // 作业发布（学院负责人、教师）
           {
             path: '/teaching/homework-publish',
             name: 'TeachingHomeworkPublish',
@@ -195,7 +195,7 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '作业发布',
               icon: 'DocumentAdd',
-              roles: ['admin', 'college_head', 'teacher'],
+              roles: ['college_head', 'teacher'],
             },
           },
           // 日报管理（管理员、学院负责人、教师、学员）

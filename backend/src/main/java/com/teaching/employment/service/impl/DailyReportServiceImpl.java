@@ -6,15 +6,22 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.DailyReport;
+import com.teaching.employment.entity.Student;
+import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.DailyReportMapper;
 import com.teaching.employment.service.DailyReportService;
+import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 学员日报Service实现类
@@ -28,6 +35,8 @@ public class DailyReportServiceImpl extends ServiceImpl<DailyReportMapper, Daily
         implements DailyReportService {
 
     private final DailyReportMapper dailyReportMapper;
+    private final StudentService studentService;
+    private final UserService userService;
 
     @Override
     public IPage<DailyReport> getDailyReportPage(Integer current, Integer size, Long studentId, LocalDate startDate,
@@ -50,7 +59,12 @@ public class DailyReportServiceImpl extends ServiceImpl<DailyReportMapper, Daily
 
         wrapper.orderByDesc(DailyReport::getReportDate);
 
-        return dailyReportMapper.selectPage(page, wrapper);
+        IPage<DailyReport> resultPage = dailyReportMapper.selectPage(page, wrapper);
+
+        // 填充学员信息
+        fillStudentInfo(resultPage.getRecords());
+
+        return resultPage;
     }
 
     @Override
@@ -107,5 +121,62 @@ public class DailyReportServiceImpl extends ServiceImpl<DailyReportMapper, Daily
         report.setReviewTime(LocalDateTime.now());
 
         return dailyReportMapper.updateById(report) > 0;
+    }
+
+    /**
+     * 填充学员信息到日报列表
+     */
+    private void fillStudentInfo(List<DailyReport> reports) {
+        if (reports == null || reports.isEmpty()) {
+            return;
+        }
+
+        // 获取所有不重复的学员ID
+        List<Long> studentIds = reports.stream()
+                .map(DailyReport::getStudentId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (studentIds.isEmpty()) {
+            return;
+        }
+
+        // 批量查询学员信息
+        List<Student> students = studentService.listByIds(studentIds);
+
+        // 获取所有用户ID
+        List<Long> userIds = students.stream()
+                .map(Student::getUserId)
+                .filter(id -> id != null)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 批量查询用户信息(用于获取姓名)
+        Map<Long, User> userMap = Map.of();
+        if (!userIds.isEmpty()) {
+            List<User> users = userService.listByIds(userIds);
+            userMap = users.stream()
+                    .collect(Collectors.toMap(User::getId, user -> user));
+        }
+
+        // 构建学员ID到学员的映射
+        Map<Long, Student> studentMap = students.stream()
+                .collect(Collectors.toMap(Student::getId, student -> student));
+
+        // 填充学员信息到日报
+        for (DailyReport report : reports) {
+            Student student = studentMap.get(report.getStudentId());
+            if (student != null) {
+                report.setStudentNo(student.getStudentNo());
+
+                // 从用户表中获取真实姓名
+                if (student.getUserId() != null) {
+                    User user = userMap.get(student.getUserId());
+                    if (user != null) {
+                        report.setStudentName(user.getRealName());
+                    }
+                }
+            }
+        }
     }
 }

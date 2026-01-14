@@ -28,34 +28,43 @@ public class DailyReport implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "学生ID")
+    @TableField("student_id")
     private Long studentId;
 
     @ApiModelProperty(value = "日报日期")
+    @TableField("report_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate reportDate;
 
     @ApiModelProperty(value = "今日学习内容")
+    @TableField("today_content")
     private String todayContent;
 
     @ApiModelProperty(value = "今日完成进度")
+    @TableField("today_progress")
     private String todayProgress;
 
     @ApiModelProperty(value = "遇到的问题")
+    @TableField("problems")
     private String problems;
 
     @ApiModelProperty(value = "明日计划")
+    @TableField("tomorrow_plan")
     private String tomorrowPlan;
 
     @ApiModelProperty(value = "学习时长（小时）")
+    @TableField("study_hours")
     private Integer studyHours;
 
     @ApiModelProperty(value = "代码行数")
+    @TableField("code_lines")
     private Integer codeLines;
 
     @ApiModelProperty(value = "附件URL（截图、代码等）")
     private String attachmentUrl;
 
     @ApiModelProperty(value = "教师评语")
+    @TableField("teacher_comment")
     private String teacherComment;
 
     @ApiModelProperty(value = "评分（1-5分）")
@@ -65,10 +74,12 @@ public class DailyReport implements Serializable {
     private String status;
 
     @ApiModelProperty(value = "提交时间")
+    @TableField("submit_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime submitTime;
 
     @ApiModelProperty(value = "批阅时间")
+    @TableField("review_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime reviewTime;
 

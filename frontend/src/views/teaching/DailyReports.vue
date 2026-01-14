@@ -1,16 +1,118 @@
 <template>
   <div class="daily-reports">
-    <el-card shadow="never">
-      <!-- 搜索表单 -->
+    <!-- 页面标题和操作 -->
+    <el-card shadow="never" class="header-card">
+      <div class="page-header">
+        <div class="title-section">
+          <h2>日报管理</h2>
+          <p class="subtitle">学员学习日报记录与批阅</p>
+        </div>
+        <div class="action-section">
+          <!-- 学员显示写日报按钮 -->
+          <el-button
+            v-if="userRole === 'user'"
+            type="primary"
+            :icon="DocumentAdd"
+            @click="handleWriteReport"
+          >
+            写日报
+          </el-button>
+        </div>
+      </div>
+
+      <!-- 统计卡片 -->
+      <el-row :gutter="16" class="stats-row">
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-content">
+              <div class="stat-icon total">
+                <el-icon><Document /></el-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="stat-label">总日报数</div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-content">
+              <div class="stat-icon draft">
+                <el-icon><Edit /></el-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.draft }}</div>
+                <div class="stat-label">草稿</div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-content">
+              <div class="stat-icon submitted">
+                <el-icon><Clock /></el-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.submitted }}</div>
+                <div class="stat-label">待批阅</div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-content">
+              <div class="stat-icon reviewed">
+                <el-icon><CircleCheck /></el-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.reviewed }}</div>
+                <div class="stat-label">已批阅</div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </el-card>
+
+    <!-- 搜索筛选 -->
+    <el-card shadow="never" class="search-card">
       <el-form :model="searchForm" inline class="search-form">
-        <el-form-item label="学生姓名">
-          <el-input
-            v-model="searchForm.studentName"
-            placeholder="请输入学生姓名"
+        <!-- 学员只能看自己的,管理员和教师可以筛选 -->
+        <el-form-item v-if="userRole !== 'user'" label="学员">
+          <el-select
+            v-model="searchForm.studentId"
+            placeholder="选择学员"
+            clearable
+            filterable
+            style="width: 200px"
+            @change="handleSearch"
+          >
+            <el-option
+              v-for="student in studentList"
+              :key="student.id"
+              :label="`${student.realName} (${student.studentNo})`"
+              :value="student.userId"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="全部状态"
             clearable
             style="width: 150px"
-          />
+            @change="handleSearch"
+          >
+            <el-option label="草稿" value="draft" />
+            <el-option label="已提交" value="submitted" />
+            <el-option label="已批阅" value="reviewed" />
+          </el-select>
         </el-form-item>
+
         <el-form-item label="日期范围">
           <el-date-picker
             v-model="dateRange"
@@ -20,26 +122,19 @@
             end-placeholder="结束日期"
             value-format="YYYY-MM-DD"
             style="width: 280px"
+            @change="handleDateRangeChange"
           />
         </el-form-item>
+
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button :icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
-      <!-- 操作按钮 -->
-      <div class="table-operations">
-        <el-button
-          type="primary"
-          @click="handleAdd"
-        >
-          <el-icon><Plus /></el-icon>
-          写日报
-        </el-button>
-      </div>
-
-      <!-- 数据表格 -->
+    <!-- 日报列表 -->
+    <el-card shadow="never" class="table-card">
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -48,35 +143,145 @@
         style="width: 100%"
       >
         <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="studentName" label="学生姓名" width="120" />
-        <el-table-column prop="courseName" label="课程" width="150" />
-        <el-table-column prop="reportDate" label="日期" width="120" />
-        <el-table-column prop="content" label="日报内容" min-width="300" show-overflow-tooltip />
-        <el-table-column prop="studyHours" label="学习时长" width="100" align="center">
+
+        <el-table-column prop="studentNo" label="学号" width="120">
           <template #default="{ row }">
-            {{ row.studyHours }} 小时
+            {{ row.studentNo || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="提交时间" width="160" />
-        <el-table-column label="操作" width="150" fixed="right">
+
+        <el-table-column prop="studentName" label="学员姓名" width="120">
           <template #default="{ row }">
-            <el-button
-              type="primary"
-              size="small"
-              link
-              @click="handleView(row)"
-            >
-              查看
-            </el-button>
-            <el-button
-              v-if="isOwner(row)"
-              type="danger"
-              size="small"
-              link
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
+            {{ row.studentName || '-' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="reportDate" label="日报日期" width="120">
+          <template #default="{ row }">
+            {{ row.reportDate }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="todayContent" label="今日学习内容" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.todayContent || '-' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="studyHours" label="学习时长" width="100" align="center">
+          <template #default="{ row }">
+            <span v-if="row.studyHours">
+              {{ row.studyHours }} 小时
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="codeLines" label="代码行数" width="100" align="center">
+          <template #default="{ row }">
+            <span v-if="row.codeLines">{{ row.codeLines }} 行</span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="status" label="状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.status === 'draft'" type="info">草稿</el-tag>
+            <el-tag v-else-if="row.status === 'submitted'" type="warning">已提交</el-tag>
+            <el-tag v-else-if="row.status === 'reviewed'" type="success">已批阅</el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="rating" label="评分" width="100" align="center">
+          <template #default="{ row }">
+            <el-rate
+              v-if="row.rating"
+              v-model="row.rating"
+              disabled
+              show-score
+              text-color="#ff9900"
+            />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="submitTime" label="提交时间" width="160">
+          <template #default="{ row }">
+            {{ row.submitTime || '-' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <!-- 学员操作 -->
+            <template v-if="userRole === 'user'">
+              <el-button
+                v-if="row.status === 'draft'"
+                type="primary"
+                size="small"
+                :icon="Edit"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-if="row.status === 'draft'"
+                type="success"
+                size="small"
+                :icon="Promotion"
+                @click="handleSubmit(row.id)"
+              >
+                提交
+              </el-button>
+              <el-button
+                v-if="row.status === 'submitted'"
+                type="info"
+                size="small"
+                :icon="View"
+                @click="handleView(row)"
+              >
+                查看
+              </el-button>
+              <el-button
+                v-if="row.status === 'reviewed'"
+                type="success"
+                size="small"
+                :icon="View"
+                @click="handleView(row)"
+              >
+                批阅结果
+              </el-button>
+            </template>
+
+            <!-- 教师/管理员操作 -->
+            <template v-else>
+              <el-button
+                type="primary"
+                size="small"
+                :icon="View"
+                @click="handleView(row)"
+              >
+                查看
+              </el-button>
+              <el-button
+                v-if="row.status === 'submitted'"
+                type="warning"
+                size="small"
+                :icon="EditPen"
+                @click="handleReview(row)"
+              >
+                批阅
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                :icon="Delete"
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -85,353 +290,605 @@
       <el-pagination
         v-model:current-page="pagination.current"
         v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
         :total="pagination.total"
+        :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
+        class="pagination"
         @size-change="fetchData"
         @current-change="fetchData"
       />
     </el-card>
 
-    <!-- 新增/编辑对话框 -->
+    <!-- 写/编辑日报对话框 -->
     <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="700px"
-      @close="handleDialogClose"
+      v-model="writeDialogVisible"
+      :title="isEditMode ? '编辑日报' : '写日报'"
+      width="800px"
+      @close="handleWriteDialogClose"
     >
       <el-form
-        ref="formRef"
-        :model="formData"
-        :rules="formRules"
-        label-width="100px"
+        ref="writeFormRef"
+        :model="writeForm"
+        :rules="writeRules"
+        label-width="120px"
       >
-        <el-form-item label="选择课程" prop="courseId">
-          <el-select
-            v-model="formData.courseId"
-            placeholder="请选择课程"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="course in courseList"
-              :key="course.id"
-              :label="course.name"
-              :value="course.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="日期" prop="reportDate">
+        <el-form-item label="日报日期" prop="reportDate">
           <el-date-picker
-            v-model="formData.reportDate"
+            v-model="writeForm.reportDate"
             type="date"
             placeholder="选择日期"
             value-format="YYYY-MM-DD"
+            :disabled-date="(date) => date > new Date()"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="学习内容" prop="content">
+
+        <el-form-item label="今日学习内容" prop="todayContent">
           <el-input
-            v-model="formData.content"
+            v-model="writeForm.todayContent"
             type="textarea"
-            :rows="6"
-            placeholder="请详细描述今天学习的内容、遇到的问题、解决方案等"
+            :rows="4"
+            placeholder="请详细描述今天的学习内容..."
           />
         </el-form-item>
-        <el-form-item label="学习时长" prop="studyHours">
-          <el-input-number
-            v-model="formData.studyHours"
-            :min="0.5"
-            :max="24"
-            :step="0.5"
-            :precision="1"
-            style="width: 100%"
-          />
-          <span style="margin-left: 10px">小时</span>
-        </el-form-item>
-        <el-form-item label="明日计划" prop="tomorrowPlan">
+
+        <el-form-item label="今日完成进度">
           <el-input
-            v-model="formData.tomorrowPlan"
+            v-model="writeForm.todayProgress"
             type="textarea"
             :rows="3"
-            placeholder="请输入明天的学习计划"
+            placeholder="描述今天完成的进度和成果..."
+          />
+        </el-form-item>
+
+        <el-form-item label="遇到的问题">
+          <el-input
+            v-model="writeForm.problems"
+            type="textarea"
+            :rows="3"
+            placeholder="学习中遇到的难点和问题..."
+          />
+        </el-form-item>
+
+        <el-form-item label="明日计划">
+          <el-input
+            v-model="writeForm.tomorrowPlan"
+            type="textarea"
+            :rows="3"
+            placeholder="明天的学习计划和目标..."
+          />
+        </el-form-item>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="学习时长" prop="studyHours">
+              <el-input-number
+                v-model="writeForm.studyHours"
+                :min="0"
+                :max="24"
+                :precision="1"
+                style="width: 100%"
+              />
+              <span style="margin-left: 10px">小时</span>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="代码行数">
+              <el-input-number
+                v-model="writeForm.codeLines"
+                :min="0"
+                style="width: 100%"
+              />
+              <span style="margin-left: 10px">行</span>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="附件URL">
+          <el-input
+            v-model="writeForm.attachmentUrl"
+            placeholder="截图、代码等附件链接(可选)"
           />
         </el-form-item>
       </el-form>
+
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">提交</el-button>
+        <span class="dialog-footer">
+          <el-button @click="writeDialogVisible = false">取消</el-button>
+          <el-button @click="handleSaveDraft">保存草稿</el-button>
+          <el-button type="primary" @click="handleSubmitDirectly">提交日报</el-button>
+        </span>
       </template>
     </el-dialog>
 
-    <!-- 查看对话框 -->
+    <!-- 查看日报对话框 -->
     <el-dialog
       v-model="viewDialogVisible"
       title="日报详情"
-      width="700px"
+      width="800px"
     >
-      <div class="report-detail">
+      <div v-if="currentReport" class="report-detail">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="学生姓名">
-            {{ currentReport.studentName }}
+          <el-descriptions-item label="学员姓名">
+            {{ currentReport.studentName || '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="课程">
-            {{ currentReport.courseName }}
+          <el-descriptions-item label="学号">
+            {{ currentReport.studentNo || '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="日期" :span="2">
+          <el-descriptions-item label="日报日期">
             {{ currentReport.reportDate }}
           </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag v-if="currentReport.status === 'draft'" type="info">草稿</el-tag>
+            <el-tag v-else-if="currentReport.status === 'submitted'" type="warning">已提交</el-tag>
+            <el-tag v-else-if="currentReport.status === 'reviewed'" type="success">已批阅</el-tag>
+          </el-descriptions-item>
           <el-descriptions-item label="学习时长">
-            {{ currentReport.studyHours }} 小时
+            {{ currentReport.studyHours ? `${currentReport.studyHours} 小时` : '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="提交时间">
-            {{ currentReport.createTime }}
-          </el-descriptions-item>
-          <el-descriptions-item label="学习内容" :span="2">
-            <div class="content-text">{{ currentReport.content }}</div>
-          </el-descriptions-item>
-          <el-descriptions-item label="明日计划" :span="2">
-            <div class="content-text">{{ currentReport.tomorrowPlan }}</div>
+          <el-descriptions-item label="代码行数">
+            {{ currentReport.codeLines ? `${currentReport.codeLines} 行` : '-' }}
           </el-descriptions-item>
         </el-descriptions>
+
+        <el-divider content-position="left">学习内容</el-divider>
+
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="今日学习内容">
+            {{ currentReport.todayContent || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="完成进度">
+            {{ currentReport.todayProgress || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="遇到的问题">
+            {{ currentReport.problems || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="明日计划">
+            {{ currentReport.tomorrowPlan || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="currentReport.attachmentUrl" label="附件">
+            <el-link :href="currentReport.attachmentUrl" target="_blank" type="primary">
+              查看附件
+            </el-link>
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <!-- 批阅信息(已批阅时显示) -->
+        <template v-if="currentReport.status === 'reviewed'">
+          <el-divider content-position="left">教师评语</el-divider>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item label="评分" :span="2">
+              <el-rate
+                v-model="currentReport.rating"
+                disabled
+                show-score
+                text-color="#ff9900"
+              />
+            </el-descriptions-item>
+            <el-descriptions-item label="教师评语" :span="2">
+              {{ currentReport.teacherComment || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="批阅时间" :span="2">
+              {{ currentReport.reviewTime || '-' }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </template>
       </div>
+
       <template #footer>
         <el-button @click="viewDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 批阅日报对话框 -->
+    <el-dialog
+      v-model="reviewDialogVisible"
+      title="批阅日报"
+      width="700px"
+    >
+      <div v-if="currentReport" class="review-content">
+        <!-- 日报摘要 -->
+        <el-card shadow="never" class="report-summary">
+          <el-descriptions :column="2" border>
+            <el-descriptions-item label="学员姓名">
+              {{ currentReport.studentName }}
+            </el-descriptions-item>
+            <el-descriptions-item label="日报日期">
+              {{ currentReport.reportDate }}
+            </el-descriptions-item>
+            <el-descriptions-item label="学习时长" :span="2">
+              {{ currentReport.studyHours ? `${currentReport.studyHours} 小时` : '-' }}
+            </el-descriptions-item>
+          </el-descriptions>
+
+          <el-divider style="margin: 15px 0" />
+
+          <div class="summary-item">
+            <strong>今日学习内容：</strong>
+            <p>{{ currentReport.todayContent }}</p>
+          </div>
+          <div class="summary-item">
+            <strong>遇到的问题：</strong>
+            <p>{{ currentReport.problems || '无' }}</p>
+          </div>
+        </el-card>
+
+        <!-- 批阅表单 -->
+        <el-form
+          ref="reviewFormRef"
+          :model="reviewForm"
+          label-width="100px"
+          style="margin-top: 20px"
+        >
+          <el-form-item label="评分">
+            <el-rate
+              v-model="reviewForm.rating"
+              :texts="['需改进', '一般', '良好', '优秀', '出色']"
+              show-text
+              :max="5"
+            />
+          </el-form-item>
+
+          <el-form-item label="教师评语">
+            <el-input
+              v-model="reviewForm.teacherComment"
+              type="textarea"
+              :rows="6"
+              placeholder="请填写评语，鼓励学员、指出问题、给出建议..."
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <el-button @click="reviewDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleConfirmReview">确认批阅</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
-import { getCourseListApi } from '@/api/course'
-import type { Course } from '@/api/course'
-import { useAuthStore } from '@/stores/auth'
-
-// 模拟日报数据（实际应该从API获取）
-interface DailyReport {
-  id?: number
-  studentId?: number
-  studentName?: string
-  courseId?: number
-  courseName?: string
-  reportDate?: string
-  content?: string
-  studyHours?: number
-  tomorrowPlan?: string
-  createTime?: string
-}
+import {
+  DocumentAdd,
+  Document,
+  Edit,
+  Clock,
+  CircleCheck,
+  Search,
+  Refresh,
+  View,
+  Delete,
+  Promotion,
+  EditPen,
+} from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores'
+import {
+  getDailyReportPageApi,
+  createDailyReportApi,
+  updateDailyReportApi,
+  deleteDailyReportApi,
+  submitDailyReportApi,
+  reviewDailyReportApi,
+  type DailyReport,
+} from '@/api/dailyReport'
+import { getStudentListApi } from '@/api/student'
 
 const authStore = useAuthStore()
+const userRole = computed(() => authStore.userRole)
+const userId = computed(() => authStore.user?.id)
+
+// 统计数据
+const stats = reactive({
+  total: 0,
+  draft: 0,
+  submitted: 0,
+  reviewed: 0,
+})
 
 // 搜索表单
 const searchForm = reactive({
-  studentName: '',
+  studentId: undefined as number | undefined,
+  status: '',
   startDate: '',
-  endDate: ''
+  endDate: '',
 })
 
-// 日期范围
-const dateRange = ref<string[]>([])
-
-// 分页
-const pagination = reactive({
-  current: 1,
-  size: 10,
-  total: 0
-})
+const dateRange = ref<[string, string] | null>(null)
 
 // 表格数据
 const loading = ref(false)
 const tableData = ref<DailyReport[]>([])
-
-// 课程列表
-const courseList = ref<Course[]>([])
-
-// 对话框
-const dialogVisible = ref(false)
-const dialogTitle = computed(() => (formData.id ? '编辑日报' : '写日报'))
-const formRef = ref<FormInstance>()
-const formData = reactive<DailyReport>({
-  reportDate: new Date().toISOString().split('T')[0],
-  content: '',
-  studyHours: 4,
-  tomorrowPlan: ''
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
 })
 
-// 查看对话框
+// 学员列表(管理员和教师筛选用)
+const studentList = ref<any[]>([])
+
+// 写/编辑日报对话框
+const writeDialogVisible = ref(false)
+const isEditMode = ref(false)
+const writeFormRef = ref<FormInstance>()
+const writeForm = reactive({
+  id: undefined as number | undefined,
+  reportDate: '',
+  todayContent: '',
+  todayProgress: '',
+  problems: '',
+  tomorrowPlan: '',
+  studyHours: undefined as number | undefined,
+  codeLines: undefined as number | undefined,
+  attachmentUrl: '',
+})
+
+const writeRules: FormRules = {
+  reportDate: [{ required: true, message: '请选择日报日期', trigger: 'change' }],
+  todayContent: [{ required: true, message: '请输入今日学习内容', trigger: 'blur' }],
+  studyHours: [{ required: true, message: '请输入学习时长', trigger: 'blur' }],
+}
+
+// 查看日报对话框
 const viewDialogVisible = ref(false)
-const currentReport = ref<DailyReport>({})
+const currentReport = ref<DailyReport | null>(null)
 
-// 表单验证规则
-const formRules: FormRules = {
-  courseId: [
-    { required: true, message: '请选择课程', trigger: 'change' }
-  ],
-  reportDate: [
-    { required: true, message: '请选择日期', trigger: 'change' }
-  ],
-  content: [
-    { required: true, message: '请输入学习内容', trigger: 'blur' },
-    { min: 10, message: '学习内容至少10个字符', trigger: 'blur' }
-  ],
-  studyHours: [
-    { required: true, message: '请输入学习时长', trigger: 'blur' }
-  ]
-}
+// 批阅日报对话框
+const reviewDialogVisible = ref(false)
+const reviewFormRef = ref<FormInstance>()
+const reviewForm = reactive({
+  teacherComment: '',
+  rating: 3,
+})
 
-// 判断是否是日报的所有者
-const isOwner = (row: DailyReport) => {
-  // 简化判断，实际应该比较当前用户ID
-  return authStore.userRole === 'user' || authStore.userRole === 'admin'
-}
-
-// 获取课程列表
-const fetchCourseList = async () => {
+// 加载学员列表
+const fetchStudentList = async () => {
   try {
-    const response = await getCourseListApi()
-    if (response.code === 200) {
-      courseList.value = response.data
-    }
+    const res = await getStudentListApi()
+    studentList.value = res.records || []
   } catch (error) {
-    console.error('获取课程列表失败:', error)
+    console.error('加载学员列表失败:', error)
   }
 }
 
-// 获取日报列表（模拟数据）
+// 加载日报列表
 const fetchData = async () => {
   loading.value = true
   try {
-    // TODO: 实际应该调用API
-    // const response = await getDailyReportPageApi(params)
+    const params: any = {
+      current: pagination.current,
+      size: pagination.size,
+      studentId: searchForm.studentId,
+      status: searchForm.status,
+      startDate: searchForm.startDate,
+      endDate: searchForm.endDate,
+    }
 
-    // 模拟数据
-    await new Promise(resolve => setTimeout(resolve, 500))
-    tableData.value = [
-      {
-        id: 1,
-        studentName: '张三',
-        courseName: 'Java程序设计',
-        reportDate: '2024-01-13',
-        content: '今天学习了Java面向对象编程，包括类、对象、继承等概念。完成了三个练习题，遇到的问题是如何理解多态，通过查阅资料和观看视频教程解决了。',
-        studyHours: 6,
-        tomorrowPlan: '明天继续学习Java接口和抽象类，完成课后作业',
-        createTime: '2024-01-13 18:30:00'
-      },
-      {
-        id: 2,
-        studentName: '李四',
-        courseName: '数据结构',
-        reportDate: '2024-01-13',
-        content: '学习了二叉树的基本操作，包括前中后序遍历。实现了递归和非递归两种方式，对递归的理解更深刻了。',
-        studyHours: 5,
-        tomorrowPlan: '学习图的存储结构和遍历算法',
-        createTime: '2024-01-13 19:00:00'
-      }
-    ]
-    pagination.total = 2
+    // 学员只能查看自己的日报
+    if (userRole.value === 'user') {
+      params.studentId = userId.value
+    }
 
-    // ElMessage.error(response.message || '获取日报列表失败')
+    const res = await getDailyReportPageApi(params)
+    tableData.value = res.records || []
+    pagination.total = res.total || 0
+
+    // 更新统计数据
+    updateStats()
   } catch (error) {
-    console.error('获取日报列表失败:', error)
-    ElMessage.error('获取日报列表失败')
+    console.error('加载日报列表失败:', error)
+    ElMessage.error('加载数据失败')
   } finally {
     loading.value = false
   }
 }
 
+// 更新统计数据
+const updateStats = () => {
+  stats.total = tableData.value.length
+  stats.draft = tableData.value.filter((item) => item.status === 'draft').length
+  stats.submitted = tableData.value.filter((item) => item.status === 'submitted').length
+  stats.reviewed = tableData.value.filter((item) => item.status === 'reviewed').length
+}
+
+// 日期范围变化
+const handleDateRangeChange = (dates: [string, string] | null) => {
+  if (dates && dates.length === 2) {
+    searchForm.startDate = dates[0]
+    searchForm.endDate = dates[1]
+  } else {
+    searchForm.startDate = ''
+    searchForm.endDate = ''
+  }
+  handleSearch()
+}
+
 // 搜索
 const handleSearch = () => {
-  if (dateRange.value && dateRange.value.length === 2) {
-    searchForm.startDate = dateRange.value[0]
-    searchForm.endDate = dateRange.value[1]
-  }
   pagination.current = 1
   fetchData()
 }
 
 // 重置
 const handleReset = () => {
-  searchForm.studentName = ''
+  searchForm.studentId = undefined
+  searchForm.status = ''
   searchForm.startDate = ''
   searchForm.endDate = ''
-  dateRange.value = []
+  dateRange.value = null
   pagination.current = 1
   fetchData()
 }
 
-// 新增
-const handleAdd = () => {
-  Object.assign(formData, {
-    id: undefined,
-    reportDate: new Date().toISOString().split('T')[0],
-    courseId: undefined,
-    content: '',
-    studyHours: 4,
-    tomorrowPlan: ''
-  })
-  dialogVisible.value = true
+// 写日报
+const handleWriteReport = () => {
+  isEditMode.value = false
+  // 默认日期为今天
+  writeForm.reportDate = new Date().toISOString().split('T')[0]
+  writeDialogVisible.value = true
 }
 
-// 查看
+// 编辑日报
+const handleEdit = (row: DailyReport) => {
+  isEditMode.value = true
+  Object.assign(writeForm, {
+    id: row.id,
+    reportDate: row.reportDate,
+    todayContent: row.todayContent,
+    todayProgress: row.todayProgress,
+    problems: row.problems,
+    tomorrowPlan: row.tomorrowPlan,
+    studyHours: row.studyHours,
+    codeLines: row.codeLines,
+    attachmentUrl: row.attachmentUrl,
+  })
+  writeDialogVisible.value = true
+}
+
+// 关闭写日报对话框
+const handleWriteDialogClose = () => {
+  writeFormRef.value?.resetFields()
+  Object.assign(writeForm, {
+    id: undefined,
+    reportDate: '',
+    todayContent: '',
+    todayProgress: '',
+    problems: '',
+    tomorrowPlan: '',
+    studyHours: undefined,
+    codeLines: undefined,
+    attachmentUrl: '',
+  })
+}
+
+// 保存草稿
+const handleSaveDraft = async () => {
+  try {
+    const data = { ...writeForm, status: 'draft' }
+
+    if (isEditMode.value && writeForm.id) {
+      await updateDailyReportApi(data)
+      ElMessage.success('保存草稿成功')
+    } else {
+      data.studentId = userId.value
+      await createDailyReportApi(data)
+      ElMessage.success('创建草稿成功')
+    }
+
+    writeDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    console.error('保存草稿失败:', error)
+    ElMessage.error('保存失败')
+  }
+}
+
+// 直接提交
+const handleSubmitDirectly = async () => {
+  const valid = await writeFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  try {
+    const data = { ...writeForm, status: 'submitted' }
+
+    if (isEditMode.value && writeForm.id) {
+      await updateDailyReportApi(data)
+      await submitDailyReportApi(writeForm.id!)
+      ElMessage.success('提交成功')
+    } else {
+      data.studentId = userId.value
+      await createDailyReportApi(data)
+      ElMessage.success('提交成功')
+    }
+
+    writeDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    console.error('提交失败:', error)
+    ElMessage.error('提交失败')
+  }
+}
+
+// 提交日报
+const handleSubmit = async (id: number) => {
+  try {
+    await ElMessageBox.confirm('确认提交此日报吗?提交后将无法修改', '提示', {
+      type: 'warning',
+    })
+
+    await submitDailyReportApi(id)
+    ElMessage.success('提交成功')
+    fetchData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('提交失败:', error)
+      ElMessage.error('提交失败')
+    }
+  }
+}
+
+// 查看日报
 const handleView = (row: DailyReport) => {
   currentReport.value = row
   viewDialogVisible.value = true
 }
 
-// 删除
-const handleDelete = (row: DailyReport) => {
-  ElMessageBox.confirm('确定要删除该日报吗？删除后不可恢复！', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-    .then(async () => {
-      try {
-        // TODO: 实际应该调用API
-        // const response = await deleteDailyReportApi(row.id!)
+// 批阅日报
+const handleReview = (row: DailyReport) => {
+  currentReport.value = row
+  reviewForm.teacherComment = row.teacherComment || ''
+  reviewForm.rating = row.rating || 3
+  reviewDialogVisible.value = true
+}
 
-        ElMessage.success('删除成功')
-        fetchData()
-      } catch (error) {
-        console.error('删除失败:', error)
-        ElMessage.error('删除失败')
-      }
+// 确认批阅
+const handleConfirmReview = async () => {
+  if (!reviewForm.teacherComment) {
+    ElMessage.warning('请填写教师评语')
+    return
+  }
+
+  try {
+    await reviewDailyReportApi(currentReport.value!.id!, {
+      teacherComment: reviewForm.teacherComment,
+      rating: reviewForm.rating,
     })
-    .catch(() => {})
+
+    ElMessage.success('批阅成功')
+    reviewDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    console.error('批阅失败:', error)
+    ElMessage.error('批阅失败')
+  }
 }
 
-// 提交表单
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        // TODO: 实际应该调用API
-        // const api = formData.id ? updateDailyReportApi : createDailyReportApi
-        // const response = await api(formData)
+// 删除日报
+const handleDelete = async (row: DailyReport) => {
+  try {
+    await ElMessageBox.confirm('确认删除此日报吗?', '提示', {
+      type: 'warning',
+    })
 
-        await new Promise(resolve => setTimeout(resolve, 500))
-        ElMessage.success(formData.id ? '更新成功' : '提交成功')
-        dialogVisible.value = false
-        fetchData()
-      } catch (error) {
-        console.error('操作失败:', error)
-        ElMessage.error('操作失败')
-      }
+    await deleteDailyReportApi(row.id!)
+    ElMessage.success('删除成功')
+    fetchData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('删除失败:', error)
+      ElMessage.error('删除失败')
     }
-  })
+  }
 }
 
-// 关闭对话框
-const handleDialogClose = () => {
-  formRef.value?.resetFields()
-}
-
-// 页面加载时获取数据
 onMounted(() => {
-  fetchCourseList()
+  // 管理员和教师加载学员列表
+  if (userRole.value !== 'user') {
+    fetchStudentList()
+  }
   fetchData()
 })
 </script>
@@ -440,24 +897,126 @@ onMounted(() => {
 .daily-reports {
   padding: 20px;
 
-  .search-form {
+  .header-card {
+    margin-bottom: 20px;
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+
+      .title-section {
+        h2 {
+          margin: 0 0 5px 0;
+          font-size: 24px;
+          font-weight: 600;
+        }
+
+        .subtitle {
+          margin: 0;
+          color: var(--el-text-color-secondary);
+          font-size: 14px;
+        }
+      }
+    }
+
+    .stats-row {
+      .stat-card {
+        .stat-content {
+          display: flex;
+          align-items: center;
+
+          .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 16px;
+
+            &.total {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+            }
+
+            &.draft {
+              background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+              color: white;
+            }
+
+            &.submitted {
+              background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+              color: white;
+            }
+
+            &.reviewed {
+              background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+              color: white;
+            }
+          }
+
+          .stat-info {
+            .stat-value {
+              font-size: 28px;
+              font-weight: 600;
+              line-height: 1;
+              margin-bottom: 4px;
+            }
+
+            .stat-label {
+              font-size: 14px;
+              color: var(--el-text-color-secondary);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .search-card {
     margin-bottom: 20px;
   }
 
-  .table-operations {
-    margin-bottom: 20px;
-  }
-
-  :deep(.el-pagination) {
-    margin-top: 20px;
-    justify-content: flex-end;
+  .table-card {
+    .pagination {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 
   .report-detail {
-    .content-text {
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.6;
+    :deep(.el-descriptions) {
+      margin-bottom: 20px;
+    }
+
+    .el-divider {
+      margin: 20px 0;
+    }
+  }
+
+  .review-content {
+    .report-summary {
+      margin-bottom: 20px;
+
+      .summary-item {
+        margin: 15px 0;
+
+        strong {
+          display: block;
+          margin-bottom: 8px;
+          color: var(--el-text-color-primary);
+        }
+
+        p {
+          margin: 0;
+          color: var(--el-text-color-regular);
+          line-height: 1.6;
+        }
+      }
     }
   }
 }

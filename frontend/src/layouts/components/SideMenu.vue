@@ -356,8 +356,6 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/courses',
     '/teaching/students',
     '/teaching/teachers',
-    '/teaching/homework-grading',
-    '/teaching/homework-publish',
     '/teaching/daily-reports',
     '/employment',
     '/employment/companies',

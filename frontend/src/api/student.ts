@@ -41,8 +41,8 @@ export function getStudentPageApi(params: StudentPageParams) {
 /**
  * 获取所有学生列表
  */
-export function getStudentListApi() {
-  return http.get<Student[]>('/student/list')
+export function getStudentListApi(params?: { current?: number; size?: number }) {
+  return http.get<IPage<Student>>('/student/page', { params: { current: 1, size: 1000, ...params } })
 }
 
 /**
