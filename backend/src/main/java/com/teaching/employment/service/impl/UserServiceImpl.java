@@ -47,6 +47,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public User getUserWithDetailsById(Long userId) {
+        return userMapper.selectUserWithDetailsById(userId);
+    }
+
+    @Override
     public IPage<User> getUserPage(Integer current, Integer size, Long roleId, Long schoolId, String keyword) {
         Page<User> page = new Page<>(current, size);
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();

@@ -63,15 +63,10 @@ const activeMenu = computed(() => {
   return route.path
 })
 
-// 获取用户角色代码
-const userRole = computed(() => {
-  return authStore.user?.role?.roleCode || 'user'
-})
-
 // 检查路由权限
 const hasRoutePermission = (route: any): boolean => {
   if (!route.meta?.roles) return true
-  return route.meta.roles.includes(userRole.value)
+  return route.meta.roles.includes(authStore.userRole)
 }
 
 // 菜单路由（过滤掉隐藏的路由和没有权限的路由）

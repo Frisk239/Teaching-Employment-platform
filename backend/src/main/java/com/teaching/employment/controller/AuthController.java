@@ -84,14 +84,32 @@ public class AuthController {
      */
     @GetMapping("/current")
     @ApiOperation("获取当前用户信息")
-    public Result<User> getCurrentUser(@RequestHeader("Authorization") String token) {
+    public Result<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String token) {
         try {
             // 去掉Bearer前缀
             String actualToken = token.replace("Bearer ", "");
             Long userId = jwtUtil.getUserIdFromToken(actualToken);
 
-            User user = userService.getById(userId);
-            return Result.ok(user);
+            // 使用关联查询获取用户信息（包含角色和学校）
+            User user = userService.getUserWithDetailsById(userId);
+
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+
+            // 填充roleCode字段(与login保持一致)
+            String roleCode = null;
+            if (user.getRole() != null) {
+                roleCode = user.getRole().getRoleCode();
+                user.setRoleCode(roleCode);
+            }
+
+            // 构造返回数据，与login接口保持一致
+            Map<String, Object> data = new HashMap<>();
+            data.put("user", user);
+            data.put("roleCode", roleCode);
+
+            return Result.ok(data);
         } catch (Exception e) {
             log.error("获取用户信息失败: {}", e.getMessage());
             return Result.error("获取用户信息失败");

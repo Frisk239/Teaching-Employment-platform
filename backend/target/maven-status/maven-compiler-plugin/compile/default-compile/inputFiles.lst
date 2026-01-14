@@ -53,6 +53,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\CourseRecord.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\ExamMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\PositionController.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\StudentDashboardController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\HomeworkController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\OfferController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\HomeworkSubmission.java
@@ -106,6 +107,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\PositionService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\RoleMenuRelationMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\Teacher.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\TeacherDashboardController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\QuestionService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\OfferServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\Interview.java

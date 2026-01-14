@@ -32,7 +32,7 @@ export const authApi = {
    * 获取当前用户信息
    */
   getCurrentUser: () => {
-    return http.get<User>('/auth/current')
+    return http.get<{ user: User; roleCode: string }>('/auth/current')
   },
 
   /**

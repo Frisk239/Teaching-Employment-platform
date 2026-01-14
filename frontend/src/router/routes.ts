@@ -1,9 +1,18 @@
 /**
  * 高校教学就业平台 - 路由配置
+ *
+ * 路由结构：
+ * - 登录/注册页面（不需要布局）
+ * - 主应用（使用 MainLayout）
+ *   - 系统管理（仅管理员）
+ *   - 教学管理（多角色共享）
+ *   - 就业管理（多角色共享）
+ *   - 个人中心（所有角色）
  */
 import type { RouteRecordRaw } from 'vue-router'
 
 export const routes: RouteRecordRaw[] = [
+  // ==================== 公共页面（不需要登录） ====================
   {
     path: '/login',
     name: 'Login',
@@ -24,171 +33,292 @@ export const routes: RouteRecordRaw[] = [
       hidden: true,
     },
   },
+
+  // ==================== 主应用（需要登录和布局） ====================
   {
     path: '/',
-    component: () => import('@/components/layout/MainLayout.vue'),
+    component: () => import('@/layouts/MainLayout.vue'),
     redirect: '/dashboard',
     meta: {
       requiresAuth: true,
     },
     children: [
+      // ---------- 首页 ----------
       {
         path: '/dashboard',
         name: 'Dashboard',
         component: () => import('@/views/dashboard/Dashboard.vue'),
         meta: {
-          title: '仪表盘',
-          icon: 'DataLine',
+          title: '首页',
+          icon: 'House',
           affix: true,
           roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
         },
       },
-      {
-        path: '/employment',
-        name: 'Employment',
-        meta: {
-          title: '就业管理',
-          icon: 'Briefcase',
-          roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
-        },
-        children: [
-          {
-            path: '/employment/companies',
-            name: 'CompanyManagement',
-            component: () => import('@/views/employment/CompanyManagement.vue'),
-            meta: {
-              title: '企业管理',
-              icon: 'OfficeBuilding',
-              roles: ['admin', 'enterprise_contact'],
-            },
-          },
-          {
-            path: '/employment/publish',
-            name: 'PositionPublishing',
-            component: () => import('@/views/employment/PositionPublishing.vue'),
-            meta: {
-              title: '发布职位',
-              icon: 'Plus',
-              roles: ['admin', 'enterprise_contact'],
-            },
-          },
-          {
-            path: '/employment/positions',
-            name: 'PositionManagement',
-            component: () => import('@/views/employment/PositionManagement.vue'),
-            meta: {
-              title: '职位管理',
-              icon: 'List',
-              roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
-            },
-          },
-          {
-            path: '/employment/applications',
-            name: 'ApplicationManagement',
-            component: () => import('@/views/employment/ApplicationManagement.vue'),
-            meta: {
-              title: '申请管理',
-              icon: 'Document',
-              roles: ['admin', 'college_head', 'teacher', 'enterprise_contact'],
-            },
-          },
-        ],
-      },
-      {
-        path: '/student',
-        name: 'Student',
-        meta: {
-          title: '学生管理',
-          icon: 'User',
-          roles: ['admin', 'college_head', 'teacher'],
-        },
-        children: [
-          {
-            path: '/student/list',
-            name: 'StudentList',
-            component: () => import('@/views/student/StudentList.vue'),
-            meta: {
-              title: '学生列表',
-              icon: 'UserFilled',
-              roles: ['admin', 'college_head', 'teacher'],
-            },
-          },
-          {
-            path: '/student/import',
-            name: 'StudentImport',
-            component: () => import('@/views/student/StudentImport.vue'),
-            meta: {
-              title: '导入学生',
-              icon: 'Upload',
-              roles: ['admin', 'college_head'],
-            },
-          },
-        ],
-      },
-      {
-        path: '/course',
-        name: 'Course',
-        meta: {
-          title: '课程管理',
-          icon: 'Reading',
-          roles: ['admin', 'college_head', 'teacher', 'user'],
-        },
-        children: [
-          {
-            path: '/course/list',
-            name: 'CourseList',
-            component: () => import('@/views/course/CourseList.vue'),
-            meta: {
-              title: '课程列表',
-              icon: 'Notebook',
-              roles: ['admin', 'college_head', 'teacher', 'user'],
-            },
-          },
-          {
-            path: '/course/popular',
-            name: 'PopularCourses',
-            component: () => import('@/views/course/PopularCourses.vue'),
-            meta: {
-              title: '热门课程',
-              icon: 'Star',
-              roles: ['admin', 'college_head', 'teacher', 'user'],
-            },
-          },
-        ],
-      },
+
+      // ==================== 系统管理（仅管理员） ====================
       {
         path: '/system',
         name: 'System',
+        redirect: '/system/users',
         meta: {
-          title: '系统设置',
+          title: '系统管理',
           icon: 'Setting',
-          roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+          roles: ['admin'],
         },
         children: [
           {
-            path: '/system/profile',
-            name: 'Profile',
-            component: () => import('@/views/system/Profile.vue'),
+            path: '/system/users',
+            name: 'SystemUsers',
+            component: () => import('@/views/system/Users.vue'),
             meta: {
-              title: '个人资料',
+              title: '用户管理',
+              icon: 'User',
+              roles: ['admin'],
+            },
+          },
+          {
+            path: '/system/roles',
+            name: 'SystemRoles',
+            component: () => import('@/views/system/Roles.vue'),
+            meta: {
+              title: '角色管理',
+              icon: 'Management',
+              roles: ['admin'],
+            },
+          },
+          {
+            path: '/system/permissions',
+            name: 'SystemPermissions',
+            component: () => import('@/views/system/Permissions.vue'),
+            meta: {
+              title: '权限管理',
+              icon: 'Lock',
+              roles: ['admin'],
+            },
+          },
+          {
+            path: '/system/menus',
+            name: 'SystemMenus',
+            component: () => import('@/views/system/Menus.vue'),
+            meta: {
+              title: '菜单管理',
+              icon: 'Menu',
+              roles: ['admin'],
+            },
+          },
+        ],
+      },
+
+      // ==================== 教学管理（多角色共享） ====================
+      {
+        path: '/teaching',
+        name: 'Teaching',
+        redirect: '/teaching/schools',
+        meta: {
+          title: '教学管理',
+          icon: 'Edit',
+          roles: ['admin', 'college_head', 'teacher', 'user'],
+        },
+        children: [
+          // 学校管理（管理员、学院负责人）
+          {
+            path: '/teaching/schools',
+            name: 'TeachingSchools',
+            component: () => import('@/views/teaching/SchoolList.vue'),
+            meta: {
+              title: '学校管理',
+              icon: 'School',
+              roles: ['admin', 'college_head'],
+            },
+          },
+          // 教室管理（管理员、学院负责人、教师）
+          {
+            path: '/teaching/classrooms',
+            name: 'TeachingClassrooms',
+            component: () => import('@/views/teaching/ClassroomList.vue'),
+            meta: {
+              title: '教室管理',
+              icon: 'House',
+              roles: ['admin', 'college_head', 'teacher'],
+            },
+          },
+          // 课程管理（所有教学角色）
+          {
+            path: '/teaching/courses',
+            name: 'TeachingCourses',
+            component: () => import('@/views/teaching/CourseList.vue'),
+            meta: {
+              title: '课程管理',
+              icon: 'Collection',
+              roles: ['admin', 'college_head', 'teacher', 'user'],
+            },
+          },
+          // 学员管理（管理员、学院负责人、教师）
+          {
+            path: '/teaching/students',
+            name: 'TeachingStudents',
+            component: () => import('@/views/teaching/StudentList.vue'),
+            meta: {
+              title: '学员管理',
+              icon: 'Avatar',
+              roles: ['admin', 'college_head', 'teacher'],
+            },
+          },
+          // 教师管理（管理员、学院负责人）
+          {
+            path: '/teaching/teachers',
+            name: 'TeachingTeachers',
+            component: () => import('@/views/teaching/TeacherList.vue'),
+            meta: {
+              title: '教师管理',
+              icon: 'User',
+              roles: ['admin', 'college_head'],
+            },
+          },
+          // 作业批改（管理员、学院负责人、教师、学员）
+          {
+            path: '/teaching/homework-grading',
+            name: 'TeachingHomeworkGrading',
+            component: () => import('@/views/teaching/HomeworkGrading.vue'),
+            meta: {
+              title: '作业批改',
+              icon: 'Checked',
+              roles: ['admin', 'college_head', 'teacher', 'user'],
+            },
+          },
+          // 作业发布（管理员、学院负责人、教师）
+          {
+            path: '/teaching/homework-publish',
+            name: 'TeachingHomeworkPublish',
+            component: () => import('@/views/teaching/HomeworkPublish.vue'),
+            meta: {
+              title: '作业发布',
+              icon: 'DocumentAdd',
+              roles: ['admin', 'college_head', 'teacher'],
+            },
+          },
+          // 日报管理（管理员、学院负责人、教师、学员）
+          {
+            path: '/teaching/daily-reports',
+            name: 'TeachingDailyReports',
+            component: () => import('@/views/teaching/DailyReports.vue'),
+            meta: {
+              title: '日报管理',
+              icon: 'DocumentCopy',
+              roles: ['admin', 'college_head', 'teacher', 'user'],
+            },
+          },
+        ],
+      },
+
+      // ==================== 就业管理（多角色共享） ====================
+      {
+        path: '/employment',
+        name: 'Employment',
+        redirect: '/employment/companies',
+        meta: {
+          title: '就业管理',
+          icon: 'OfficeBuilding',
+          roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+        },
+        children: [
+          // 企业管理（管理员、企业对接人）
+          {
+            path: '/employment/companies',
+            name: 'EmploymentCompanies',
+            component: () => import('@/views/employment/CompanyList.vue'),
+            meta: {
+              title: '企业管理',
+              icon: 'Management',
+              roles: ['admin', 'enterprise_contact'],
+            },
+          },
+          // 岗位管理（所有就业相关角色）
+          {
+            path: '/employment/positions',
+            name: 'EmploymentPositions',
+            component: () => import('@/views/employment/PositionList.vue'),
+            meta: {
+              title: '岗位管理',
+              icon: 'Briefcase',
+              roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+            },
+          },
+          // 求职管理（管理员、学院负责人、教师、企业对接人、学员）
+          {
+            path: '/employment/applications',
+            name: 'EmploymentApplications',
+            component: () => import('@/views/employment/ApplicationList.vue'),
+            meta: {
+              title: '求职管理',
               icon: 'User',
               roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
             },
           },
+          // 笔试管理（管理员、企业对接人、学员）
           {
-            path: '/system/password',
-            name: 'Password',
-            component: () => import('@/views/system/Password.vue'),
+            path: '/employment/written-tests',
+            name: 'EmploymentWrittenTests',
+            component: () => import('@/views/employment/WrittenTest.vue'),
             meta: {
-              title: '修改密码',
-              icon: 'Lock',
-              roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+              title: '笔试管理',
+              icon: 'Edit',
+              roles: ['admin', 'enterprise_contact', 'user'],
+            },
+          },
+          // 面试管理（管理员、学院负责人、企业对接人、学员）
+          {
+            path: '/employment/interviews',
+            name: 'EmploymentInterviews',
+            component: () => import('@/views/employment/Interview.vue'),
+            meta: {
+              title: '面试管理',
+              icon: 'ChatDotRound',
+              roles: ['admin', 'college_head', 'enterprise_contact', 'user'],
+            },
+          },
+          // 统计（管理员、学院负责人、企业对接人）
+          {
+            path: '/employment/statistics',
+            name: 'EmploymentStatistics',
+            component: () => import('@/views/employment/Statistics.vue'),
+            meta: {
+              title: '统计',
+              icon: 'DataAnalysis',
+              roles: ['admin', 'college_head', 'enterprise_contact'],
             },
           },
         ],
       },
+
+      // ==================== 个人中心（所有角色） ====================
+      {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('@/views/profile/Profile.vue'),
+        meta: {
+          title: '个人中心',
+          icon: 'User',
+          hidden: true, // 不在侧边栏显示
+          roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+        },
+      },
+      {
+        path: '/settings',
+        name: 'Settings',
+        component: () => import('@/views/profile/Settings.vue'),
+        meta: {
+          title: '设置',
+          icon: 'Setting',
+          hidden: true,
+          roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+        },
+      },
     ],
   },
+
+  // ==================== 404页面 ====================
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',

@@ -32,12 +32,13 @@ public class JobApplicationController {
     public Result<IPage<JobApplication>> getJobApplicationPage(
             @ApiParam("当前页") @RequestParam(defaultValue = "1") Integer current,
             @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size,
+            @ApiParam("学生姓名") @RequestParam(required = false) String studentName,
             @ApiParam("职位ID") @RequestParam(required = false) Long positionId,
             @ApiParam("学生ID") @RequestParam(required = false) Long studentId,
             @ApiParam("企业ID") @RequestParam(required = false) Long companyId,
             @ApiParam("申请状态") @RequestParam(required = false) String status,
             @ApiParam("当前阶段") @RequestParam(required = false) String currentStage) {
-        IPage<JobApplication> page = jobApplicationService.getJobApplicationPage(current, size, positionId,
+        IPage<JobApplication> page = jobApplicationService.getJobApplicationPage(current, size, studentName, positionId,
                 studentId, companyId, status, currentStage);
         return Result.ok(page);
     }

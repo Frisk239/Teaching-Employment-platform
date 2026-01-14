@@ -3,15 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-
-// 恢复登录状态并验证token
-const authStore = useAuthStore()
-
-onMounted(async () => {
-  await authStore.restoreAuth()
-})
+// 不自动恢复登录状态,每次都需要重新登录
 </script>
 
 <style lang="scss">

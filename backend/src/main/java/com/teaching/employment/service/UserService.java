@@ -30,6 +30,14 @@ public interface UserService extends IService<User> {
     User getUserByUsername(String username);
 
     /**
+     * 根据用户ID查询用户（包含角色和学校信息）
+     *
+     * @param userId 用户ID
+     * @return 用户信息
+     */
+    User getUserWithDetailsById(Long userId);
+
+    /**
      * 分页查询用户列表
      *
      * @param current  当前页

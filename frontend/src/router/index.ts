@@ -23,7 +23,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   NProgress.start()
 
   // 设置页面标题
@@ -31,23 +31,38 @@ router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} - ${import.meta.env.VITE_APP_TITLE || '高校教学就业平台'}`
   }
 
-  // 检查是否需要登录
   const authStore = useAuthStore()
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false)
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth !== false)
 
+  // 如果需要登录但未登录
   if (requiresAuth && !authStore.isLoggedIn) {
-    // 需要登录但未登录，跳转到登录页
     ElMessage.warning('请先登录')
     next({
       path: '/login',
       query: { redirect: to.fullPath },
     })
-  } else if (to.path === '/login' && authStore.isLoggedIn) {
-    // 已登录但访问登录页，跳转到首页
-    next({ path: '/' })
-  } else {
-    next()
+    return
   }
+
+  // 如果已登录但访问登录页，跳转到首页
+  if (to.path === '/login' && authStore.isLoggedIn) {
+    next({ path: '/dashboard' })
+    return
+  }
+
+  // 检查角色权限
+  if (to.meta.roles && Array.isArray(to.meta.roles)) {
+    const userRole = authStore.userRole
+    if (!to.meta.roles.includes(userRole)) {
+      // 用户角色无权访问该页面
+      ElMessage.error('您没有权限访问该页面')
+      next({ path: '/dashboard' })
+      return
+    }
+  }
+
+  // 所有检查通过，放行
+  next()
 })
 
 router.afterEach(() => {

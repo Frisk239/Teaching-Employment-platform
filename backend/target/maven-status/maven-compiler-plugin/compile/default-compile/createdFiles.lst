@@ -43,7 +43,9 @@ com\teaching\employment\controller\DailyReportController.class
 com\teaching\employment\mapper\CourseRecordMapper.class
 com\teaching\employment\service\UserService.class
 com\teaching\employment\service\JobApplicationService.class
+com\teaching\employment\controller\TeacherDashboardController.class
 com\teaching\employment\entity\Resume.class
+com\teaching\employment\controller\StudentDashboardController.class
 com\teaching\employment\service\impl\NotificationServiceImpl.class
 com\teaching\employment\constants\Constants.class
 com\teaching\employment\entity\StudentExamRecord.class

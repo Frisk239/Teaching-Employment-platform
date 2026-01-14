@@ -17,6 +17,7 @@ public interface JobApplicationService extends IService<JobApplication> {
      *
      * @param current     当前页
      * @param size        每页大小
+     * @param studentName 学生姓名(精确搜索)
      * @param positionId  职位ID
      * @param studentId   学生ID
      * @param companyId   企业ID
@@ -24,7 +25,7 @@ public interface JobApplicationService extends IService<JobApplication> {
      * @param currentStage 当前阶段
      * @return 申请分页数据
      */
-    IPage<JobApplication> getJobApplicationPage(Integer current, Integer size, Long positionId, Long studentId,
+    IPage<JobApplication> getJobApplicationPage(Integer current, Integer size, String studentName, Long positionId, Long studentId,
                                                   Long companyId, String status, String currentStage);
 
     /**

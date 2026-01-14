@@ -59,4 +59,20 @@ export const statisticsApi = {
   getPositionStats: () => {
     return http.get<any>('/statistics/position-stats')
   },
+
+  /**
+   * 获取薪资分布统计
+   */
+  getSalaryDistribution: () => {
+    return http.get<any>('/statistics/salary-distribution')
+  },
+
+  /**
+   * 获取公司排名统计
+   */
+  getCompanyRanking: (limit = 10) => {
+    return http.get<any>('/statistics/company-ranking', {
+      params: { limit },
+    })
+  },
 }

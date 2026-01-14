@@ -71,7 +71,10 @@ request.interceptors.response.use(
 
     // 判断响应状态
     if (res.code === 200 || res.success === true) {
-      return res.data || res
+      // 对于分页等需要完整响应的接口,返回 res
+      // 对于登录等只需要 data 的接口,返回 res.data
+      // 这里返回 res.data,但保持向后兼容
+      return res.data !== undefined ? res.data : res
     } else if (res.code === 401) {
       // Token 过期或未登录
       ElMessage.error('登录已过期，请重新登录')

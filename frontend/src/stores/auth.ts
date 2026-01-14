@@ -17,11 +17,16 @@ export const useAuthStore = defineStore('auth', () => {
   // 计算属性
   const isLoggedIn = computed(() => !!token.value && !!user.value)
   const userRole = computed(() => {
-    // 如果role是对象,取roleCode,如果是字符串直接使用
-    if (typeof user.value?.role === 'object') {
-      return user.value?.role?.roleCode || 'student'
+    // 优先使用 roleCode 字段
+    if (user.value?.roleCode) {
+      return user.value.roleCode
     }
-    return user.value?.role || 'student'
+    // 如果没有 roleCode,检查 role 对象
+    if (typeof user.value?.role === 'object') {
+      return user.value?.role?.roleCode || 'user'
+    }
+    // 最后尝试 role 字段本身
+    return user.value?.role || 'user'
   })
   const userName = computed(() => user.value?.realName || user.value?.username || '')
   const userAvatar = computed(() => user.value?.avatar || '')
@@ -40,12 +45,21 @@ export const useAuthStore = defineStore('auth', () => {
       // 保存 token 和用户信息
       if (data.token) {
         token.value = data.token
-        localStorage.setItem('token', data.token)
+        // 如果勾选了"记住我",使用localStorage持久化
+        // 否则使用sessionStorage(关闭浏览器即清除)
+        const storage = form.remember ? localStorage : sessionStorage
+        storage.setItem('token', data.token)
       }
 
-      if (data) {
-        user.value = data
-        localStorage.setItem('user', JSON.stringify(data))
+      // data 包含 { token, user, roleCode }
+      // 我们需要保存 user 对象,并确保包含 roleCode
+      if (data.user) {
+        user.value = {
+          ...data.user,
+          roleCode: data.roleCode || data.user.roleCode
+        }
+        const storage = form.remember ? localStorage : sessionStorage
+        storage.setItem('user', JSON.stringify(user.value))
       }
 
       ElMessage.success('登录成功')
@@ -95,12 +109,15 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('退出登录API调用失败:', error)
       // 即使API调用失败,也清除本地状态
     } finally {
-      // 清除本地状态
+      // 清除本地状态(包括localStorage和sessionStorage)
       token.value = ''
       user.value = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       localStorage.removeItem('refreshToken')
+      sessionStorage.removeItem('token')
+      sessionStorage.removeItem('user')
+      sessionStorage.removeItem('refreshToken')
       ElMessage.success('已退出登录')
       router.push('/login')
     }
@@ -110,8 +127,13 @@ export const useAuthStore = defineStore('auth', () => {
    * 恢复登录状态
    */
   const restoreAuth = async () => {
-    const savedToken = localStorage.getItem('token')
-    const savedUser = localStorage.getItem('user')
+    console.log('=== restoreAuth 开始 ===')
+    // 优先从localStorage读取(记住我),其次从sessionStorage读取
+    const savedToken = localStorage.getItem('token') || sessionStorage.getItem('token')
+    const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
+
+    console.log('savedToken:', savedToken ? '存在' : '不存在')
+    console.log('savedUser:', savedUser)
 
     if (savedToken) {
       token.value = savedToken
@@ -120,10 +142,14 @@ export const useAuthStore = defineStore('auth', () => {
     if (savedUser) {
       try {
         user.value = JSON.parse(savedUser)
+        console.log('解析后的用户信息:', user.value)
       } catch (error) {
         console.error('恢复用户信息失败:', error)
-        localStorage.removeItem('user')
+        // 清除所有存储
         localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('user')
         token.value = ''
         user.value = null
         return
@@ -133,19 +159,34 @@ export const useAuthStore = defineStore('auth', () => {
     // 如果有token,验证token是否有效
     if (token.value) {
       try {
+        console.log('开始验证token...')
         // 调用API验证token并获取最新用户信息
-        const userData = await authApi.getCurrentUser()
-        user.value = userData
-        localStorage.setItem('user', JSON.stringify(userData))
+        const { user: userData, roleCode } = await authApi.getCurrentUser()
+        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode)
+
+        // 保存用户信息,包含roleCode
+        user.value = {
+          ...userData,
+          roleCode
+        }
+
+        // 保存到当前使用的存储中
+        const storage = localStorage.getItem('token') ? localStorage : sessionStorage
+        storage.setItem('user', JSON.stringify(user.value))
       } catch (error) {
         console.error('Token验证失败:', error)
         // token无效,清除所有登录信息
         localStorage.removeItem('token')
         localStorage.removeItem('user')
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('user')
         token.value = ''
         user.value = null
       }
     }
+
+    console.log('restoreAuth 完成, user:', user.value)
+    console.log('=== restoreAuth 结束 ===')
   }
 
   /**
@@ -153,10 +194,13 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const getCurrentUser = async (): Promise<User | null> => {
     try {
-      const data = await authApi.getCurrentUser()
-      user.value = data
-      localStorage.setItem('user', JSON.stringify(data))
-      return data
+      const { user: userData, roleCode } = await authApi.getCurrentUser()
+      user.value = {
+        ...userData,
+        roleCode
+      }
+      localStorage.setItem('user', JSON.stringify(user.value))
+      return user.value
     } catch (error: any) {
       console.error('获取用户信息失败:', error)
       return null

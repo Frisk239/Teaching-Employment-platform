@@ -1,72 +1,123 @@
+import request from '@/utils/request'
+import type { Result, IPage } from './types'
+
+// 学生接口类型定义
+export interface Student {
+  id?: number
+  username: string
+  realName: string
+  schoolId: number
+  schoolName?: string
+  email?: string
+  phone?: string
+  grade?: string
+  major?: string
+  className?: string
+  enrollmentDate?: string
+  status?: number
+  avatar?: string
+  createTime?: string
+  updateTime?: string
+}
+
+// 分页查询参数
+export interface StudentPageParams {
+  current: number
+  size: number
+  keyword?: string
+  schoolId?: number
+  grade?: string
+  major?: string
+  status?: number
+}
+
 /**
- * 高校教学就业平台 - 学生相关 API
+ * 获取学生分页列表
  */
-import request, { http } from '@/utils/request'
-import type { Student, StudentQueryParams, PageResult } from './types'
+export function getStudentPageApi(params: StudentPageParams): Promise<IPage<Student>> {
+  return request({
+    url: '/student/page',
+    method: 'get',
+    params
+  }) as Promise<IPage<Student>>
+}
 
-export const studentApi = {
-  /**
-   * 获取所有学生
-   */
-  getAll: () => {
-    return http.get<Student[]>('/student/list')
-  },
+/**
+ * 获取所有学生列表
+ */
+export function getStudentListApi(): Promise<Student[]> {
+  return request({
+    url: '/student/list',
+    method: 'get'
+  }) as Promise<Student[]>
+}
 
-  /**
-   * 根据 ID 获取学生
-   */
-  getById: (id: number) => {
-    return http.get<Student>(`/student/${id}`)
-  },
+/**
+ * 根据ID获取学生详情
+ */
+export function getStudentByIdApi(id: number): Promise<Student> {
+  return request({
+    url: `/student/${id}`,
+    method: 'get'
+  }) as Promise<Student>
+}
 
-  /**
-   * 创建学生
-   */
-  create: (data: Student) => {
-    return http.post<Student>('/student', data)
-  },
+/**
+ * 创建学生
+ */
+export function createStudentApi(data: Student) {
+  return request<Result<void>>({
+    url: '/student',
+    method: 'post',
+    data
+  })
+}
 
-  /**
-   * 更新学生
-   */
-  update: (data: Student) => {
-    return http.put<Student>('/student', data)
-  },
+/**
+ * 更新学生
+ */
+export function updateStudentApi(data: Student) {
+  return request<Result<void>>({
+    url: '/student',
+    method: 'put',
+    data
+  })
+}
 
-  /**
-   * 删除学生
-   */
-  delete: (id: number) => {
-    return http.delete<boolean>(`/student/${id}`)
-  },
+/**
+ * 删除学生
+ */
+export function deleteStudentApi(id: number) {
+  return request<Result<void>>({
+    url: `/student/${id}`,
+    method: 'delete'
+  })
+}
 
-  /**
-   * 分页查询学生
-   */
-  getPage: (params: StudentQueryParams) => {
-    return http.get<PageResult<Student>>('/student/page', { params })
-  },
+/**
+ * Excel导入学生
+ */
+export function importStudentsApi(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request<Result<Map<string, number>>>({
+    url: '/student/import',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
 
-  /**
-   * 批量删除学生
-   */
-  batchDelete: (ids: number[]) => {
-    return http.post<boolean>('/student/batch-delete', { ids })
-  },
-
-  /**
-   * 导入学生数据
-   */
-  import: (file: File) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    return http.upload<{ success: number; failed: number }>('/student/import', formData)
-  },
-
-  /**
-   * 导出学生数据
-   */
-  export: (params?: StudentQueryParams) => {
-    return http.download('/student/export', { params })
-  },
+/**
+ * Excel导出学生
+ */
+export function exportStudentsApi(params: StudentPageParams) {
+  return request({
+    url: '/student/export',
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
 }

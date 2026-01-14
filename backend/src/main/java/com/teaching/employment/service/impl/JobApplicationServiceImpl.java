@@ -8,11 +8,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.JobApplication;
 import com.teaching.employment.entity.Position;
 import com.teaching.employment.entity.Resume;
+import com.teaching.employment.entity.Student;
+import com.teaching.employment.entity.Company;
+import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.JobApplicationMapper;
 import com.teaching.employment.service.JobApplicationService;
 import com.teaching.employment.service.PositionService;
 import com.teaching.employment.service.ResumeService;
+import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.CompanyService;
+import com.teaching.employment.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,12 +39,48 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
     private final JobApplicationMapper jobApplicationMapper;
     private final PositionService positionService;
     private final ResumeService resumeService;
+    private final StudentService studentService;
+    private final CompanyService companyService;
+    private final UserService userService;
 
     @Override
-    public IPage<JobApplication> getJobApplicationPage(Integer current, Integer size, Long positionId, Long studentId,
+    public IPage<JobApplication> getJobApplicationPage(Integer current, Integer size, String studentName, Long positionId, Long studentId,
                                                          Long companyId, String status, String currentStage) {
         Page<JobApplication> page = new Page<>(current, size);
         LambdaQueryWrapper<JobApplication> wrapper = new LambdaQueryWrapper<>();
+
+        // 学生姓名精确搜索 - 先通过学生姓名查询学生ID,再用ID过滤
+        if (StrUtil.isNotBlank(studentName)) {
+            // 查询用户表中符合姓名的用户ID列表
+            LambdaQueryWrapper<com.teaching.employment.entity.User> userWrapper = new LambdaQueryWrapper<>();
+            userWrapper.select(com.teaching.employment.entity.User::getId)
+                       .eq(com.teaching.employment.entity.User::getUsername, studentName);
+            java.util.List<Long> userIds = userService.list(userWrapper)
+                    .stream()
+                    .map(com.teaching.employment.entity.User::getId)
+                    .collect(java.util.stream.Collectors.toList());
+
+            // 通过用户ID查询学生ID列表
+            if (!userIds.isEmpty()) {
+                LambdaQueryWrapper<Student> studentWrapper = new LambdaQueryWrapper<>();
+                studentWrapper.select(Student::getId)
+                           .in(Student::getUserId, userIds);
+                java.util.List<Long> studentIds = studentService.list(studentWrapper)
+                        .stream()
+                        .map(Student::getId)
+                        .collect(java.util.stream.Collectors.toList());
+
+                if (!studentIds.isEmpty()) {
+                    wrapper.in(JobApplication::getStudentId, studentIds);
+                } else {
+                    // 没有找到匹配的学生,返回空结果
+                    wrapper.eq(JobApplication::getId, -1L);
+                }
+            } else {
+                // 没有找到匹配的用户,返回空结果
+                wrapper.eq(JobApplication::getId, -1L);
+            }
+        }
 
         if (positionId != null) {
             wrapper.eq(JobApplication::getPositionId, positionId);
@@ -65,22 +107,55 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
 
         wrapper.orderByDesc(JobApplication::getApplicationTime);
 
-        return jobApplicationMapper.selectPage(page, wrapper);
+        IPage<JobApplication> resultPage = jobApplicationMapper.selectPage(page, wrapper);
+
+        // 填充关联字段信息
+        resultPage.getRecords().forEach(application -> {
+            // 填充职位名称
+            if (application.getPositionId() != null) {
+                Position position = positionService.getById(application.getPositionId());
+                if (position != null) {
+                    application.setPositionName(position.getPositionName());
+                    // 填充企业名称
+                    if (position.getCompanyId() != null) {
+                        Company company = companyService.getById(position.getCompanyId());
+                        if (company != null) {
+                            application.setCompanyName(company.getCompanyName());
+                        }
+                    }
+                }
+            }
+
+            // 填充学生姓名
+            if (application.getStudentId() != null) {
+                Student student = studentService.getById(application.getStudentId());
+                if (student != null && student.getUserId() != null) {
+                    User user = userService.getById(student.getUserId());
+                    if (user != null) {
+                        application.setStudentName(user.getUsername());
+                    } else {
+                        application.setStudentName("学生" + student.getId());
+                    }
+                }
+            }
+        });
+
+        return resultPage;
     }
 
     @Override
     public IPage<JobApplication> getApplicationsByStudentId(Integer current, Integer size, Long studentId) {
-        return getJobApplicationPage(current, size, null, studentId, null, null, null);
+        return getJobApplicationPage(current, size, null, null, studentId, null, null, null);
     }
 
     @Override
     public IPage<JobApplication> getApplicationsByPositionId(Integer current, Integer size, Long positionId) {
-        return getJobApplicationPage(current, size, positionId, null, null, null, null);
+        return getJobApplicationPage(current, size, null, positionId, null, null, null, null);
     }
 
     @Override
     public IPage<JobApplication> getApplicationsByCompanyId(Integer current, Integer size, Long companyId) {
-        return getJobApplicationPage(current, size, null, null, companyId, null, null);
+        return getJobApplicationPage(current, size, null, null, null, companyId, null, null);
     }
 
     @Override

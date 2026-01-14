@@ -18,7 +18,8 @@ export interface User {
   email?: string
   phone?: string
   roleId?: number
-  role?: Role
+  role?: Role | string
+  roleCode?: string
   avatar?: string
   token?: string
   permissions?: string[]
@@ -196,6 +197,14 @@ export interface Announcement {
 }
 
 // ============ 分页相关 ============
+export interface IPage<T> {
+  records: T[]
+  total: number
+  current: number
+  size: number
+  pages: number
+}
+
 export interface PageResult<T> {
   list: T[]
   total: number
