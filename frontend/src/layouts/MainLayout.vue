@@ -275,4 +275,13 @@ const handleUserCommand = async (command: string) => {
     z-index: 9998 !important;
   }
 }
+
+// 确保所有 message-box 的 overlay 都使用 fixed 定位
+.el-overlay.is-message-box {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
 </style>
