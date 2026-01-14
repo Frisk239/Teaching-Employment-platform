@@ -107,4 +107,16 @@ public class Course implements Serializable {
      */
     @TableField(exist = false)
     private String teacherName;
+
+    /**
+     * 学校名称（来自学校表）
+     */
+    @TableField(exist = false)
+    private String schoolName;
+
+    /**
+     * 教室名称（来自教室表）
+     */
+    @TableField(exist = false)
+    private String classroomName;
 }

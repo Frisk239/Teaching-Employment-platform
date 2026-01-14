@@ -18,6 +18,11 @@ public interface TeacherService extends IService<Teacher> {
     IPage<Teacher> getTeacherPage(Integer current, Integer size, Long schoolId, String keyword);
 
     /**
+     * 查询所有教师列表(用于下拉框)
+     */
+    java.util.List<Teacher> getTeacherList(Long schoolId);
+
+    /**
      * 根据用户ID查询教师信息
      */
     Teacher getTeacherByUserId(Long userId);

@@ -49,7 +49,7 @@ public class CourseController {
     @GetMapping("/{id}")
     @ApiOperation("根据ID查询课程")
     public Result<Course> getCourseById(@PathVariable Long id) {
-        Course course = courseService.getById(id);
+        Course course = courseService.getCourseWithDetails(id);
         return Result.ok(course);
     }
 

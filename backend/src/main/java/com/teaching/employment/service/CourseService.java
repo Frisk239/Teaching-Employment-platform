@@ -38,6 +38,14 @@ public interface CourseService extends IService<Course> {
     List<Course> getCoursesByClassroomId(Long classroomId);
 
     /**
+     * 根据ID查询课程详情(包含关联信息)
+     *
+     * @param id 课程ID
+     * @return 课程详情
+     */
+    Course getCourseWithDetails(Long id);
+
+    /**
      * 添加学员到课程
      */
     boolean addStudentToCourse(Long courseId, Long studentId);

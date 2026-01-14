@@ -37,7 +37,7 @@
             <el-option
               v-for="teacher in teacherList"
               :key="teacher.id"
-              :label="teacher.teacherName"
+              :label="teacher.realName || teacher.teacherName"
               :value="teacher.id"
             />
           </el-select>
@@ -230,7 +230,7 @@
                 <el-option
                   v-for="teacher in filteredTeacherList"
                   :key="teacher.id"
-                  :label="teacher.teacherName"
+                  :label="teacher.realName || teacher.teacherName"
                   :value="teacher.id"
                 />
               </el-select>

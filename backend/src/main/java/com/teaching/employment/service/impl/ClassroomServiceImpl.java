@@ -9,8 +9,8 @@ import com.teaching.employment.entity.Classroom;
 import com.teaching.employment.entity.Course;
 import com.teaching.employment.entity.School;
 import com.teaching.employment.mapper.ClassroomMapper;
+import com.teaching.employment.mapper.CourseMapper;
 import com.teaching.employment.service.ClassroomService;
-import com.teaching.employment.service.CourseService;
 import com.teaching.employment.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ClassroomServiceImpl extends ServiceImpl<ClassroomMapper, Classroom> implements ClassroomService {
 
     private final ClassroomMapper classroomMapper;
-    private final CourseService courseService;
+    private final CourseMapper courseMapper;
     private final SchoolService schoolService;
 
     @Override
@@ -94,8 +94,10 @@ public class ClassroomServiceImpl extends ServiceImpl<ClassroomMapper, Classroom
             statistics.put("capacity", classroom.getCapacity());
         }
 
-        // 获取教室的所有课程
-        List<Course> courses = courseService.getCoursesByClassroomId(classroomId);
+        // 使用CourseMapper直接查询教室的所有课程
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Course::getClassroomId, classroomId);
+        List<Course> courses = courseMapper.selectList(wrapper);
 
         // 统计课程数量
         int totalCourses = courses.size();
@@ -140,7 +142,10 @@ public class ClassroomServiceImpl extends ServiceImpl<ClassroomMapper, Classroom
 
     @Override
     public List<Course> getClassroomCourses(Long classroomId) {
-        return courseService.getCoursesByClassroomId(classroomId);
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Course::getClassroomId, classroomId);
+        wrapper.orderByDesc(Course::getCreateTime);
+        return courseMapper.selectList(wrapper);
     }
 
     @Override

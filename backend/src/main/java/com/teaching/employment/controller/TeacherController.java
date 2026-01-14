@@ -43,6 +43,17 @@ public class TeacherController {
     }
 
     /**
+     * 查询所有教师(用于下拉框)
+     */
+    @GetMapping("/list")
+    @ApiOperation("查询所有教师")
+    public Result<List<Teacher>> getTeacherList(
+            @ApiParam("学校ID") @RequestParam(required = false) Long schoolId) {
+        List<Teacher> list = teacherService.getTeacherList(schoolId);
+        return Result.ok(list);
+    }
+
+    /**
      * 根据ID查询教师
      */
     @GetMapping("/{id}")

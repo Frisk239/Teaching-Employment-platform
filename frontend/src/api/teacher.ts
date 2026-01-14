@@ -1,23 +1,38 @@
-import request from '@/utils/request'
-import type { Result, IPage } from './types'
+import { http } from '@/utils/request'
+import type { IPage } from './types'
 
 // 教师接口类型定义
 export interface Teacher {
   id?: number
-  username: string
-  realName: string
-  schoolId: number
-  schoolName?: string
-  email?: string
-  phone?: string
-  title?: string
+  userId?: number
+  teacherNo?: string
+  schoolId?: number
   department?: string
-  subject?: string
-  hireDate?: string
-  status?: number
-  avatar?: string
+  title?: string
+  education?: string
+  specialty?: string
+  entryDate?: string
+  idCard?: string
+  gender?: number
+  birthDate?: string
+  address?: string
+  description?: string
   createTime?: string
   updateTime?: string
+  // 关联查询字段
+  user?: {
+    id: number
+    username: string
+    realName: string
+  }
+  school?: {
+    id: number
+    schoolName: string
+  }
+  // 兼容字段
+  realName?: string
+  teacherName?: string
+  schoolName?: string
 }
 
 // 分页查询参数
@@ -27,27 +42,21 @@ export interface TeacherPageParams {
   keyword?: string
   schoolId?: number
   department?: string
-  status?: number
 }
 
 /**
  * 获取教师分页列表
  */
 export function getTeacherPageApi(params: TeacherPageParams) {
-  return request<Result<IPage<Teacher>>>({
-    url: '/teacher/page',
-    method: 'get',
-    params
-  })
+  return http.get<IPage<Teacher>>('/teacher/page', { params })
 }
 
 /**
  * 获取所有教师列表
  */
-export function getTeacherListApi() {
-  return request<Result<Teacher[]>>({
-    url: '/teacher/list',
-    method: 'get'
+export function getTeacherListApi(schoolId?: number) {
+  return http.get<Teacher[]>('/teacher/list', {
+    params: schoolId ? { schoolId } : undefined
   })
 }
 
@@ -55,40 +64,26 @@ export function getTeacherListApi() {
  * 根据ID获取教师详情
  */
 export function getTeacherByIdApi(id: number) {
-  return request<Result<Teacher>>({
-    url: `/teacher/${id}`,
-    method: 'get'
-  })
+  return http.get<Teacher>(`/teacher/${id}`)
 }
 
 /**
  * 创建教师
  */
 export function createTeacherApi(data: Teacher) {
-  return request<Result<void>>({
-    url: '/teacher',
-    method: 'post',
-    data
-  })
+  return http.post<void>('/teacher', data)
 }
 
 /**
  * 更新教师
  */
 export function updateTeacherApi(data: Teacher) {
-  return request<Result<void>>({
-    url: '/teacher',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/teacher', data)
 }
 
 /**
  * 删除教师
  */
 export function deleteTeacherApi(id: number) {
-  return request<Result<void>>({
-    url: `/teacher/${id}`,
-    method: 'delete'
-  })
+  return http.delete<void>(`/teacher/${id}`)
 }
