@@ -78,4 +78,10 @@ public class Classroom implements Serializable {
      */
     @TableField(exist = false)
     private School school;
+
+    /**
+     * 学校名称（关联查询时使用，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private String schoolName;
 }

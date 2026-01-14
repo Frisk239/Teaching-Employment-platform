@@ -7,15 +7,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.Classroom;
 import com.teaching.employment.entity.Course;
+import com.teaching.employment.entity.School;
 import com.teaching.employment.mapper.ClassroomMapper;
 import com.teaching.employment.service.ClassroomService;
 import com.teaching.employment.service.CourseService;
+import com.teaching.employment.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 教室Service实现类
@@ -29,6 +32,7 @@ public class ClassroomServiceImpl extends ServiceImpl<ClassroomMapper, Classroom
 
     private final ClassroomMapper classroomMapper;
     private final CourseService courseService;
+    private final SchoolService schoolService;
 
     @Override
     public IPage<Classroom> getClassroomPage(Integer current, Integer size, Long schoolId, String keyword) {
@@ -44,7 +48,27 @@ public class ClassroomServiceImpl extends ServiceImpl<ClassroomMapper, Classroom
         }
 
         wrapper.orderByDesc(Classroom::getCreateTime);
-        return classroomMapper.selectPage(page, wrapper);
+        IPage<Classroom> result = classroomMapper.selectPage(page, wrapper);
+
+        // 获取所有学校ID
+        List<Long> schoolIds = result.getRecords().stream()
+                .map(Classroom::getSchoolId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 批量查询学校信息
+        if (!schoolIds.isEmpty()) {
+            List<School> schools = schoolService.listByIds(schoolIds);
+            Map<Long, String> schoolMap = schools.stream()
+                    .collect(Collectors.toMap(School::getId, School::getSchoolName));
+
+            // 填充学校名称
+            result.getRecords().forEach(classroom ->
+                classroom.setSchoolName(schoolMap.get(classroom.getSchoolId()))
+            );
+        }
+
+        return result;
     }
 
     @Override

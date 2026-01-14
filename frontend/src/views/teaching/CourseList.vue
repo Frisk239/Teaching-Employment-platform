@@ -1,22 +1,14 @@
 <template>
   <div class="course-list">
-    <el-card shadow="never">
+    <el-card shadow="never" class="search-card">
       <!-- 搜索表单 -->
       <el-form :model="searchForm" inline class="search-form">
-        <el-form-item label="课程名称">
+        <el-form-item label="关键词">
           <el-input
-            v-model="searchForm.name"
-            placeholder="请输入课程名称"
+            v-model="searchForm.keyword"
+            placeholder="课程名称/课程代码"
             clearable
             style="width: 200px"
-          />
-        </el-form-item>
-        <el-form-item label="课程代码">
-          <el-input
-            v-model="searchForm.code"
-            placeholder="请输入课程代码"
-            clearable
-            style="width: 150px"
           />
         </el-form-item>
         <el-form-item label="所属学校">
@@ -29,7 +21,7 @@
             <el-option
               v-for="school in schoolList"
               :key="school.id"
-              :label="school.name"
+              :label="school.schoolName"
               :value="school.id"
             />
           </el-select>
@@ -45,7 +37,7 @@
             <el-option
               v-for="teacher in teacherList"
               :key="teacher.id"
-              :label="teacher.realName"
+              :label="teacher.teacherName"
               :value="teacher.id"
             />
           </el-select>
@@ -57,34 +49,39 @@
             clearable
             style="width: 120px"
           >
-            <el-option label="正常" :value="1" />
-            <el-option label="禁用" :value="0" />
+            <el-option label="未开始" value="pending" />
+            <el-option label="进行中" value="ongoing" />
+            <el-option label="已完成" value="completed" />
+            <el-option label="已取消" value="cancelled" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            查询
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <!-- 数据表格卡片 -->
+    <el-card shadow="never" class="table-card">
       <!-- 操作按钮 -->
-      <div class="table-operations">
-        <el-button
-          v-permission="'teaching:course:add'"
-          type="primary"
-          @click="handleAdd"
-        >
-          <el-icon><Plus /></el-icon>
-          新增课程
-        </el-button>
-        <el-button
-          v-permission="'teaching:course:export'"
-          @click="handleExport"
-        >
-          <el-icon><Download /></el-icon>
-          导出
-        </el-button>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span class="title">课程列表</span>
+          <div class="operations">
+            <el-button type="primary" @click="handleAdd">
+              <el-icon><Plus /></el-icon>
+              新增课程
+            </el-button>
+          </div>
+        </div>
+      </template>
 
       <!-- 数据表格 -->
       <el-table
@@ -93,60 +90,57 @@
         border
         stripe
         style="width: 100%"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
       >
-        <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="name" label="课程名称" min-width="180" />
-        <el-table-column prop="code" label="课程代码" width="120" />
-        <el-table-column prop="schoolName" label="所属学校" width="180" />
-        <el-table-column prop="teacherName" label="授课教师" width="120" />
-        <el-table-column prop="classroomName" label="教室" width="120" />
-        <el-table-column prop="credits" label="学分" width="80" align="center" />
-        <el-table-column prop="hours" label="课时" width="80" align="center">
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column prop="courseCode" label="课程代码" width="120" />
+        <el-table-column prop="courseName" label="课程名称" min-width="180" />
+        <el-table-column prop="courseType" label="课程类型" width="120">
           <template #default="{ row }">
-            {{ row.hours }} 课时
-          </template>
-        </el-table-column>
-        <el-table-column prop="capacity" label="容量" width="80" align="center">
-          <template #default="{ row }">
-            {{ row.enrolledCount || 0 }} / {{ row.capacity }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="startDate" label="开始日期" width="120" />
-        <el-table-column prop="endDate" label="结束日期" width="120" />
-        <el-table-column label="状态" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '正常' : '禁用' }}
+            <el-tag :type="row.courseType === '直播课程' ? 'warning' : 'primary'" size="small">
+              {{ row.courseType }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column prop="schoolName" label="所属学校" width="180" />
+        <el-table-column prop="teacherName" label="授课教师" width="120" />
+        <el-table-column prop="classroomName" label="教室" width="150" />
+        <el-table-column prop="credit" label="学分" width="80" align="center">
           <template #default="{ row }">
-            <el-button
-              v-permission="'teaching:course:view'"
-              type="info"
-              size="small"
-              link
-              @click="handleViewStudents(row)"
-            >
-              学生
+            {{ row.credit || 0 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="totalHours" label="总课时" width="80" align="center">
+          <template #default="{ row }">
+            {{ row.totalHours || 0 }} 课时
+          </template>
+        </el-table-column>
+        <el-table-column prop="maxStudents" label="人数" width="100" align="center">
+          <template #default="{ row }">
+            {{ row.currentStudents || 0 }} / {{ row.maxStudents || 0 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="startDate" label="开课日期" width="120" />
+        <el-table-column prop="endDate" label="结课日期" width="120" />
+        <el-table-column label="状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)">
+              {{ getStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="250" align="center" fixed="right">
+          <template #default="{ row }">
+            <el-button type="info" size="small" link @click="handleView(row)">
+              <el-icon><View /></el-icon>
+              查看
             </el-button>
-            <el-button
-              v-permission="'teaching:course:edit'"
-              type="primary"
-              size="small"
-              link
-              @click="handleEdit(row)"
-            >
+            <el-button type="primary" size="small" link @click="handleEdit(row)">
+              <el-icon><Edit /></el-icon>
               编辑
             </el-button>
-            <el-button
-              v-permission="'teaching:course:delete'"
-              type="danger"
-              size="small"
-              link
-              @click="handleDelete(row)"
-            >
+            <el-button type="danger" size="small" link @click="handleDelete(row)">
+              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>
@@ -154,44 +148,57 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        v-model:current-page="pagination.current"
-        v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="pagination.total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="fetchData"
-        @current-change="fetchData"
-      />
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.size"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="fetchData"
+          @current-change="fetchData"
+        />
+      </div>
     </el-card>
 
     <!-- 新增/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="700px"
+      width="800px"
+      :close-on-click-modal="false"
       @close="handleDialogClose"
     >
       <el-form
         ref="formRef"
         :model="formData"
         :rules="formRules"
-        label-width="100px"
+        label-width="120px"
+        class="course-form"
       >
+        <el-divider content-position="left">基本信息</el-divider>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="课程名称" prop="name">
-              <el-input v-model="formData.name" placeholder="请输入课程名称" />
+            <el-form-item label="课程名称" prop="courseName">
+              <el-input v-model="formData.courseName" placeholder="请输入课程名称" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="课程代码" prop="code">
-              <el-input v-model="formData.code" placeholder="如: CS101" />
+            <el-form-item label="课程代码" prop="courseCode">
+              <el-input v-model="formData.courseCode" placeholder="如: CS101" />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="课程类型" prop="courseType">
+              <el-select v-model="formData.courseType" placeholder="请选择类型" style="width: 100%">
+                <el-option label="普通课程" value="普通课程" />
+                <el-option label="直播课程" value="直播课程" />
+              </el-select>
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item label="所属学校" prop="schoolId">
               <el-select
@@ -203,12 +210,15 @@
                 <el-option
                   v-for="school in schoolList"
                   :key="school.id"
-                  :label="school.name"
+                  :label="school.schoolName"
                   :value="school.id"
                 />
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="授课教师" prop="teacherId">
               <el-select
@@ -220,15 +230,12 @@
                 <el-option
                   v-for="teacher in filteredTeacherList"
                   :key="teacher.id"
-                  :label="teacher.realName"
+                  :label="teacher.teacherName"
                   :value="teacher.id"
                 />
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="教室" prop="classroomId">
               <el-select
@@ -239,50 +246,72 @@
                 <el-option
                   v-for="classroom in filteredClassroomList"
                   :key="classroom.id"
-                  :label="`${classroom.name} (${classroom.building}${classroom.roomNumber})`"
+                  :label="`${classroom.classroomName} (${classroom.building} ${classroom.floor})`"
                   :value="classroom.id"
                 />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="学分" prop="credits">
-              <el-input-number v-model="formData.credits" :min="0.5" :max="10" :step="0.5" style="width: 100%" />
+        </el-row>
+
+        <el-divider content-position="left">课程信息</el-divider>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="学分" prop="credit">
+              <el-input-number
+                v-model="formData.credit"
+                :min="0.5"
+                :max="10"
+                :step="0.5"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="总课时" prop="totalHours">
+              <el-input-number
+                v-model="formData.totalHours"
+                :min="1"
+                :max="200"
+                :step="1"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="最大学员数" prop="maxStudents">
+              <el-input-number
+                v-model="formData.maxStudents"
+                :min="1"
+                :max="500"
+                :step="1"
+                controls-position="right"
+                style="width: 100%"
+              />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="课时" prop="hours">
-              <el-input-number v-model="formData.hours" :min="1" :max="200" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="容量" prop="capacity">
-              <el-input-number v-model="formData.capacity" :min="1" :max="500" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="开始日期" prop="startDate">
+            <el-form-item label="开课日期" prop="startDate">
               <el-date-picker
                 v-model="formData.startDate"
                 type="date"
-                placeholder="选择开始日期"
+                placeholder="选择开课日期"
                 value-format="YYYY-MM-DD"
                 style="width: 100%"
               />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="结束日期" prop="endDate">
+            <el-form-item label="结课日期" prop="endDate">
               <el-date-picker
                 v-model="formData.endDate"
                 type="date"
-                placeholder="选择结束日期"
+                placeholder="选择结课日期"
                 value-format="YYYY-MM-DD"
                 style="width: 100%"
               />
@@ -290,19 +319,22 @@
           </el-col>
         </el-row>
 
-        <el-form-item label="课程简介" prop="description">
+        <el-divider content-position="left">其他信息</el-divider>
+        <el-form-item label="课程描述" prop="description">
           <el-input
             v-model="formData.description"
             type="textarea"
             :rows="4"
-            placeholder="请输入课程简介"
+            placeholder="请输入课程描述"
           />
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio :label="1">正常</el-radio>
-            <el-radio :label="0">禁用</el-radio>
+            <el-radio value="pending">未开始</el-radio>
+            <el-radio value="ongoing">进行中</el-radio>
+            <el-radio value="completed">已完成</el-radio>
+            <el-radio value="cancelled">已取消</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -312,28 +344,31 @@
       </template>
     </el-dialog>
 
-    <!-- 学生列表对话框 -->
-    <el-dialog
-      v-model="studentDialogVisible"
-      title="课程学生列表"
-      width="900px"
-    >
-      <el-table
-        v-loading="studentLoading"
-        :data="studentList"
-        border
-        stripe
-        style="width: 100%"
-      >
-        <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="realName" label="姓名" width="120" />
-        <el-table-column prop="username" label="学号" width="120" />
-        <el-table-column prop="schoolName" label="学校" width="180" />
-        <el-table-column prop="phone" label="手机号" width="140" />
-        <el-table-column prop="enrollDate" label="选课日期" width="120" />
-      </el-table>
+    <!-- 查看详情对话框 -->
+    <el-dialog v-model="viewDialogVisible" title="课程详情" width="700px">
+      <el-descriptions v-if="viewData" :column="2" border>
+        <el-descriptions-item label="课程代码">{{ viewData.courseCode }}</el-descriptions-item>
+        <el-descriptions-item label="课程名称">{{ viewData.courseName }}</el-descriptions-item>
+        <el-descriptions-item label="课程类型">{{ viewData.courseType }}</el-descriptions-item>
+        <el-descriptions-item label="所属学校">{{ viewData.schoolName }}</el-descriptions-item>
+        <el-descriptions-item label="授课教师">{{ viewData.teacherName }}</el-descriptions-item>
+        <el-descriptions-item label="教室">{{ viewData.classroomName }}</el-descriptions-item>
+        <el-descriptions-item label="学分">{{ viewData.credit || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="总课时">{{ viewData.totalHours || 0 }} 课时</el-descriptions-item>
+        <el-descriptions-item label="最大学员数">{{ viewData.maxStudents || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="当前学员数">{{ viewData.currentStudents || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="开课日期">{{ viewData.startDate }}</el-descriptions-item>
+        <el-descriptions-item label="结课日期">{{ viewData.endDate }}</el-descriptions-item>
+        <el-descriptions-item label="状态" :span="2">
+          <el-tag :type="getStatusType(viewData.status)">
+            {{ getStatusLabel(viewData.status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="课程描述" :span="2">{{ viewData.description || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间" :span="2">{{ viewData.createTime }}</el-descriptions-item>
+      </el-descriptions>
       <template #footer>
-        <el-button @click="studentDialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="viewDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
@@ -342,22 +377,28 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { Plus, Download } from '@element-plus/icons-vue'
-import { getCoursePageApi, getCourseByIdApi, createCourseApi, updateCourseApi, deleteCourseApi, getCourseStudentsApi } from '@/api/course'
+import { Search, Refresh, Plus, View, Edit, Delete } from '@element-plus/icons-vue'
+import {
+  getCoursePageApi,
+  getCourseByIdApi,
+  createCourseApi,
+  updateCourseApi,
+  deleteCourseApi
+} from '@/api/course'
 import { getSchoolListApi } from '@/api/school'
 import { getTeacherListApi } from '@/api/teacher'
 import { getClassroomListApi } from '@/api/classroom'
+import type { Course } from '@/api/course'
 import type { School } from '@/api/school'
 import type { Teacher } from '@/api/teacher'
 import type { Classroom } from '@/api/classroom'
 
 // 搜索表单
 const searchForm = reactive({
-  name: '',
-  code: '',
+  keyword: '',
   schoolId: undefined as number | undefined,
   teacherId: undefined as number | undefined,
-  status: undefined as number | undefined
+  status: undefined as string | undefined
 })
 
 // 分页
@@ -369,7 +410,7 @@ const pagination = reactive({
 
 // 表格数据
 const loading = ref(false)
-const tableData = ref([])
+const tableData = ref<Course[]>([])
 
 // 学校列表
 const schoolList = ref<School[]>([])
@@ -382,26 +423,26 @@ const classroomList = ref<Classroom[]>([])
 const dialogVisible = ref(false)
 const dialogTitle = computed(() => (formData.id ? '编辑课程' : '新增课程'))
 const formRef = ref<FormInstance>()
-const formData = reactive({
+const formData = reactive<Partial<Course>>({
   id: undefined,
-  name: '',
-  code: '',
+  courseName: '',
+  courseCode: '',
+  courseType: '普通课程',
   schoolId: undefined,
   teacherId: undefined,
   classroomId: undefined,
   description: '',
-  credits: 3,
-  hours: 48,
-  capacity: 50,
+  credit: 3,
+  totalHours: 48,
+  maxStudents: 50,
   startDate: '',
   endDate: '',
-  status: 1
+  status: 'pending'
 })
 
-// 学生列表对话框
-const studentDialogVisible = ref(false)
-const studentLoading = ref(false)
-const studentList = ref([])
+// 查看详情
+const viewDialogVisible = ref(false)
+const viewData = ref<Course | null>(null)
 
 // 过滤后的教师列表(根据学校)
 const filteredTeacherList = computed(() => {
@@ -417,73 +458,76 @@ const filteredClassroomList = computed(() => {
 
 // 表单验证规则
 const formRules: FormRules = {
-  name: [
+  courseName: [
     { required: true, message: '请输入课程名称', trigger: 'blur' },
     { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' }
   ],
-  code: [
+  courseCode: [
     { required: true, message: '请输入课程代码', trigger: 'blur' },
     { pattern: /^[A-Z0-9]+$/, message: '课程代码只能包含大写字母和数字', trigger: 'blur' }
   ],
-  schoolId: [
-    { required: true, message: '请选择学校', trigger: 'change' }
-  ],
-  teacherId: [
-    { required: true, message: '请选择授课教师', trigger: 'change' }
-  ],
-  classroomId: [
-    { required: true, message: '请选择教室', trigger: 'change' }
-  ],
-  credits: [
-    { required: true, message: '请输入学分', trigger: 'blur' }
-  ],
-  hours: [
-    { required: true, message: '请输入课时', trigger: 'blur' }
-  ],
-  capacity: [
-    { required: true, message: '请输入容量', trigger: 'blur' }
-  ],
-  startDate: [
-    { required: true, message: '请选择开始日期', trigger: 'change' }
-  ],
-  endDate: [
-    { required: true, message: '请选择结束日期', trigger: 'change' }
-  ]
+  courseType: [{ required: true, message: '请选择课程类型', trigger: 'change' }],
+  schoolId: [{ required: true, message: '请选择学校', trigger: 'change' }],
+  teacherId: [{ required: true, message: '请选择授课教师', trigger: 'change' }],
+  credit: [{ required: true, message: '请输入学分', trigger: 'blur' }],
+  totalHours: [{ required: true, message: '请输入总课时', trigger: 'blur' }],
+  maxStudents: [{ required: true, message: '请输入最大学员数', trigger: 'blur' }],
+  startDate: [{ required: true, message: '请选择开课日期', trigger: 'change' }],
+  endDate: [{ required: true, message: '请选择结课日期', trigger: 'change' }]
+}
+
+// 获取状态类型
+const getStatusType = (status: string | undefined) => {
+  const typeMap: Record<string, any> = {
+    pending: 'info',
+    ongoing: 'success',
+    completed: '',
+    cancelled: 'danger'
+  }
+  return typeMap[status || ''] || 'info'
+}
+
+// 获取状态标签
+const getStatusLabel = (status: string | undefined) => {
+  const labelMap: Record<string, string> = {
+    pending: '未开始',
+    ongoing: '进行中',
+    completed: '已完成',
+    cancelled: '已取消'
+  }
+  return labelMap[status || ''] || '未知'
 }
 
 // 获取学校列表
 const fetchSchoolList = async () => {
   try {
-    const response = await getSchoolListApi()
-    if (response.code === 200) {
-      schoolList.value = response.data
-    }
+    const data = await getSchoolListApi()
+    schoolList.value = data
   } catch (error) {
     console.error('获取学校列表失败:', error)
+    ElMessage.error('获取学校列表失败')
   }
 }
 
 // 获取教师列表
 const fetchTeacherList = async () => {
   try {
-    const response = await getTeacherListApi()
-    if (response.code === 200) {
-      teacherList.value = response.data
-    }
+    const data = await getTeacherListApi()
+    teacherList.value = data
   } catch (error) {
     console.error('获取教师列表失败:', error)
+    ElMessage.error('获取教师列表失败')
   }
 }
 
 // 获取教室列表
 const fetchClassroomList = async () => {
   try {
-    const response = await getClassroomListApi()
-    if (response.code === 200) {
-      classroomList.value = response.data
-    }
+    const data = await getClassroomListApi()
+    classroomList.value = data
   } catch (error) {
     console.error('获取教室列表失败:', error)
+    ElMessage.error('获取教室列表失败')
   }
 }
 
@@ -494,19 +538,14 @@ const fetchData = async () => {
     const params = {
       current: pagination.current,
       size: pagination.size,
-      name: searchForm.name || undefined,
-      code: searchForm.code || undefined,
       schoolId: searchForm.schoolId,
       teacherId: searchForm.teacherId,
-      status: searchForm.status
+      status: searchForm.status,
+      keyword: searchForm.keyword || undefined
     }
-    const response = await getCoursePageApi(params)
-    if (response.code === 200) {
-      tableData.value = response.data.records
-      pagination.total = response.data.total
-    } else {
-      ElMessage.error(response.message || '获取课程列表失败')
-    }
+    const data = await getCoursePageApi(params)
+    tableData.value = data.records
+    pagination.total = data.total
   } catch (error) {
     console.error('获取课程列表失败:', error)
     ElMessage.error('获取课程列表失败')
@@ -529,8 +568,7 @@ const handleSearch = () => {
 
 // 重置
 const handleReset = () => {
-  searchForm.name = ''
-  searchForm.code = ''
+  searchForm.keyword = ''
   searchForm.schoolId = undefined
   searchForm.teacherId = undefined
   searchForm.status = undefined
@@ -542,32 +580,41 @@ const handleReset = () => {
 const handleAdd = () => {
   Object.assign(formData, {
     id: undefined,
-    name: '',
-    code: '',
+    courseName: '',
+    courseCode: '',
+    courseType: '普通课程',
     schoolId: undefined,
     teacherId: undefined,
     classroomId: undefined,
     description: '',
-    credits: 3,
-    hours: 48,
-    capacity: 50,
+    credit: 3,
+    totalHours: 48,
+    maxStudents: 50,
     startDate: '',
     endDate: '',
-    status: 1
+    status: 'pending'
   })
   dialogVisible.value = true
 }
 
 // 编辑
-const handleEdit = async (row: any) => {
+const handleEdit = async (row: Course) => {
   try {
-    const response = await getCourseByIdApi(row.id)
-    if (response.code === 200) {
-      Object.assign(formData, response.data)
-      dialogVisible.value = true
-    } else {
-      ElMessage.error(response.message || '获取课程信息失败')
-    }
+    const data = await getCourseByIdApi(row.id!)
+    Object.assign(formData, data)
+    dialogVisible.value = true
+  } catch (error) {
+    console.error('获取课程信息失败:', error)
+    ElMessage.error('获取课程信息失败')
+  }
+}
+
+// 查看
+const handleView = async (row: Course) => {
+  try {
+    const data = await getCourseByIdApi(row.id!)
+    viewData.value = data
+    viewDialogVisible.value = true
   } catch (error) {
     console.error('获取课程信息失败:', error)
     ElMessage.error('获取课程信息失败')
@@ -575,7 +622,7 @@ const handleEdit = async (row: any) => {
 }
 
 // 删除
-const handleDelete = (row: any) => {
+const handleDelete = (row: Course) => {
   ElMessageBox.confirm('确定要删除该课程吗？删除后不可恢复！', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -583,38 +630,15 @@ const handleDelete = (row: any) => {
   })
     .then(async () => {
       try {
-        const response = await deleteCourseApi(row.id)
-        if (response.code === 200) {
-          ElMessage.success('删除成功')
-          fetchData()
-        } else {
-          ElMessage.error(response.message || '删除失败')
-        }
+        await deleteCourseApi(row.id!)
+        ElMessage.success('删除成功')
+        fetchData()
       } catch (error) {
         console.error('删除失败:', error)
         ElMessage.error('删除失败')
       }
     })
     .catch(() => {})
-}
-
-// 查看学生
-const handleViewStudents = async (row: any) => {
-  studentDialogVisible.value = true
-  studentLoading.value = true
-  try {
-    const response = await getCourseStudentsApi(row.id)
-    if (response.code === 200) {
-      studentList.value = response.data
-    } else {
-      ElMessage.error(response.message || '获取学生列表失败')
-    }
-  } catch (error) {
-    console.error('获取学生列表失败:', error)
-    ElMessage.error('获取学生列表失败')
-  } finally {
-    studentLoading.value = false
-  }
 }
 
 // 提交表单
@@ -624,14 +648,10 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         const api = formData.id ? updateCourseApi : createCourseApi
-        const response = await api(formData)
-        if (response.code === 200) {
-          ElMessage.success(formData.id ? '更新成功' : '新增成功')
-          dialogVisible.value = false
-          fetchData()
-        } else {
-          ElMessage.error(response.message || '操作失败')
-        }
+        await api(formData as Course)
+        ElMessage.success(formData.id ? '更新成功' : '新增成功')
+        dialogVisible.value = false
+        fetchData()
       } catch (error) {
         console.error('操作失败:', error)
         ElMessage.error('操作失败')
@@ -643,11 +663,6 @@ const handleSubmit = async () => {
 // 关闭对话框
 const handleDialogClose = () => {
   formRef.value?.resetFields()
-}
-
-// 导出
-const handleExport = () => {
-  ElMessage.info('导出功能开发中...')
 }
 
 // 页面加载时获取数据
@@ -663,17 +678,43 @@ onMounted(() => {
 .course-list {
   padding: 20px;
 
-  .search-form {
+  .search-card {
     margin-bottom: 20px;
+
+    .search-form {
+      margin-bottom: 0;
+    }
   }
 
-  .table-operations {
-    margin-bottom: 20px;
+  .table-card {
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .operations {
+        display: flex;
+        gap: 10px;
+      }
+    }
+
+    .pagination-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 
-  :deep(.el-pagination) {
-    margin-top: 20px;
-    justify-content: flex-end;
+  .course-form {
+    :deep(.el-divider) {
+      margin: 20px 0;
+    }
   }
 }
 </style>

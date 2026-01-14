@@ -1,131 +1,133 @@
-import request from '@/utils/request'
-import type { Result, IPage } from './types'
+import { http } from '@/utils/request'
+import type { IPage } from './types'
 
 // 课程接口类型定义
 export interface Course {
   id?: number
-  name: string
-  code: string
-  schoolId: number
-  schoolName?: string
+  courseName?: string
+  courseCode?: string
+  courseType?: string
+  schoolId?: number
   teacherId?: number
-  teacherName?: string
   classroomId?: number
-  classroomName?: string
   description?: string
-  credits?: number
-  hours?: number
-  capacity?: number
-  enrolledCount?: number
+  credit?: number
+  totalHours?: number
   startDate?: string
   endDate?: string
-  status?: number
+  maxStudents?: number
+  currentStudents?: number
+  status?: string
   createTime?: string
   updateTime?: string
+  // 关联查询字段
+  school?: {
+    id: number
+    schoolName: string
+  }
+  teacher?: {
+    id: number
+    teacherName: string
+  }
+  classroom?: {
+    id: number
+    classroomName: string
+  }
+  schoolName?: string
+  teacherName?: string
+  classroomName?: string
 }
 
 // 分页查询参数
 export interface CoursePageParams {
   current: number
   size: number
-  name?: string
-  code?: string
   schoolId?: number
   teacherId?: number
-  status?: number
+  status?: string
+  keyword?: string
 }
 
 /**
  * 获取课程分页列表
  */
 export function getCoursePageApi(params: CoursePageParams) {
-  return request<Result<IPage<Course>>>({
-    url: '/course/page',
-    method: 'get',
-    params
-  })
+  return http.get<IPage<Course>>('/course/page', { params })
 }
 
 /**
  * 获取所有课程列表
  */
 export function getCourseListApi() {
-  return request<Result<Course[]>>({
-    url: '/course/list',
-    method: 'get'
-  })
+  return http.get<Course[]>('/course/list')
 }
 
 /**
  * 根据ID获取课程详情
  */
 export function getCourseByIdApi(id: number) {
-  return request<Result<Course>>({
-    url: `/course/${id}`,
-    method: 'get'
-  })
+  return http.get<Course>(`/course/${id}`)
 }
 
 /**
  * 创建课程
  */
 export function createCourseApi(data: Course) {
-  return request<Result<void>>({
-    url: '/course',
-    method: 'post',
-    data
-  })
+  return http.post<void>('/course', data)
 }
 
 /**
  * 更新课程
  */
 export function updateCourseApi(data: Course) {
-  return request<Result<void>>({
-    url: '/course',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/course', data)
 }
 
 /**
  * 删除课程
  */
 export function deleteCourseApi(id: number) {
-  return request<Result<void>>({
-    url: `/course/${id}`,
-    method: 'delete'
-  })
+  return http.delete<void>(`/course/${id}`)
 }
 
 /**
- * 学生选课
+ * 查询学生的课程表
  */
-export function enrollCourseApi(courseId: number, studentId: number) {
-  return request<Result<void>>({
-    url: `/course/enroll`,
-    method: 'post',
-    data: { courseId, studentId }
-  })
+export function getCoursesByStudentApi(studentId: number) {
+  return http.get<Course[]>(`/course/student/${studentId}`)
 }
 
 /**
- * 学生退课
+ * 查询教师的课程列表
  */
-export function dropCourseApi(courseId: number, studentId: number) {
-  return request<Result<void>>({
-    url: `/course/drop`,
-    method: 'post',
-    data: { courseId, studentId }
-  })
+export function getCoursesByTeacherApi(teacherId: number) {
+  return http.get<Course[]>(`/course/teacher/${teacherId}`)
 }
 
 /**
- * 获取课程学生列表
+ * 添加学员到课程
  */
-export function getCourseStudentsApi(courseId: number) {
-  return request<Result<any[]>>({
-    url: `/course/students/${courseId}`,
-    method: 'get'
-  })
+export function addStudentToCourseApi(courseId: number, studentId: number) {
+  return http.post<void>(`/course/${courseId}/student`, { studentId })
+}
+
+/**
+ * 批量添加学员到课程
+ */
+export function batchAddStudentsToCourseApi(courseId: number, studentIds: number[]) {
+  return http.post<void>(`/course/${courseId}/students/batch`, { studentIds })
+}
+
+/**
+ * 从课程中移除学员
+ */
+export function removeStudentFromCourseApi(courseId: number, studentId: number) {
+  return http.delete<void>(`/course/${courseId}/student/${studentId}`)
+}
+
+/**
+ * 为课程分配教师
+ */
+export function assignTeacherToCourseApi(courseId: number, teacherId: number) {
+  return http.put<void>(`/course/${courseId}/teacher`, { teacherId })
 }
