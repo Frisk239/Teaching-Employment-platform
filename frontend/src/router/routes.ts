@@ -227,7 +227,7 @@ export const routes: RouteRecordRaw[] = [
           {
             path: '/employment/companies',
             name: 'EmploymentCompanies',
-            component: () => import('@/views/employment/CompanyList.vue'),
+            component: () => import('@/views/employment/CompanyManagement.vue'),
             meta: {
               title: '企业管理',
               icon: 'Management',

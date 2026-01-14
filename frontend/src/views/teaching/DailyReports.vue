@@ -94,7 +94,7 @@
               v-for="student in studentList"
               :key="student.id"
               :label="`${student.realName} (${student.studentNo})`"
-              :value="student.userId"
+              :value="student.id"
             />
           </el-select>
         </el-form-item>
@@ -923,6 +923,8 @@ onMounted(() => {
 
     .stats-row {
       .stat-card {
+        border-radius: 12px;
+
         .stat-content {
           display: flex;
           align-items: center;
@@ -938,23 +940,23 @@ onMounted(() => {
             margin-right: 16px;
 
             &.total {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
+              background: #e0f2fe;
+              color: #0369a1;
             }
 
             &.draft {
-              background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-              color: white;
+              background: #fef3c7;
+              color: #b45309;
             }
 
             &.submitted {
-              background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-              color: white;
+              background: #fee2e2;
+              color: #dc2626;
             }
 
             &.reviewed {
-              background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-              color: white;
+              background: #dcfce7;
+              color: #15803d;
             }
           }
 

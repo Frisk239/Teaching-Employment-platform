@@ -1,10 +1,12 @@
-import request from '@/utils/request'
-import type { Result, IPage } from './types'
+/**
+ * 企业管理 API
+ */
+import { http } from '@/utils/request'
+import type { IPage } from './types'
 
-// 公司接口类型定义
 export interface Company {
   id?: number
-  companyName: string
+  companyName?: string
   creditCode?: string
   shortName?: string
   logo?: string
@@ -20,80 +22,67 @@ export interface Company {
   contactPosition?: string
   contactPhone?: string
   contactEmail?: string
-  verifyStatus?: string
+  verifyStatus?: 'pending' | 'approved' | 'rejected'
+  verifyTime?: string
+  rejectReason?: string
   status?: number
   createTime?: string
   updateTime?: string
 }
 
-// 分页查询参数
-export interface CompanyPageParams {
-  current: number
-  size: number
-  name?: string
-  industry?: string
+export interface CompanyQueryParams {
+  current?: number
+  size?: number
+  verifyStatus?: string
   status?: number
+  keyword?: string
 }
 
 /**
- * 获取公司分页列表
+ * 分页查询企业列表
  */
-export function getCompanyPageApi(params: CompanyPageParams): Promise<IPage<Company>> {
-  return request({
-    url: '/company/page',
-    method: 'get',
-    params
-  }) as Promise<IPage<Company>>
+export function getCompanyPageApi(params: CompanyQueryParams) {
+  return http.get<IPage<Company>>('/company/page', { params })
 }
 
 /**
- * 获取所有公司列表
+ * 查询所有企业列表(用于下拉框)
  */
-export function getCompanyListApi(): Promise<Company[]> {
-  return request({
-    url: '/company/list',
-    method: 'get'
-  }) as Promise<Company[]>
+export function getCompanyListApi(params?: { status?: number }) {
+  return http.get<Company[]>('/company/list', { params })
 }
 
 /**
- * 根据ID获取公司详情
+ * 根据ID查询企业详情
  */
 export function getCompanyByIdApi(id: number) {
-  return request<Result<Company>>({
-    url: `/company/${id}`,
-    method: 'get'
-  })
+  return http.get<Company>(`/company/${id}`)
 }
 
 /**
- * 创建公司
+ * 新增企业
  */
 export function createCompanyApi(data: Company) {
-  return request<Result<void>>({
-    url: '/company',
-    method: 'post',
-    data
-  })
+  return http.post<void>('/company', data)
 }
 
 /**
- * 更新公司
+ * 更新企业
  */
 export function updateCompanyApi(data: Company) {
-  return request<Result<void>>({
-    url: '/company',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/company', data)
 }
 
 /**
- * 删除公司
+ * 删除企业
  */
 export function deleteCompanyApi(id: number) {
-  return request<Result<void>>({
-    url: `/company/${id}`,
-    method: 'delete'
-  })
+  return http.delete<void>(`/company/${id}`)
+}
+
+/**
+ * 企业认证审核
+ */
+export function verifyCompanyApi(id: number, data: { verifyStatus: string; rejectReason?: string }) {
+  return http.post<void>(`/company/${id}/verify`, data)
 }

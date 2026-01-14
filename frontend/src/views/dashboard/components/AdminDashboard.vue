@@ -652,12 +652,12 @@ onUnmounted(() => {
   padding: 20px;
 
   .welcome-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #1e293b;
     color: white;
     padding: 24px 32px;
     border-radius: 12px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
     h2 {
       margin: 0 0 8px 0;
@@ -718,41 +718,41 @@ onUnmounted(() => {
       }
 
       &.stat-card-blue .stat-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
         color: white;
       }
       &.stat-card-blue .stat-value {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
       &.stat-card-green .stat-icon {
-        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         color: white;
       }
       &.stat-card-green .stat-value {
-        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
       &.stat-card-purple .stat-icon {
-        background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
       }
       &.stat-card-purple .stat-value {
-        background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
       &.stat-card-orange .stat-icon {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
         color: white;
       }
       &.stat-card-orange .stat-value {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
