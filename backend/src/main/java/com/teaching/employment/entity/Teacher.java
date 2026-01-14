@@ -103,4 +103,16 @@ public class Teacher implements Serializable {
      */
     @TableField(exist = false)
     private String realName;
+
+    /**
+     * 手机号（来自用户表，用于显示和导出）
+     */
+    @TableField(exist = false)
+    private String phone;
+
+    /**
+     * 邮箱（来自用户表，用于显示和导出）
+     */
+    @TableField(exist = false)
+    private String email;
 }

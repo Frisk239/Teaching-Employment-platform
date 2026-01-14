@@ -11,9 +11,17 @@
           <el-icon><Plus /></el-icon>
           新增教师
         </el-button>
-        <el-button @click="handleExport">
+        <el-button type="success" @click="handleImport">
+          <el-icon><Upload /></el-icon>
+          Excel导入
+        </el-button>
+        <el-button type="info" @click="downloadTemplate">
           <el-icon><Download /></el-icon>
-          导出数据
+          下载模板
+        </el-button>
+        <el-button type="warning" @click="handleExport">
+          <el-icon><Download /></el-icon>
+          Excel导出
         </el-button>
       </div>
     </div>
@@ -24,7 +32,7 @@
         <el-col :span="6">
           <el-input
             v-model="searchForm.keyword"
-            placeholder="搜索工号、姓名、手机号..."
+            placeholder="搜索姓名..."
             :prefix-icon="Search"
             clearable
             @input="handleSearch"
@@ -438,6 +446,44 @@
         <el-button type="primary" @click="handleEditFromDetail">编辑</el-button>
       </template>
     </el-dialog>
+
+    <!-- Excel导入对话框 -->
+    <el-dialog v-model="importDialogVisible" title="Excel导入教师" width="600px">
+      <el-alert title="导入说明" type="info" :closable="false" style="margin-bottom: 16px">
+        <p>1. 请下载模板文件,按照模板格式填写教师信息</p>
+        <p>2. 支持.xlsx和.xls格式文件</p>
+        <p>3. 单次最多导入1000条数据</p>
+      </el-alert>
+
+      <el-button type="primary" @click="downloadTemplate" style="margin-bottom: 16px">
+        <el-icon><Download /></el-icon>
+        下载模板
+      </el-button>
+
+      <el-divider />
+
+      <el-upload
+        ref="uploadRef"
+        class="upload-demo"
+        drag
+        :auto-upload="false"
+        :on-change="handleFileChange"
+        :limit="1"
+        accept=".xlsx,.xls"
+      >
+        <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+        <div class="el-upload__text">
+          将文件拖到此处,或<em>点击上传</em>
+        </div>
+      </el-upload>
+
+      <template #footer>
+        <el-button @click="handleCancelImport">取消</el-button>
+        <el-button type="primary" @click="handleConfirmImport" :loading="importing" :disabled="!selectedFile">
+          开始导入
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -447,6 +493,7 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import {
   Plus,
   Download,
+  Upload,
   Search,
   List,
   Grid,
@@ -458,14 +505,19 @@ import {
   Edit,
   Delete,
   Check,
-  Phone
+  Phone,
+  UploadFilled
 } from '@element-plus/icons-vue'
 import {
   getTeacherPageApi,
   getTeacherByIdApi,
   createTeacherApi,
   updateTeacherApi,
-  deleteTeacherApi
+  deleteTeacherApi,
+  getTeacherStatsApi,
+  exportTeachersApi,
+  importTeachersApi,
+  downloadTeacherTemplateApi
 } from '@/api/teacher'
 import { getSchoolListApi } from '@/api/school'
 
@@ -507,6 +559,12 @@ const formRef = ref<FormInstance>()
 // 详情对话框
 const detailVisible = ref(false)
 const currentTeacher = ref<any>(null)
+
+// 导入对话框
+const importDialogVisible = ref(false)
+const uploadRef = ref()
+const selectedFile = ref<File | null>(null)
+const importing = ref(false)
 
 // 表单数据
 const formData = reactive({
@@ -574,13 +632,26 @@ const fetchData = async () => {
     tableData.value = response.records || []
     pagination.total = response.total || 0
 
-    // 更新统计
-    stats.total = pagination.total
+    // 获取统计数据
+    await fetchStats()
   } catch (error) {
     console.error('获取教师列表失败:', error)
     ElMessage.error('获取教师列表失败')
   } finally {
     loading.value = false
+  }
+}
+
+// 获取统计数据
+const fetchStats = async () => {
+  try {
+    const response = await getTeacherStatsApi()
+    stats.total = response.total
+    stats.schools = response.schools
+    stats.departments = response.departments
+    stats.courses = response.courses
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
   }
 }
 
@@ -695,8 +766,170 @@ const handleDialogClose = () => {
 }
 
 // 导出
-const handleExport = () => {
-  ElMessage.info('导出功能开发中')
+const handleExport = async () => {
+  try {
+    const response = await exportTeachersApi({
+      current: 1,
+      size: 10,
+      keyword: searchForm.keyword || '',
+      schoolId: searchForm.schoolId,
+      department: searchForm.department || ''
+    }) as any
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `教师数据_${new Date().getTime()}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败')
+  }
+}
+
+// 导入
+const handleImport = () => {
+  importDialogVisible.value = true
+}
+
+// 下载模板
+const downloadTemplate = async () => {
+  try {
+    const response = await downloadTeacherTemplateApi() as any
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `教师导入模板_${new Date().getTime()}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('模板下载成功')
+  } catch (error) {
+    console.error('下载模板失败:', error)
+    ElMessage.error('下载模板失败')
+  }
+}
+
+// 文件选择变化
+const handleFileChange = (file: any) => {
+  selectedFile.value = file.raw
+}
+
+// 取消导入
+const handleCancelImport = () => {
+  importDialogVisible.value = false
+  selectedFile.value = null
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles()
+  }
+}
+
+// 确认导入
+const handleConfirmImport = async () => {
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择要导入的文件')
+    return
+  }
+
+  importing.value = true
+
+  try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+    const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/teacher/import', {
+      method: 'POST',
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const responseData = await response.json()
+    console.log('导入响应:', responseData)
+
+    // 后端返回的是 { code: 200, data: "导入结果文本", message: "操作成功" }
+    const result = responseData.data || responseData.message || ''
+    console.log('导入结果:', result)
+
+    // 解析导入结果
+    const lines = result.split('\n').filter((line: string) => line.trim())
+    const summaryLine = lines[0] || ''
+    const errorLines = lines.slice(1).filter((line: string) => line.includes('第'))
+
+    // 提取成功和失败数量
+    const successMatch = summaryLine.match(/成功：(\d+)条/)
+    const failMatch = summaryLine.match(/失败：(\d+)条/)
+    const successCount = successMatch ? parseInt(successMatch[1]) : 0
+    const failCount = failMatch ? parseInt(failMatch[1]) : 0
+
+    // 格式化错误信息
+    const errorMessages = errorLines.map((line: string) => {
+      return line.replace(/第\d+行：/, '')
+    }).filter((msg: string) => msg.trim())
+
+    // 构建HTML格式的结果消息
+    let resultHtml = `<div style="text-align: left;">`
+
+    if (successCount > 0 || failCount > 0) {
+      resultHtml += `
+        <div style="margin-bottom: 15px;">
+          <h3 style="margin: 0 0 10px 0;">导入完成</h3>
+          <p style="margin: 5px 0; font-size: 14px;">
+            <span style="color: #67c23a; font-weight: bold;">成功：${successCount} 条</span>
+            ${failCount > 0 ? `<span style="color: #f56c6c; font-weight: bold; margin-left: 20px;">失败：${failCount} 条</span>` : ''}
+          </p>
+        </div>
+      `
+    }
+
+    if (errorMessages.length > 0) {
+      resultHtml += `
+        <div style="margin-top: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: #f56c6c;">失败原因：</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8;">
+            ${errorMessages.map((msg: string) => `<li>${msg}</li>`).join('')}
+          </ul>
+        </div>
+      `
+    }
+
+    resultHtml += `</div>`
+
+    ElMessageBox.alert(resultHtml, '导入结果', {
+      confirmButtonText: '确定',
+      dangerouslyUseHTMLString: true,
+      type: failCount > 0 ? 'warning' : 'success',
+      customClass: 'import-result-messagebox'
+    })
+
+    fetchData()
+    importDialogVisible.value = false
+  } catch (error) {
+    console.error('导入失败:', error)
+    ElMessage.error('导入失败,请检查文件格式是否正确')
+  } finally {
+    importing.value = false
+    if (uploadRef.value) {
+      uploadRef.value.clearFiles()
+    }
+    selectedFile.value = null
+  }
 }
 
 // 初始化
@@ -870,6 +1103,34 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+  }
+}
+
+:deep(.import-result-messagebox) {
+  .el-message-box__content {
+    padding: 20px 0;
+
+    .el-message-box__message {
+      p {
+        margin: 5px 0;
+      }
+
+      h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      h4 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      ul {
+        list-style: disc;
+      }
+    }
   }
 }
 </style>

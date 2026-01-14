@@ -891,22 +891,36 @@ onMounted(() => {
     }
   }
 }
-</style>
-    color: #8c939d;
-    width: 100px;
-    height: 100px;
-    text-align: center;
-    line-height: 100px;
-  }
 
-  .avatar {
-    width: 100px;
-    height: 100px;
-    display: block;
-  }
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
 
-  .upload-demo {
-    text-align: center;
+  &:hover {
+    border-color: #409eff;
   }
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+  line-height: 100px;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+
+.upload-demo {
+  text-align: center;
 }
 </style>

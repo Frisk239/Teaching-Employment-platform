@@ -10,7 +10,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +41,9 @@ public class TeacherController {
             @ApiParam("当前页") @RequestParam(defaultValue = "1") Integer current,
             @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size,
             @ApiParam("学校ID") @RequestParam(required = false) Long schoolId,
-            @ApiParam("关键词") @RequestParam(required = false) String keyword) {
-        IPage<Teacher> page = teacherService.getTeacherPage(current, size, schoolId, keyword);
+            @ApiParam("关键词") @RequestParam(required = false) String keyword,
+            @ApiParam("部门") @RequestParam(required = false) String department) {
+        IPage<Teacher> page = teacherService.getTeacherPage(current, size, schoolId, keyword, department);
         return Result.ok(page);
     }
 
@@ -54,12 +59,28 @@ public class TeacherController {
     }
 
     /**
+     * 获取教师统计数据
+     */
+    @GetMapping("/stats")
+    @ApiOperation("获取教师统计数据")
+    public Result<Map<String, Object>> getTeacherStatistics() {
+        Map<String, Object> stats = teacherService.getTeacherStatistics();
+        return Result.ok(stats);
+    }
+
+    /**
      * 根据ID查询教师
      */
     @GetMapping("/{id}")
     @ApiOperation("根据ID查询教师")
     public Result<Teacher> getTeacherById(@PathVariable Long id) {
         Teacher teacher = teacherService.getById(id);
+        if (teacher != null) {
+            // 填充关联数据(学校名称、用户姓名、手机号、邮箱)
+            List<Teacher> teachers = new ArrayList<>();
+            teachers.add(teacher);
+            teacherService.fillRelatedData(teachers);
+        }
         return Result.ok(teacher);
     }
 
@@ -111,5 +132,37 @@ public class TeacherController {
     public Result<List<Course>> getTeacherCourses(@PathVariable Long id) {
         List<Course> courses = teacherService.getTeacherCourses(id);
         return Result.ok(courses);
+    }
+
+    /**
+     * 导出教师数据
+     */
+    @GetMapping("/export")
+    @ApiOperation("Excel导出教师")
+    public void exportTeachers(HttpServletResponse response) throws IOException {
+        teacherService.exportTeachers(response);
+    }
+
+    /**
+     * 导入教师数据
+     */
+    @PostMapping("/import")
+    @ApiOperation("Excel导入教师")
+    public Result<String> importTeachers(@RequestParam("file") MultipartFile file) {
+        try {
+            String result = teacherService.importTeachers(file);
+            return Result.ok(result);
+        } catch (IOException e) {
+            return Result.error("导入失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 下载教师导入模板
+     */
+    @GetMapping("/template")
+    @ApiOperation("下载教师导入模板")
+    public void downloadTemplate(HttpServletResponse response) throws IOException {
+        teacherService.downloadTemplate(response);
     }
 }

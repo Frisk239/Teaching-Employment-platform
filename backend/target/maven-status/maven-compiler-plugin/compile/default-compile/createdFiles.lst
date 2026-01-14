@@ -79,6 +79,7 @@ com\teaching\employment\mapper\SchoolMapper.class
 com\teaching\employment\EmploymentPlatformApplication.class
 com\teaching\employment\entity\Course.class
 com\teaching\employment\service\QuestionService.class
+com\teaching\employment\utils\ExcelUtil$TeacherExportTemplate.class
 com\teaching\employment\service\impl\RoleServiceImpl.class
 com\teaching\employment\controller\FileUploadController.class
 com\teaching\employment\entity\RoleMenuRelation.class
@@ -90,6 +91,7 @@ com\teaching\employment\controller\ClassroomController.class
 com\teaching\employment\entity\School.class
 com\teaching\employment\service\RoleService.class
 com\teaching\employment\config\Knife4jConfig.class
+com\teaching\employment\utils\ExcelUtil$TeacherImportTemplate.class
 com\teaching\employment\mapper\StudentExamRecordMapper.class
 com\teaching\employment\service\CourseService.class
 com\teaching\employment\controller\StudentExamRecordController.class

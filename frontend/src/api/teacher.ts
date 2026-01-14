@@ -87,3 +87,47 @@ export function updateTeacherApi(data: Teacher) {
 export function deleteTeacherApi(id: number) {
   return http.delete<void>(`/teacher/${id}`)
 }
+
+/**
+ * 获取教师统计数据
+ */
+export function getTeacherStatsApi() {
+  return http.get<{
+    total: number
+    schools: number
+    departments: number
+    courses: number
+  }>('/teacher/stats')
+}
+
+/**
+ * 导出教师数据
+ */
+export function exportTeachersApi(params: TeacherPageParams) {
+  return http.get('/teacher/export', {
+    params,
+    responseType: 'blob'
+  })
+}
+
+/**
+ * 导入教师数据
+ */
+export function importTeachersApi(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return http.post<string>('/teacher/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+/**
+ * 下载教师导入模板
+ */
+export function downloadTeacherTemplateApi() {
+  return http.get('/teacher/template', {
+    responseType: 'blob'
+  })
+}
