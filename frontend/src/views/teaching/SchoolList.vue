@@ -1,48 +1,63 @@
 <template>
   <div class="school-list">
-    <el-card shadow="never">
+    <el-card shadow="never" class="search-card">
       <!-- 搜索表单 -->
       <el-form :model="searchForm" inline class="search-form">
         <el-form-item label="学校名称">
           <el-input
-            v-model="searchForm.name"
+            v-model="searchForm.schoolName"
             placeholder="请输入学校名称"
             clearable
             style="width: 200px"
           />
         </el-form-item>
-        <el-form-item label="地址">
+        <el-form-item label="省份">
           <el-input
-            v-model="searchForm.address"
-            placeholder="请输入地址"
+            v-model="searchForm.province"
+            placeholder="请输入省份"
             clearable
-            style="width: 200px"
+            style="width: 150px"
+          />
+        </el-form-item>
+        <el-form-item label="城市">
+          <el-input
+            v-model="searchForm.city"
+            placeholder="请输入城市"
+            clearable
+            style="width: 150px"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            查询
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
+    </el-card>
 
+    <!-- 数据表格卡片 -->
+    <el-card shadow="never" class="table-card">
       <!-- 操作按钮 -->
-      <div class="table-operations">
-        <el-button
-          v-permission="'teaching:school:add'"
-          type="primary"
-          @click="handleAdd"
-        >
-          <el-icon><Plus /></el-icon>
-          新增学校
-        </el-button>
-        <el-button
-          v-permission="'teaching:school:export'"
-          @click="handleExport"
-        >
-          <el-icon><Download /></el-icon>
-          导出
-        </el-button>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span class="title">学校列表</span>
+          <div class="operations">
+            <el-button type="primary" @click="handleAdd">
+              <el-icon><Plus /></el-icon>
+              新增学校
+            </el-button>
+            <el-button @click="handleExport">
+              <el-icon><Download /></el-icon>
+              导出
+            </el-button>
+          </div>
+        </div>
+      </template>
 
       <!-- 数据表格 -->
       <el-table
@@ -51,39 +66,44 @@
         border
         stripe
         style="width: 100%"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
       >
-        <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="name" label="学校名称" min-width="180" />
-        <el-table-column prop="code" label="学校代码" width="120" />
-        <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip />
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column prop="schoolName" label="学校名称" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="schoolCode" label="学校代码" width="120" />
+        <el-table-column prop="province" label="省份" width="100" />
+        <el-table-column prop="city" label="城市" width="100" />
+        <el-table-column prop="address" label="详细地址" min-width="200" show-overflow-tooltip />
         <el-table-column prop="contactPerson" label="联系人" width="120" />
         <el-table-column prop="contactPhone" label="联系电话" width="140" />
-        <el-table-column prop="establishmentDate" label="成立日期" width="120" />
+        <el-table-column prop="email" label="邮箱" width="180" show-overflow-tooltip />
+        <el-table-column label="许可证状态" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="!row.licenseExpiryDate" type="info">未设置</el-tag>
+            <el-tag v-else-if="isLicenseExpiringSoon(row.licenseExpiryDate)" type="warning">即将过期</el-tag>
+            <el-tag v-else-if="isLicenseExpired(row.licenseExpiryDate)" type="danger">已过期</el-tag>
+            <el-tag v-else type="success">正常</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '正常' : '禁用' }}
+              {{ row.status === 1 ? '正常' : '停用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button
-              v-permission="'teaching:school:edit'"
-              type="primary"
-              size="small"
-              link
-              @click="handleEdit(row)"
-            >
+            <el-button type="primary" size="small" link @click="handleView(row)">
+              <el-icon><View /></el-icon>
+              查看
+            </el-button>
+            <el-button type="primary" size="small" link @click="handleEdit(row)">
+              <el-icon><Edit /></el-icon>
               编辑
             </el-button>
-            <el-button
-              v-permission="'teaching:school:delete'"
-              type="danger"
-              size="small"
-              link
-              @click="handleDelete(row)"
-            >
+            <el-button type="danger" size="small" link @click="handleDelete(row)">
+              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>
@@ -91,81 +111,206 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
-        v-model:current-page="pagination.current"
-        v-model:page-size="pagination.size"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="pagination.total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="fetchData"
-        @current-change="fetchData"
-      />
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.size"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="fetchData"
+          @current-change="fetchData"
+        />
+      </div>
     </el-card>
 
     <!-- 新增/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="600px"
+      width="800px"
+      :close-on-click-modal="false"
       @close="handleDialogClose"
     >
       <el-form
         ref="formRef"
         :model="formData"
         :rules="formRules"
-        label-width="100px"
+        label-width="140px"
+        class="school-form"
       >
-        <el-form-item label="学校名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入学校名称" />
-        </el-form-item>
-        <el-form-item label="学校代码" prop="code">
-          <el-input v-model="formData.code" placeholder="请输入学校代码" />
-        </el-form-item>
-        <el-form-item label="地址" prop="address">
+        <el-divider content-position="left">基本信息</el-divider>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="学校名称" prop="schoolName">
+              <el-input v-model="formData.schoolName" placeholder="请输入学校名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="学校代码" prop="schoolCode">
+              <el-input v-model="formData.schoolCode" placeholder="请输入学校代码" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="省份" prop="province">
+              <el-input v-model="formData.province" placeholder="请输入省份" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="城市" prop="city">
+              <el-input v-model="formData.city" placeholder="请输入城市" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="状态" prop="status">
+              <el-radio-group v-model="formData.status">
+                <el-radio :label="1">正常</el-radio>
+                <el-radio :label="0">停用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="详细地址" prop="address">
           <el-input
             v-model="formData.address"
             type="textarea"
             :rows="2"
-            placeholder="请输入地址"
+            placeholder="请输入详细地址"
           />
         </el-form-item>
-        <el-form-item label="联系人" prop="contactPerson">
-          <el-input v-model="formData.contactPerson" placeholder="请输入联系人" />
+
+        <el-form-item label="学校官网" prop="website">
+          <el-input v-model="formData.website" placeholder="请输入学校官网网址">
+            <template #prepend>http://</template>
+          </el-input>
         </el-form-item>
-        <el-form-item label="联系电话" prop="contactPhone">
-          <el-input
-            v-model="formData.contactPhone"
-            placeholder="请输入联系电话"
-            maxlength="11"
-          />
-        </el-form-item>
-        <el-form-item label="成立日期" prop="establishmentDate">
-          <el-date-picker
-            v-model="formData.establishmentDate"
-            type="date"
-            placeholder="选择日期"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
-        </el-form-item>
+
+        <el-divider content-position="left">联系信息</el-divider>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="联系人" prop="contactPerson">
+              <el-input v-model="formData.contactPerson" placeholder="请输入联系人" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="联系电话" prop="contactPhone">
+              <el-input
+                v-model="formData.contactPhone"
+                placeholder="请输入联系电话"
+                maxlength="11"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="formData.email" placeholder="请输入邮箱" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-divider content-position="left">办学许可证</el-divider>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="许可证号" prop="licenseNumber">
+              <el-input v-model="formData.licenseNumber" placeholder="请输入办学许可证号" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="颁发日期" prop="licenseIssueDate">
+              <el-date-picker
+                v-model="formData.licenseIssueDate"
+                type="date"
+                placeholder="选择颁发日期"
+                value-format="YYYY-MM-DD"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="有效期至" prop="licenseExpiryDate">
+              <el-date-picker
+                v-model="formData.licenseExpiryDate"
+                type="date"
+                placeholder="选择有效期"
+                value-format="YYYY-MM-DD"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="许可证图片" prop="licenseImageUrl">
+              <el-upload
+                class="license-upload"
+                action="#"
+                :show-file-list="false"
+                :before-upload="handleLicenseUpload"
+              >
+                <el-button size="small">
+                  <el-icon><Upload /></el-icon>
+                  上传许可证
+                </el-button>
+              </el-upload>
+              <div v-if="formData.licenseImageUrl" class="license-preview">
+                <el-link :href="formData.licenseImageUrl" target="_blank" type="primary">
+                  查看许可证
+                </el-link>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-divider content-position="left">学校简介</el-divider>
         <el-form-item label="简介" prop="description">
           <el-input
             v-model="formData.description"
             type="textarea"
-            :rows="3"
+            :rows="4"
             placeholder="请输入学校简介"
           />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="formData.status">
-            <el-radio :label="1">正常</el-radio>
-            <el-radio :label="0">禁用</el-radio>
-          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 查看详情对话框 -->
+    <el-dialog v-model="viewDialogVisible" title="学校详情" width="700px">
+      <el-descriptions v-if="viewData" :column="2" border>
+        <el-descriptions-item label="学校名称">{{ viewData.schoolName }}</el-descriptions-item>
+        <el-descriptions-item label="学校代码">{{ viewData.schoolCode }}</el-descriptions-item>
+        <el-descriptions-item label="省份">{{ viewData.province }}</el-descriptions-item>
+        <el-descriptions-item label="城市">{{ viewData.city }}</el-descriptions-item>
+        <el-descriptions-item label="详细地址" :span="2">{{ viewData.address }}</el-descriptions-item>
+        <el-descriptions-item label="学校官网" :span="2">
+          <el-link v-if="viewData.website" :href="viewData.website" target="_blank" type="primary">
+            {{ viewData.website }}
+          </el-link>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="联系人">{{ viewData.contactPerson }}</el-descriptions-item>
+        <el-descriptions-item label="联系电话">{{ viewData.contactPhone }}</el-descriptions-item>
+        <el-descriptions-item label="邮箱" :span="2">{{ viewData.email }}</el-descriptions-item>
+        <el-descriptions-item label="办学许可证号">{{ viewData.licenseNumber || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="许可证有效期">{{ viewData.licenseExpiryDate || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="viewData.status === 1 ? 'success' : 'danger'">
+            {{ viewData.status === 1 ? '正常' : '停用' }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ viewData.createTime }}</el-descriptions-item>
+        <el-descriptions-item label="学校简介" :span="2">{{ viewData.description || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button type="primary" @click="viewDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
@@ -174,13 +319,30 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { Plus, Download } from '@element-plus/icons-vue'
-import { getSchoolPageApi, getSchoolByIdApi, createSchoolApi, updateSchoolApi, deleteSchoolApi } from '@/api/school'
+import {
+  Search,
+  Refresh,
+  Plus,
+  Download,
+  View,
+  Edit,
+  Delete,
+  Upload
+} from '@element-plus/icons-vue'
+import {
+  getSchoolPageApi,
+  getSchoolByIdApi,
+  createSchoolApi,
+  updateSchoolApi,
+  deleteSchoolApi
+} from '@/api/school'
+import type { School } from '@/api/school'
 
 // 搜索表单
 const searchForm = reactive({
-  name: '',
-  address: ''
+  schoolName: '',
+  province: '',
+  city: ''
 })
 
 // 分页
@@ -192,47 +354,72 @@ const pagination = reactive({
 
 // 表格数据
 const loading = ref(false)
-const tableData = ref([])
+const tableData = ref<School[]>([])
 
 // 对话框
 const dialogVisible = ref(false)
 const dialogTitle = computed(() => (formData.id ? '编辑学校' : '新增学校'))
 const formRef = ref<FormInstance>()
-const formData = reactive({
+const formData = reactive<Partial<School>>({
   id: undefined,
-  name: '',
-  code: '',
+  schoolName: '',
+  schoolCode: '',
+  licenseNumber: '',
+  licenseIssueDate: '',
+  licenseExpiryDate: '',
+  licenseImageUrl: '',
+  province: '',
+  city: '',
   address: '',
+  website: '',
   contactPerson: '',
   contactPhone: '',
-  establishmentDate: '',
+  email: '',
   description: '',
   status: 1
 })
 
+// 查看详情
+const viewDialogVisible = ref(false)
+const viewData = ref<School | null>(null)
+
 // 表单验证规则
 const formRules: FormRules = {
-  name: [
+  schoolName: [
     { required: true, message: '请输入学校名称', trigger: 'blur' },
-    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+    { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' }
   ],
-  code: [
+  schoolCode: [
     { required: true, message: '请输入学校代码', trigger: 'blur' },
     { pattern: /^[A-Z0-9]+$/, message: '学校代码只能包含大写字母和数字', trigger: 'blur' }
   ],
-  address: [
-    { required: true, message: '请输入地址', trigger: 'blur' }
-  ],
-  contactPerson: [
-    { required: true, message: '请输入联系人', trigger: 'blur' }
-  ],
+  province: [{ required: true, message: '请输入省份', trigger: 'blur' }],
+  city: [{ required: true, message: '请输入城市', trigger: 'blur' }],
+  address: [{ required: true, message: '请输入详细地址', trigger: 'blur' }],
+  contactPerson: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
   contactPhone: [
     { required: true, message: '请输入联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
   ],
-  establishmentDate: [
-    { required: true, message: '请选择成立日期', trigger: 'change' }
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
   ]
+}
+
+// 判断许可证是否即将过期(30天内)
+const isLicenseExpiringSoon = (expiryDate: string) => {
+  if (!expiryDate) return false
+  const expiry = new Date(expiryDate)
+  const now = new Date()
+  const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return daysUntilExpiry > 0 && daysUntilExpiry <= 30
+}
+
+// 判断许可证是否已过期
+const isLicenseExpired = (expiryDate: string) => {
+  if (!expiryDate) return false
+  return new Date(expiryDate) < new Date()
 }
 
 // 获取学校列表
@@ -242,16 +429,13 @@ const fetchData = async () => {
     const params = {
       current: pagination.current,
       size: pagination.size,
-      name: searchForm.name || undefined,
-      address: searchForm.address || undefined
+      schoolName: searchForm.schoolName || undefined,
+      province: searchForm.province || undefined,
+      city: searchForm.city || undefined
     }
-    const response = await getSchoolPageApi(params)
-    if (response.code === 200) {
-      tableData.value = response.data.records
-      pagination.total = response.data.total
-    } else {
-      ElMessage.error(response.message || '获取学校列表失败')
-    }
+    const data = await getSchoolPageApi(params)
+    tableData.value = data.records
+    pagination.total = data.total
   } catch (error) {
     console.error('获取学校列表失败:', error)
     ElMessage.error('获取学校列表失败')
@@ -268,8 +452,9 @@ const handleSearch = () => {
 
 // 重置
 const handleReset = () => {
-  searchForm.name = ''
-  searchForm.address = ''
+  searchForm.schoolName = ''
+  searchForm.province = ''
+  searchForm.city = ''
   pagination.current = 1
   fetchData()
 }
@@ -278,12 +463,19 @@ const handleReset = () => {
 const handleAdd = () => {
   Object.assign(formData, {
     id: undefined,
-    name: '',
-    code: '',
+    schoolName: '',
+    schoolCode: '',
+    licenseNumber: '',
+    licenseIssueDate: '',
+    licenseExpiryDate: '',
+    licenseImageUrl: '',
+    province: '',
+    city: '',
     address: '',
+    website: '',
     contactPerson: '',
     contactPhone: '',
-    establishmentDate: '',
+    email: '',
     description: '',
     status: 1
   })
@@ -291,15 +483,23 @@ const handleAdd = () => {
 }
 
 // 编辑
-const handleEdit = async (row: any) => {
+const handleEdit = async (row: School) => {
   try {
-    const response = await getSchoolByIdApi(row.id)
-    if (response.code === 200) {
-      Object.assign(formData, response.data)
-      dialogVisible.value = true
-    } else {
-      ElMessage.error(response.message || '获取学校信息失败')
-    }
+    const data = await getSchoolByIdApi(row.id!)
+    Object.assign(formData, data)
+    dialogVisible.value = true
+  } catch (error) {
+    console.error('获取学校信息失败:', error)
+    ElMessage.error('获取学校信息失败')
+  }
+}
+
+// 查看
+const handleView = async (row: School) => {
+  try {
+    const data = await getSchoolByIdApi(row.id!)
+    viewData.value = data
+    viewDialogVisible.value = true
   } catch (error) {
     console.error('获取学校信息失败:', error)
     ElMessage.error('获取学校信息失败')
@@ -307,7 +507,7 @@ const handleEdit = async (row: any) => {
 }
 
 // 删除
-const handleDelete = (row: any) => {
+const handleDelete = (row: School) => {
   ElMessageBox.confirm('确定要删除该学校吗？删除后不可恢复！', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -315,13 +515,9 @@ const handleDelete = (row: any) => {
   })
     .then(async () => {
       try {
-        const response = await deleteSchoolApi(row.id)
-        if (response.code === 200) {
-          ElMessage.success('删除成功')
-          fetchData()
-        } else {
-          ElMessage.error(response.message || '删除失败')
-        }
+        await deleteSchoolApi(row.id!)
+        ElMessage.success('删除成功')
+        fetchData()
       } catch (error) {
         console.error('删除失败:', error)
         ElMessage.error('删除失败')
@@ -337,14 +533,10 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         const api = formData.id ? updateSchoolApi : createSchoolApi
-        const response = await api(formData)
-        if (response.code === 200) {
-          ElMessage.success(formData.id ? '更新成功' : '新增成功')
-          dialogVisible.value = false
-          fetchData()
-        } else {
-          ElMessage.error(response.message || '操作失败')
-        }
+        await api(formData as School)
+        ElMessage.success(formData.id ? '更新成功' : '新增成功')
+        dialogVisible.value = false
+        fetchData()
       } catch (error) {
         console.error('操作失败:', error)
         ElMessage.error('操作失败')
@@ -356,6 +548,13 @@ const handleSubmit = async () => {
 // 关闭对话框
 const handleDialogClose = () => {
   formRef.value?.resetFields()
+}
+
+// 许可证上传
+const handleLicenseUpload = () => {
+  // TODO: 实现文件上传逻辑
+  ElMessage.info('文件上传功能待实现')
+  return false
 }
 
 // 导出
@@ -373,17 +572,53 @@ onMounted(() => {
 .school-list {
   padding: 20px;
 
-  .search-form {
+  .search-card {
     margin-bottom: 20px;
+
+    .search-form {
+      margin-bottom: 0;
+    }
   }
 
-  .table-operations {
-    margin-bottom: 20px;
+  .table-card {
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .operations {
+        display: flex;
+        gap: 10px;
+      }
+    }
+
+    .pagination-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 
-  :deep(.el-pagination) {
-    margin-top: 20px;
-    justify-content: flex-end;
+  .school-form {
+    :deep(.el-divider) {
+      margin: 20px 0;
+    }
+
+    .license-upload {
+      :deep(.el-upload) {
+        display: block;
+      }
+    }
+
+    .license-preview {
+      margin-top: 10px;
+    }
   }
 }
 </style>

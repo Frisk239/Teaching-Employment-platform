@@ -1,15 +1,22 @@
-import request from '@/utils/request'
-import type { Result, IPage } from './types'
+import { http } from '@/utils/request'
+import type { IPage } from './types'
 
 // 学校接口类型定义
 export interface School {
   id?: number
-  name: string
-  code: string
+  schoolName?: string
+  schoolCode?: string
+  licenseNumber?: string
+  licenseIssueDate?: string
+  licenseExpiryDate?: string
+  licenseImageUrl?: string
+  province?: string
+  city?: string
   address?: string
+  website?: string
   contactPerson?: string
   contactPhone?: string
-  establishmentDate?: string
+  email?: string
   description?: string
   status?: number
   createTime?: string
@@ -20,69 +27,49 @@ export interface School {
 export interface SchoolPageParams {
   current: number
   size: number
-  name?: string
-  address?: string
+  schoolName?: string
+  province?: string
+  city?: string
 }
 
 /**
  * 获取学校分页列表
  */
 export function getSchoolPageApi(params: SchoolPageParams) {
-  return request<Result<IPage<School>>>({
-    url: '/school/page',
-    method: 'get',
-    params
-  })
+  return http.get<IPage<School>>('/school/page', { params })
 }
 
 /**
  * 获取所有学校列表
  */
 export function getSchoolListApi() {
-  return request<Result<School[]>>({
-    url: '/school/list',
-    method: 'get'
-  })
+  return http.get<School[]>('/school/list')
 }
 
 /**
  * 根据ID获取学校详情
  */
 export function getSchoolByIdApi(id: number) {
-  return request<Result<School>>({
-    url: `/school/${id}`,
-    method: 'get'
-  })
+  return http.get<School>(`/school/${id}`)
 }
 
 /**
  * 创建学校
  */
 export function createSchoolApi(data: School) {
-  return request<Result<void>>({
-    url: '/school',
-    method: 'post',
-    data
-  })
+  return http.post<void>('/school', data)
 }
 
 /**
  * 更新学校
  */
 export function updateSchoolApi(data: School) {
-  return request<Result<void>>({
-    url: '/school',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/school', data)
 }
 
 /**
  * 删除学校
  */
 export function deleteSchoolApi(id: number) {
-  return request<Result<void>>({
-    url: `/school/${id}`,
-    method: 'delete'
-  })
+  return http.delete<void>(`/school/${id}`)
 }

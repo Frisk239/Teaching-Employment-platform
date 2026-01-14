@@ -32,9 +32,11 @@ public class SchoolController {
     @ApiOperation("分页查询学校列表")
     public Result<IPage<School>> getSchoolPage(
             @ApiParam("当前页") @RequestParam(defaultValue = "1") Integer current,
-            @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size) {
-        Page<School> page = new Page<>(current, size);
-        IPage<School> result = schoolService.page(page);
+            @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size,
+            @ApiParam("学校名称") @RequestParam(required = false) String schoolName,
+            @ApiParam("省份") @RequestParam(required = false) String province,
+            @ApiParam("城市") @RequestParam(required = false) String city) {
+        IPage<School> result = schoolService.getSchoolPage(current, size, schoolName, province, city);
         return Result.ok(result);
     }
 
