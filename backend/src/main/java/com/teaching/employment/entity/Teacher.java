@@ -93,6 +93,12 @@ public class Teacher implements Serializable {
     private School school;
 
     /**
+     * 学校名称（关联查询时使用，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private String schoolName;
+
+    /**
      * 真实姓名（来自用户表）
      */
     @TableField(exist = false)

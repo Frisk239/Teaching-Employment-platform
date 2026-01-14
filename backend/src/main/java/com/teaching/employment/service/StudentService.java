@@ -44,6 +44,13 @@ public interface StudentService extends IService<Student> {
     void downloadTemplate(HttpServletResponse response) throws IOException;
 
     /**
+     * Excel导出学员
+     *
+     * @param response HTTP响应
+     */
+    void exportStudents(HttpServletResponse response) throws IOException;
+
+    /**
      * 根据学号查询学员
      *
      * @param studentNo 学号

@@ -615,19 +615,22 @@ const handleImportError = () => {
 // 导出
 const handleExport = async () => {
   try {
-    // 后端会导出所有学员数据，不需要传递参数
-    const response = await exportStudentsApi({}) as any
-    // response.data 才是实际的 Blob 数据
-    const blob = new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
+    const params = {
+      current: 1,
+      size: 10000,
+      keyword: searchForm.keyword || undefined,
+      schoolId: searchForm.schoolId,
+      grade: searchForm.grade || undefined,
+      major: searchForm.major || undefined,
+      status: searchForm.status
+    }
+    const response = await exportStudentsApi(params)
+    const blob = new Blob([response])
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `学员数据_${new Date().getTime()}.xlsx`
-    document.body.appendChild(link)
+    link.download = `学生列表_${new Date().getTime()}.xlsx`
     link.click()
-    document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     ElMessage.success('导出成功')
   } catch (error) {

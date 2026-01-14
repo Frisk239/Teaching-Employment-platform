@@ -149,4 +149,68 @@ public class ExcelUtil {
 
         export(response, "学员导入模板", data, StudentImportTemplate.class);
     }
+
+    /**
+     * 学员导出Excel模板类
+     */
+    @Data
+    @ContentRowHeight(20)
+    @HeadRowHeight(30)
+    @ColumnWidth(20)
+    public static class StudentExportTemplate {
+
+        @ExcelProperty(value = "学号", index = 0)
+        private String studentNo;
+
+        @ExcelProperty(value = "姓名", index = 1)
+        private String realName;
+
+        @ExcelProperty(value = "性别", index = 2)
+        private String gender;
+
+        @ExcelProperty(value = "出生日期", index = 3)
+        private String birthDate;
+
+        @ExcelProperty(value = "身份证号", index = 4)
+        private String idCard;
+
+        @ExcelProperty(value = "手机号", index = 5)
+        private String phone;
+
+        @ExcelProperty(value = "邮箱", index = 6)
+        private String email;
+
+        @ExcelProperty(value = "学校", index = 7)
+        private String schoolName;
+
+        @ExcelProperty(value = "班级", index = 8)
+        private String className;
+
+        @ExcelProperty(value = "专业", index = 9)
+        private String major;
+
+        @ExcelProperty(value = "年级", index = 10)
+        private String grade;
+
+        @ExcelProperty(value = "家庭地址", index = 11)
+        private String address;
+
+        @ExcelProperty(value = "入学日期", index = 12)
+        private String enrollmentDate;
+
+        @ExcelProperty(value = "毕业日期", index = 13)
+        private String graduationDate;
+
+        @ExcelProperty(value = "政治面貌", index = 14)
+        private String politicalStatus;
+
+        @ExcelProperty(value = "民族", index = 15)
+        private String nation;
+
+        @ExcelProperty(value = "监护人姓名", index = 16)
+        private String guardianName;
+
+        @ExcelProperty(value = "监护人电话", index = 17)
+        private String guardianPhone;
+    }
 }

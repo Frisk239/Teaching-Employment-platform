@@ -136,6 +136,7 @@ com\teaching\employment\entity\Offer.class
 com\teaching\employment\entity\HomeworkSubmission.class
 com\teaching\employment\entity\Menu.class
 com\teaching\employment\exception\GlobalExceptionHandler.class
+com\teaching\employment\utils\ExcelUtil$StudentExportTemplate.class
 com\teaching\employment\controller\PositionController.class
 com\teaching\employment\service\SchoolService.class
 com\teaching\employment\utils\PasswordUtil.class

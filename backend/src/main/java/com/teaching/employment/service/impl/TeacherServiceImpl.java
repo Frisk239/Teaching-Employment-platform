@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.Course;
+import com.teaching.employment.entity.School;
 import com.teaching.employment.entity.Teacher;
 import com.teaching.employment.entity.User;
 import com.teaching.employment.mapper.CourseMapper;
 import com.teaching.employment.mapper.TeacherMapper;
 import com.teaching.employment.mapper.UserMapper;
+import com.teaching.employment.service.SchoolService;
 import com.teaching.employment.service.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
     private final TeacherMapper teacherMapper;
     private final CourseMapper courseMapper;
     private final UserMapper userMapper;
+    private final SchoolService schoolService;
 
     @Override
     public List<Teacher> listByIds(Collection<? extends Serializable> idList) {
@@ -44,22 +47,8 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
             return teachers;
         }
 
-        // 填充realName字段(从User表获取)
-        List<Long> userIds = teachers.stream()
-                .map(Teacher::getUserId)
-                .distinct()
-                .collect(Collectors.toList());
-
-        if (!userIds.isEmpty()) {
-            List<User> users = userMapper.selectBatchIds(userIds);
-            Map<Long, String> userMap = users.stream()
-                    .collect(Collectors.toMap(User::getId, User::getRealName));
-
-            teachers.forEach(teacher -> {
-                String realName = userMap.get(teacher.getUserId());
-                teacher.setRealName(realName);
-            });
-        }
+        // 填充学校名称和用户姓名
+        fillRelatedData(teachers);
 
         return teachers;
     }
@@ -80,26 +69,57 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
         wrapper.orderByDesc(Teacher::getCreateTime);
         IPage<Teacher> result = teacherMapper.selectPage(page, wrapper);
 
-        // 填充realName字段(从User表获取)
-        if (result.getRecords() != null && !result.getRecords().isEmpty()) {
-            List<Long> userIds = result.getRecords().stream()
-                    .map(Teacher::getUserId)
-                    .distinct()
-                    .collect(Collectors.toList());
-
-            if (!userIds.isEmpty()) {
-                List<User> users = userMapper.selectBatchIds(userIds);
-                Map<Long, String> userMap = users.stream()
-                        .collect(Collectors.toMap(User::getId, User::getRealName));
-
-                result.getRecords().forEach(teacher -> {
-                    String realName = userMap.get(teacher.getUserId());
-                    teacher.setRealName(realName);
-                });
-            }
-        }
+        // 填充学校名称和用户姓名
+        fillRelatedData(result.getRecords());
 
         return result;
+    }
+
+    /**
+     * 填充教师的关联数据(学校名称、用户姓名)
+     */
+    private void fillRelatedData(List<Teacher> teachers) {
+        if (teachers == null || teachers.isEmpty()) {
+            return;
+        }
+
+        // 收集所有需要查询的学校ID
+        List<Long> schoolIds = teachers.stream()
+                .map(Teacher::getSchoolId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 收集所有需要查询的用户ID
+        List<Long> userIds = teachers.stream()
+                .map(Teacher::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 批量查询学校信息
+        final java.util.Map<Long, String> schoolMap;
+        if (!schoolIds.isEmpty()) {
+            List<School> schools = schoolService.listByIds(schoolIds);
+            schoolMap = schools.stream()
+                    .collect(Collectors.toMap(School::getId, School::getSchoolName));
+        } else {
+            schoolMap = java.util.Map.of();
+        }
+
+        // 批量查询用户信息
+        final java.util.Map<Long, String> userMap;
+        if (!userIds.isEmpty()) {
+            List<User> users = userMapper.selectBatchIds(userIds);
+            userMap = users.stream()
+                    .collect(Collectors.toMap(User::getId, User::getRealName));
+        } else {
+            userMap = java.util.Map.of();
+        }
+
+        // 填充数据到教师对象
+        teachers.forEach(teacher -> {
+            teacher.setSchoolName(schoolMap.get(teacher.getSchoolId()));
+            teacher.setRealName(userMap.get(teacher.getUserId()));
+        });
     }
 
     @Override
@@ -111,24 +131,8 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
         wrapper.orderByDesc(Teacher::getCreateTime);
         List<Teacher> list = teacherMapper.selectList(wrapper);
 
-        // 填充realName字段(从User表获取)
-        if (list != null && !list.isEmpty()) {
-            List<Long> userIds = list.stream()
-                    .map(Teacher::getUserId)
-                    .distinct()
-                    .collect(Collectors.toList());
-
-            if (!userIds.isEmpty()) {
-                List<User> users = userMapper.selectBatchIds(userIds);
-                Map<Long, String> userMap = users.stream()
-                        .collect(Collectors.toMap(User::getId, User::getRealName));
-
-                list.forEach(teacher -> {
-                    String realName = userMap.get(teacher.getUserId());
-                    teacher.setRealName(realName);
-                });
-            }
-        }
+        // 填充学校名称和用户姓名
+        fillRelatedData(list);
 
         return list;
     }

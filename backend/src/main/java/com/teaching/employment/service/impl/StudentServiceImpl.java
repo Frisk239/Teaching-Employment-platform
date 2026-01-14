@@ -265,4 +265,45 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
         return student;
     }
+
+    @Override
+    public void exportStudents(HttpServletResponse response) throws IOException {
+        // 查询所有学员
+        LambdaQueryWrapper<Student> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Student::getCreateTime);
+        List<Student> students = studentMapper.selectList(wrapper);
+
+        // 填充关联数据(学校名称和真实姓名)
+        fillRelatedData(students);
+
+        // 转换为导出模板格式
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<ExcelUtil.StudentExportTemplate> exportData = new ArrayList<>();
+
+        for (Student student : students) {
+            ExcelUtil.StudentExportTemplate template = new ExcelUtil.StudentExportTemplate();
+            template.setStudentNo(student.getStudentNo());
+            template.setRealName(student.getRealName());
+            template.setGender(student.getGender() == 1 ? "男" : student.getGender() == 2 ? "女" : "");
+            template.setBirthDate(student.getBirthDate() != null ? student.getBirthDate().format(dateFormatter) : "");
+            template.setIdCard(student.getIdCard());
+            template.setPhone(student.getPhone());
+            template.setEmail(student.getEmail());
+            template.setSchoolName(student.getSchoolName());
+            template.setClassName(student.getClassName());
+            template.setMajor(student.getMajor());
+            template.setGrade(student.getGrade());
+            template.setAddress(student.getAddress());
+            template.setEnrollmentDate(student.getEnrollmentDate() != null ? student.getEnrollmentDate().format(dateFormatter) : "");
+            template.setGraduationDate(student.getGraduationDate() != null ? student.getGraduationDate().format(dateFormatter) : "");
+            template.setPoliticalStatus(student.getPoliticalStatus());
+            template.setNation(student.getNation());
+            template.setGuardianName(student.getGuardianName());
+            template.setGuardianPhone(student.getGuardianPhone());
+            exportData.add(template);
+        }
+
+        // 导出到Excel
+        ExcelUtil.export(response, "学员数据", exportData, ExcelUtil.StudentExportTemplate.class);
+    }
 }

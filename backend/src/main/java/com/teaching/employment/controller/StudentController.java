@@ -114,4 +114,13 @@ public class StudentController {
     public void downloadTemplate(HttpServletResponse response) throws IOException {
         studentService.downloadTemplate(response);
     }
+
+    /**
+     * Excel导出学员
+     */
+    @GetMapping("/export")
+    @ApiOperation("Excel导出学员")
+    public void exportStudents(HttpServletResponse response) throws IOException {
+        studentService.exportStudents(response);
+    }
 }
