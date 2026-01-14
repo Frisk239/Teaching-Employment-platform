@@ -83,6 +83,15 @@ export function importStudentsApi(file: File) {
 }
 
 /**
+ * 下载学生导入模板
+ */
+export function downloadStudentTemplateApi() {
+  return http.get('/student/template', {
+    responseType: 'blob'
+  })
+}
+
+/**
  * Excel导出学生
  */
 export function exportStudentsApi(params: StudentPageParams) {

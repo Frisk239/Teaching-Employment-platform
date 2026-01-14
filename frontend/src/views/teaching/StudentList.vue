@@ -79,6 +79,14 @@
         </el-button>
         <el-button
           v-permission="'teaching:student:export'"
+          type="info"
+          @click="downloadTemplate"
+        >
+          <el-icon><Download /></el-icon>
+          下载模板
+        </el-button>
+        <el-button
+          v-permission="'teaching:student:export'"
           type="warning"
           @click="handleExport"
         >
@@ -277,17 +285,21 @@
         <p>3. 单次最多导入1000条数据</p>
       </el-alert>
 
-      <el-button type="primary" @click="downloadTemplate">下载模板</el-button>
+      <el-button type="primary" @click="downloadTemplate" style="margin-bottom: 20px">
+        <el-icon><Download /></el-icon>
+        下载模板
+      </el-button>
 
       <el-divider />
 
       <el-upload
+        ref="uploadRef"
         class="upload-demo"
         drag
-        :action="uploadAction"
-        :on-success="handleImportSuccess"
-        :on-error="handleImportError"
+        :auto-upload="false"
+        :on-change="handleFileChange"
         :before-upload="beforeImport"
+        :limit="1"
         accept=".xlsx,.xls"
       >
         <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
@@ -302,7 +314,15 @@
       </el-upload>
 
       <template #footer>
-        <el-button @click="importDialogVisible = false">关闭</el-button>
+        <el-button @click="handleCancelImport">取消</el-button>
+        <el-button
+          type="primary"
+          @click="handleConfirmImport"
+          :loading="importing"
+          :disabled="!selectedFile"
+        >
+          开始导入
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -312,7 +332,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, Download, Upload, UserFilled, UploadFilled } from '@element-plus/icons-vue'
-import { getStudentPageApi, getStudentByIdApi, createStudentApi, updateStudentApi, deleteStudentApi, exportStudentsApi } from '@/api/student'
+import { getStudentPageApi, getStudentByIdApi, createStudentApi, updateStudentApi, deleteStudentApi, exportStudentsApi, downloadStudentTemplateApi } from '@/api/student'
 import { getSchoolListApi } from '@/api/school'
 
 // 搜索表单
@@ -360,9 +380,26 @@ const formData = reactive({
 // 导入对话框
 const importDialogVisible = ref(false)
 
+// 上传组件引用
+const uploadRef = ref()
+
+// 选中的文件
+const selectedFile = ref<File | null>(null)
+
+// 导入中状态
+const importing = ref(false)
+
 // 上传地址
 const uploadAction = computed(() => {
   return import.meta.env.VITE_API_BASE_URL + '/student/import'
+})
+
+// 上传请求头(包含token)
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+  return {
+    Authorization: token ? `Bearer ${token}` : ''
+  }
 })
 
 // 表单验证规则
@@ -571,11 +608,141 @@ const beforeAvatarUpload = (file: File) => {
 // 导入
 const handleImport = () => {
   importDialogVisible.value = true
+  selectedFile.value = null
+  importing.value = false
+}
+
+// 文件选择变化
+const handleFileChange = (file: any) => {
+  selectedFile.value = file.raw
+}
+
+// 取消导入
+const handleCancelImport = () => {
+  importDialogVisible.value = false
+  selectedFile.value = null
+  importing.value = false
+  // 清空上传文件列表
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles()
+  }
+}
+
+// 确认导入
+const handleConfirmImport = async () => {
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择要导入的文件')
+    return
+  }
+
+  importing.value = true
+
+  try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+    const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/student/import', {
+      method: 'POST',
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      body: formData
+    })
+
+    const result = await response.text()
+
+    // 解析导入结果
+    const lines = result.split('\n').filter(line => line.trim())
+    const summaryLine = lines[0] || ''
+    const errorLines = lines.slice(1).filter(line => line.includes('第'))
+
+    // 提取成功和失败数量
+    const successMatch = summaryLine.match(/成功：(\d+)条/)
+    const failMatch = summaryLine.match(/失败：(\d+)条/)
+    const successCount = successMatch ? parseInt(successMatch[1]) : 0
+    const failCount = failMatch ? parseInt(failMatch[1]) : 0
+
+    // 格式化错误信息
+    const errorMessages = errorLines.map(line => {
+      // 移除"第X行："前缀,只保留实际错误信息
+      return line.replace(/第\d+行：/, '')
+    }).filter(msg => msg.trim())
+
+    // 构建HTML格式的结果消息
+    let resultHtml = `<div style="text-align: left;">`
+
+    // 添加汇总信息
+    if (successCount > 0 || failCount > 0) {
+      resultHtml += `
+        <div style="margin-bottom: 15px;">
+          <h3 style="margin: 0 0 10px 0;">导入完成</h3>
+          <p style="margin: 5px 0; font-size: 14px;">
+            <span style="color: #67c23a; font-weight: bold;">成功：${successCount} 条</span>
+            ${failCount > 0 ? `<span style="color: #f56c6c; font-weight: bold; margin-left: 20px;">失败：${failCount} 条</span>` : ''}
+          </p>
+        </div>
+      `
+    }
+
+    // 添加错误详情
+    if (errorMessages.length > 0) {
+      resultHtml += `
+        <div style="margin-top: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: #f56c6c;">失败原因：</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8;">
+            ${errorMessages.map(msg => `<li>${msg}</li>`).join('')}
+          </ul>
+        </div>
+      `
+    }
+
+    resultHtml += `</div>`
+
+    // 显示导入结果
+    ElMessageBox.alert(resultHtml, '导入结果', {
+      confirmButtonText: '确定',
+      dangerouslyUseHTMLString: true,
+      type: failCount > 0 ? 'warning' : 'success',
+      customClass: 'import-result-messagebox'
+    })
+
+    // 刷新数据并关闭对话框
+    fetchData()
+    importDialogVisible.value = false
+  } catch (error) {
+    console.error('导入失败:', error)
+    ElMessage.error('导入失败,请检查文件格式是否正确')
+  } finally {
+    importing.value = false
+    // 清空上传文件列表
+    if (uploadRef.value) {
+      uploadRef.value.clearFiles()
+    }
+    selectedFile.value = null
+  }
 }
 
 // 下载模板
-const downloadTemplate = () => {
-  ElMessage.info('模板下载功能开发中...')
+const downloadTemplate = async () => {
+  try {
+    const response = await downloadStudentTemplateApi() as any
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = '学员导入模板.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('模板下载成功')
+  } catch (error) {
+    console.error('下载模板失败:', error)
+    ElMessage.error('模板下载失败')
+  }
 }
 
 // 导入前验证
@@ -597,14 +764,18 @@ const beforeImport = (file: File) => {
 
 // 导入成功
 const handleImportSuccess = (response: any) => {
-  if (response.code === 200) {
-    const { successCount, failCount } = response.data
-    ElMessage.success(`导入完成! 成功: ${successCount}条, 失败: ${failCount}条`)
-    importDialogVisible.value = false
-    fetchData()
-  } else {
-    ElMessage.error(response.message || '导入失败')
-  }
+  // 后端返回的是纯文本,不是JSON
+  console.log('导入响应:', response)
+
+  // 显示导入结果
+  ElMessageBox.alert(response, '导入结果', {
+    confirmButtonText: '确定',
+    type: response.includes('失败') ? 'warning' : 'success'
+  })
+
+  // 刷新数据并关闭对话框
+  fetchData()
+  importDialogVisible.value = false
 }
 
 // 导入失败
@@ -616,7 +787,15 @@ const handleImportError = () => {
 const handleExport = async () => {
   try {
     // 后端会导出所有学员数据，不需要传递参数
-    const response = await exportStudentsApi({}) as any
+    const response = await exportStudentsApi({
+      current: 1,
+      size: 10,
+      keyword: '',
+      schoolId: undefined,
+      grade: '',
+      major: '',
+      status: undefined
+    }) as any
     // response.data 才是实际的 Blob 数据
     const blob = new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -677,6 +856,42 @@ onMounted(() => {
 
   .avatar-uploader-icon {
     font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    text-align: center;
+  }
+}
+
+// 导入结果弹窗样式
+:deep(.import-result-messagebox) {
+  .el-message-box__content {
+    padding: 20px 0;
+
+    .el-message-box__message {
+      p {
+        margin: 5px 0;
+      }
+
+      h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      h4 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      ul {
+        list-style: disc;
+      }
+    }
+  }
+}
+</style>
     color: #8c939d;
     width: 100px;
     height: 100px;
