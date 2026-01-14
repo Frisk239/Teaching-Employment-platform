@@ -35,8 +35,8 @@ request.interceptors.request.use(
     // 显示进度条
     NProgress.start()
 
-    // 获取 token
-    const token = localStorage.getItem('token')
+    // 获取 token - 优先从 localStorage 读取,其次从 sessionStorage 读取
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }

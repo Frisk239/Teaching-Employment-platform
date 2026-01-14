@@ -263,7 +263,7 @@ const handleLogin = async () => {
     if (valid) {
       const success = await authStore.login(loginForm)
       if (success) {
-        const redirect = (route.query.redirect as string) || '/'
+        const redirect = (route.query.redirect as string) || '/dashboard'
         router.push(redirect)
       }
     }

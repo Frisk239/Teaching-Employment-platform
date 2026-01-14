@@ -133,6 +133,7 @@ const handleUserCommand = async (command: string) => {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
+          customClass: 'logout-confirm-dialog',
         })
         await authStore.logout()
         ElMessage.success('已退出登录')
@@ -258,5 +259,20 @@ const handleUserCommand = async (command: string) => {
 .fade-leave-to {
   opacity: 0;
   transform: translateX(10px);
+}
+</style>
+
+<style lang="scss">
+// 全局样式：确保退出登录弹窗始终显示在最上层
+.logout-confirm-dialog {
+  z-index: 9999 !important;
+
+  .el-message-box {
+    z-index: 9999 !important;
+  }
+
+  .el-overlay {
+    z-index: 9998 !important;
+  }
 }
 </style>

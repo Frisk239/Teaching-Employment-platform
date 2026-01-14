@@ -42,12 +42,12 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       const data = await authApi.login(form)
 
+      // 确定使用哪个存储
+      const storage = form.remember ? localStorage : sessionStorage
+
       // 保存 token 和用户信息
       if (data.token) {
         token.value = data.token
-        // 如果勾选了"记住我",使用localStorage持久化
-        // 否则使用sessionStorage(关闭浏览器即清除)
-        const storage = form.remember ? localStorage : sessionStorage
         storage.setItem('token', data.token)
       }
 
@@ -58,7 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
           ...data.user,
           roleCode: data.roleCode || data.user.roleCode
         }
-        const storage = form.remember ? localStorage : sessionStorage
         storage.setItem('user', JSON.stringify(user.value))
       }
 
@@ -161,14 +160,17 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         console.log('开始验证token...')
         // 调用API验证token并获取最新用户信息
-        const { user: userData, roleCode } = await authApi.getCurrentUser()
+        const response = await authApi.getCurrentUser()
+        const { user: userData, roleCode } = response
         console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode)
 
-        // 保存用户信息,包含roleCode
+        // 保存用户信息,确保roleCode不被userData覆盖
+        // 优先使用API返回的顶层roleCode，如果不存在则使用userData.roleCode
         user.value = {
           ...userData,
-          roleCode
+          roleCode: roleCode || userData.roleCode
         }
+        console.log('合并后的user.value:', user.value)
 
         // 保存到当前使用的存储中
         const storage = localStorage.getItem('token') ? localStorage : sessionStorage
@@ -197,7 +199,7 @@ export const useAuthStore = defineStore('auth', () => {
       const { user: userData, roleCode } = await authApi.getCurrentUser()
       user.value = {
         ...userData,
-        roleCode
+        roleCode: roleCode || userData.roleCode
       }
       localStorage.setItem('user', JSON.stringify(user.value))
       return user.value
