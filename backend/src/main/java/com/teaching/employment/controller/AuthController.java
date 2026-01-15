@@ -1,7 +1,10 @@
 package com.teaching.employment.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teaching.employment.common.Result;
+import com.teaching.employment.entity.Student;
 import com.teaching.employment.entity.User;
+import com.teaching.employment.service.StudentService;
 import com.teaching.employment.service.UserService;
 import com.teaching.employment.utils.JwtUtil;
 import io.swagger.annotations.Api;
@@ -28,6 +31,7 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final StudentService studentService;
 
     /**
      * 用户登录
@@ -50,6 +54,16 @@ public class AuthController {
             data.put("token", token);
             data.put("user", user);
             data.put("roleCode", user.getRoleCode());
+
+            // 如果是学员角色,查询并返回studentId
+            if (user.getRoleId() == 4) {
+                Student student = studentService.getOne(
+                    new LambdaQueryWrapper<Student>().eq(Student::getUserId, user.getId())
+                );
+                if (student != null) {
+                    data.put("studentId", student.getId());
+                }
+            }
 
             return Result.ok("登录成功", data);
         } catch (Exception e) {
@@ -108,6 +122,16 @@ public class AuthController {
             Map<String, Object> data = new HashMap<>();
             data.put("user", user);
             data.put("roleCode", roleCode);
+
+            // 如果是学员角色,查询并返回studentId
+            if (user.getRoleId() == 4) {
+                Student student = studentService.getOne(
+                    new LambdaQueryWrapper<Student>().eq(Student::getUserId, user.getId())
+                );
+                if (student != null) {
+                    data.put("studentId", student.getId());
+                }
+            }
 
             return Result.ok(data);
         } catch (Exception e) {

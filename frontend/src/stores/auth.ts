@@ -51,12 +51,13 @@ export const useAuthStore = defineStore('auth', () => {
         storage.setItem('token', data.token)
       }
 
-      // data 包含 { token, user, roleCode }
-      // 我们需要保存 user 对象,并确保包含 roleCode
+      // data 包含 { token, user, roleCode, studentId }
+      // 我们需要保存 user 对象,并确保包含 roleCode 和 studentId
       if (data.user) {
         user.value = {
           ...data.user,
-          roleCode: data.roleCode || data.user.roleCode
+          roleCode: data.roleCode || data.user.roleCode,
+          studentId: data.studentId  // 保存学员ID
         }
         storage.setItem('user', JSON.stringify(user.value))
       }
@@ -161,14 +162,15 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('开始验证token...')
         // 调用API验证token并获取最新用户信息
         const response = await authApi.getCurrentUser()
-        const { user: userData, roleCode } = response
-        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode)
+        const { user: userData, roleCode, studentId } = response
+        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode, 'studentId:', studentId)
 
-        // 保存用户信息,确保roleCode不被userData覆盖
-        // 优先使用API返回的顶层roleCode，如果不存在则使用userData.roleCode
+        // 保存用户信息,确保roleCode和studentId不被覆盖
+        // 优先使用API返回的顶层roleCode和studentId
         user.value = {
           ...userData,
-          roleCode: roleCode || userData.roleCode
+          roleCode: roleCode || userData.roleCode,
+          studentId: studentId
         }
         console.log('合并后的user.value:', user.value)
 
@@ -196,10 +198,11 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const getCurrentUser = async (): Promise<User | null> => {
     try {
-      const { user: userData, roleCode } = await authApi.getCurrentUser()
+      const { user: userData, roleCode, studentId } = await authApi.getCurrentUser()
       user.value = {
         ...userData,
-        roleCode: roleCode || userData.roleCode
+        roleCode: roleCode || userData.roleCode,
+        studentId: studentId
       }
       localStorage.setItem('user', JSON.stringify(user.value))
       return user.value

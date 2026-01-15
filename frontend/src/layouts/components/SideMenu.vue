@@ -349,6 +349,39 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
+  // 我的作业
+  {
+    id: 24,
+    name: '我的作业',
+    path: '/teaching/assignments',
+    icon: DocumentAdd,
+    parentId: 7,
+    sort: 6,
+    status: '1',
+    type: '2',
+  },
+  // 我的Offer
+  {
+    id: 25,
+    name: '我的Offer',
+    path: '/employment/offers',
+    icon: Checked,
+    parentId: 16,
+    sort: 8,
+    status: '1',
+    type: '2',
+  },
+  // 个人中心
+  {
+    id: 26,
+    name: '个人中心',
+    path: '/profile',
+    icon: User,
+    parentId: 0,
+    sort: 5,
+    status: '1',
+    type: '2',
+  },
 ]
 
 // 角色菜单权限配置
@@ -409,13 +442,15 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/dashboard',
     '/teaching',
     '/teaching/courses',
-    '/teaching/homework-grading',
+    '/teaching/assignments',
     '/teaching/daily-reports',
     '/employment',
     '/employment/positions',
     '/employment/applications',
     '/employment/written-tests',
     '/employment/interviews',
+    '/employment/offers',
+    '/profile',
   ],
   enterprise_contact: [
     '/dashboard',

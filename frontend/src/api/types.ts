@@ -24,6 +24,7 @@ export interface User {
   token?: string
   permissions?: string[]
   schoolId?: number
+  studentId?: number  // 学员ID,仅当用户角色为学员时有值
   status?: number
   createTime?: string
   updateTime?: string

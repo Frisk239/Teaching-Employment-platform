@@ -144,7 +144,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         List<CourseStudent> courseStudents = courseStudentService.getCoursesByStudentId(studentId);
         return courseStudents.stream()
                 .map(cs -> courseMapper.selectById(cs.getCourseId()))
-                .filter(course -> course != null && course.getIsDeleted() == 0)
+                .filter(course -> course != null)  // MyBatis Plus的@TableLogic会自动过滤已删除记录
                 .collect(java.util.stream.Collectors.toList());
     }
 

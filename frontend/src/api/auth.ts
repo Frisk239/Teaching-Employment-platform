@@ -4,12 +4,20 @@
 import request, { http } from '@/utils/request'
 import type { LoginForm, RegisterForm, User, Result } from './types'
 
+// 登录响应类型
+export interface LoginResponse {
+  token: string
+  user: User
+  roleCode: string
+  studentId?: number  // 学员ID,仅学员角色有此字段
+}
+
 export const authApi = {
   /**
    * 用户登录
    */
   login: (data: LoginForm) => {
-    return http.post<User>('/auth/login', data)
+    return http.post<LoginResponse>('/auth/login', data)
   },
 
   /**
@@ -32,7 +40,7 @@ export const authApi = {
    * 获取当前用户信息
    */
   getCurrentUser: () => {
-    return http.get<{ user: User; roleCode: string }>('/auth/current')
+    return http.get<{ user: User; roleCode: string; studentId?: number }>('/auth/current')
   },
 
   /**

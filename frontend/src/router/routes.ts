@@ -209,6 +209,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head', 'teacher', 'user'],
             },
           },
+          // 我的作业（学员专用）
+          {
+            path: '/teaching/assignments',
+            name: 'TeachingAssignments',
+            component: () => import('@/views/teaching/Assignments.vue'),
+            meta: {
+              title: '我的作业',
+              icon: 'DocumentAdd',
+              roles: ['user'],
+            },
+          },
         ],
       },
 
@@ -287,6 +298,17 @@ export const routes: RouteRecordRaw[] = [
               title: '面试管理',
               icon: 'ChatDotRound',
               roles: ['admin', 'college_head', 'enterprise_contact', 'user'],
+            },
+          },
+          // 我的Offer（学员专用）
+          {
+            path: '/employment/offers',
+            name: 'EmploymentOffers',
+            component: () => import('@/views/employment/MyOffers.vue'),
+            meta: {
+              title: '我的Offer',
+              icon: 'Checked',
+              roles: ['user'],
             },
           },
         ],

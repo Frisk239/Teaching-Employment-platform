@@ -58,7 +58,7 @@ public class StudentDashboardController {
                 .count();
 
         // 作业统计
-        com.baomidou.mybatisplus.core.metadata.IPage<Homework> homeworkPage = homeworkService.getHomeworkByStudentId(null, null, studentId);
+        com.baomidou.mybatisplus.core.metadata.IPage<Homework> homeworkPage = homeworkService.getHomeworkByStudentId(1, Integer.MAX_VALUE, studentId);
         long pendingHomework = homeworkPage.getRecords().stream()
                 .filter(h -> "published".equals(h.getStatus()))
                 .count();
