@@ -57,6 +57,9 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public Map<String, Object> getPositionTypeDistribution() {
         Map<String, Object> result = new HashMap<>();
@@ -197,42 +200,38 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public Map<String, Object> getMonthlyTrend(Integer months) {
         Map<String, Object> result = new HashMap<>();
-        List<String> labels = new ArrayList<>();
-        List<Integer> employedData = new ArrayList<>();
-        List<Integer> seekingData = new ArrayList<>();
+        List<String> monthsList = new ArrayList<>();
+        List<Integer> applicationsData = new ArrayList<>();
+        List<Integer> offersData = new ArrayList<>();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
         LocalDate now = LocalDate.now();
 
-        // 获取所有学生总数
-        long totalStudents = studentService.count();
-
         for (int i = months - 1; i >= 0; i--) {
             YearMonth yearMonth = YearMonth.now().minusMonths(i);
             String monthLabel = yearMonth.format(DateTimeFormatter.ofPattern("M月"));
-            labels.add(monthLabel);
+            monthsList.add(monthLabel);
 
             String monthStr = yearMonth.format(formatter);
 
-            // 获取该月已就业的学生数(有已接受的Offer且创建时间在该月)
-            LambdaQueryWrapper<Offer> employedWrapper = new LambdaQueryWrapper<>();
-            employedWrapper.eq(Offer::getStatus, "accepted");
-            employedWrapper.apply("DATE_FORMAT(create_time, '%Y-%m') = {0}", monthStr);
-            long employedCount = offerService.count(employedWrapper);
+            // 获取该月的职位申请数(在该月创建的申请)
+            LambdaQueryWrapper<JobApplication> applicationWrapper = new LambdaQueryWrapper<>();
+            applicationWrapper.apply("DATE_FORMAT(create_time, '%Y-%m') = {0}", monthStr);
+            long applicationCount = jobApplicationService.count(applicationWrapper);
 
-            // 获取该月仍在求职的学生数(有pending申请且在该月创建或更新)
-            LambdaQueryWrapper<JobApplication> seekingWrapper = new LambdaQueryWrapper<>();
-            seekingWrapper.eq(JobApplication::getStatus, "pending");
-            seekingWrapper.apply("DATE_FORMAT(create_time, '%Y-%m') = {0}", monthStr);
-            long seekingCount = jobApplicationService.count(seekingWrapper);
+            // 获取该月已发送的Offer数(已接受的Offer且创建时间在该月)
+            LambdaQueryWrapper<Offer> offerWrapper = new LambdaQueryWrapper<>();
+            offerWrapper.eq(Offer::getStatus, "accepted");
+            offerWrapper.apply("DATE_FORMAT(create_time, '%Y-%m') = {0}", monthStr);
+            long offerCount = offerService.count(offerWrapper);
 
-            employedData.add((int) employedCount);
-            seekingData.add((int) seekingCount);
+            applicationsData.add((int) applicationCount);
+            offersData.add((int) offerCount);
         }
 
-        result.put("labels", labels);
-        result.put("employed", employedData);
-        result.put("seeking", seekingData);
+        result.put("months", monthsList);
+        result.put("applications", applicationsData);
+        result.put("offers", offersData);
 
         return result;
     }
@@ -366,6 +365,189 @@ public class StatisticsServiceImpl implements StatisticsService {
             Long countB = (Long) b.get("positionCount");
             return countB.compareTo(countA);
         });
+
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getPositionStats() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // 获取所有职位
+        List<Position> positions = positionService.list();
+
+        for (Position position : positions) {
+            Map<String, Object> positionData = new HashMap<>();
+            positionData.put("id", position.getId());
+            positionData.put("name", position.getPositionName());
+
+            // 统计该职位的申请数
+            LambdaQueryWrapper<JobApplication> applicationWrapper = new LambdaQueryWrapper<>();
+            applicationWrapper.eq(JobApplication::getPositionId, position.getId());
+            long applicationCount = jobApplicationService.count(applicationWrapper);
+            positionData.put("applicationCount", applicationCount);
+
+            result.add(positionData);
+        }
+
+        // 按申请数降序排序
+        result.sort((a, b) -> {
+            Long countA = (Long) a.get("applicationCount");
+            Long countB = (Long) b.get("applicationCount");
+            return countB.compareTo(countA);
+        });
+
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getFunnelData() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // 1. 总申请数
+        long totalApplications = jobApplicationService.count();
+        Map<String, Object> step1 = new HashMap<>();
+        step1.put("name", "简历投递");
+        step1.put("value", totalApplications);
+        result.add(step1);
+
+        // 2. 筛选通过数(screened)
+        long screened = jobApplicationService.lambdaQuery()
+                .eq(JobApplication::getStatus, "screened")
+                .count()
+                + jobApplicationService.lambdaQuery()
+                .eq(JobApplication::getStatus, "test_passed")
+                .count()
+                + jobApplicationService.lambdaQuery()
+                .eq(JobApplication::getStatus, "interview_passed")
+                .count();
+        Map<String, Object> step2 = new HashMap<>();
+        step2.put("name", "筛选通过");
+        step2.put("value", screened);
+        result.add(step2);
+
+        // 3. 参加笔试数
+        long writtenTests = jobApplicationService.lambdaQuery()
+                .in(JobApplication::getStatus, "test_passed", "test_failed", "interview_passed", "interview_failed", "offered")
+                .count();
+        Map<String, Object> step3 = new HashMap<>();
+        step3.put("name", "参加笔试");
+        step3.put("value", writtenTests);
+        result.add(step3);
+
+        // 4. 进入面试数
+        long interviews = jobApplicationService.lambdaQuery()
+                .in(JobApplication::getStatus, "interview_passed", "interview_failed", "offered")
+                .count();
+        Map<String, Object> step4 = new HashMap<>();
+        step4.put("name", "进入面试");
+        step4.put("value", interviews);
+        result.add(step4);
+
+        // 5. 收到Offer数
+        long offers = offerService.lambdaQuery()
+                .eq(Offer::getStatus, "accepted")
+                .count();
+        Map<String, Object> step5 = new HashMap<>();
+        step5.put("name", "收到Offer");
+        step5.put("value", offers);
+        result.add(step5);
+
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopPositions(Integer limit) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // 获取所有职位
+        List<Position> positions = positionService.list();
+
+        for (Position position : positions) {
+            Map<String, Object> positionData = new HashMap<>();
+            positionData.put("name", position.getPositionName());
+
+            // 统计该职位的申请数
+            LambdaQueryWrapper<JobApplication> applicationWrapper = new LambdaQueryWrapper<>();
+            applicationWrapper.eq(JobApplication::getPositionId, position.getId());
+            long applicationCount = jobApplicationService.count(applicationWrapper);
+            positionData.put("value", applicationCount);
+
+            result.add(positionData);
+        }
+
+        // 按申请数降序排序并取前N名
+        result.sort((a, b) -> {
+            Long countA = (Long) a.get("value");
+            Long countB = (Long) b.get("value");
+            return countB.compareTo(countA);
+        });
+
+        return result.stream().limit(limit).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Map<String, Object>> getStatusDistribution() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // 统计各种状态的申请数
+        String[] statuses = {"pending", "screened", "test_passed", "test_failed",
+                             "interview_passed", "interview_failed", "offered", "rejected"};
+        String[] labels = {"待处理", "已筛选", "笔试通过", "笔试失败",
+                           "面试通过", "面试失败", "已录用", "已拒绝"};
+
+        for (int i = 0; i < statuses.length; i++) {
+            String status = statuses[i];
+            long count = jobApplicationService.lambdaQuery()
+                    .eq(JobApplication::getStatus, status)
+                    .count();
+
+            Map<String, Object> statusData = new HashMap<>();
+            statusData.put("name", labels[i]);
+            statusData.put("value", count);
+            result.add(statusData);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getOverview() {
+        Map<String, Object> result = new HashMap<>();
+
+        // 总用户数
+        long totalUsers = userService.count();
+
+        // 总学生数
+        long totalStudents = studentService.count();
+
+        // 总企业数
+        long totalCompanies = companyService.count();
+
+        // 总职位数
+        long totalPositions = positionService.count();
+
+        // 总申请数
+        long totalApplications = jobApplicationService.count();
+
+        // 计算就业率
+        long employedStudents = totalStudents > 0 ? offerService.lambdaQuery()
+                .eq(Offer::getStatus, "accepted")
+                .count() : 0;
+
+        double employmentRate = totalStudents > 0
+                ? new BigDecimal(employedStudents)
+                        .divide(new BigDecimal(totalStudents), 4, RoundingMode.HALF_UP)
+                        .multiply(new BigDecimal(100))
+                        .doubleValue()
+                : 0.0;
+
+        result.put("totalUsers", totalUsers);
+        result.put("totalStudents", totalStudents);
+        result.put("totalCompanies", totalCompanies);
+        result.put("totalPositions", totalPositions);
+        result.put("totalApplications", totalApplications);
+        result.put("employmentRate", employmentRate);
 
         return result;
     }

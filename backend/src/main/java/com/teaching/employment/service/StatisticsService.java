@@ -70,4 +70,40 @@ public interface StatisticsService {
      * @return 企业统计列表
      */
     List<Map<String, Object>> getCompanyStats();
+
+    /**
+     * 获取职位统计数据
+     *
+     * @return 职位统计列表
+     */
+    List<Map<String, Object>> getPositionStats();
+
+    /**
+     * 获取招聘漏斗数据
+     *
+     * @return 漏斗数据列表
+     */
+    List<Map<String, Object>> getFunnelData();
+
+    /**
+     * 获取热门职位
+     *
+     * @param limit 返回前N名
+     * @return 热门职位列表
+     */
+    List<Map<String, Object>> getTopPositions(Integer limit);
+
+    /**
+     * 获取状态分布数据
+     *
+     * @return 状态分布列表
+     */
+    List<Map<String, Object>> getStatusDistribution();
+
+    /**
+     * 获取概览统计数据
+     *
+     * @return 概览数据
+     */
+    Map<String, Object> getOverview();
 }

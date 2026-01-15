@@ -289,17 +289,6 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head', 'enterprise_contact', 'user'],
             },
           },
-          // 统计（管理员、学院负责人、企业对接人）
-          {
-            path: '/employment/statistics',
-            name: 'EmploymentStatistics',
-            component: () => import('@/views/employment/Statistics.vue'),
-            meta: {
-              title: '统计',
-              icon: 'DataAnalysis',
-              roles: ['admin', 'college_head', 'enterprise_contact'],
-            },
-          },
         ],
       },
 

@@ -168,17 +168,6 @@ public class StatisticsController {
     }
 
     /**
-     * 获取月度就业趋势数据
-     */
-    @GetMapping("/monthly-trend")
-    @ApiOperation("获取月度就业趋势数据")
-    public Result<Map<String, Object>> getMonthlyTrend(
-            @ApiParam("返回最近N个月") @RequestParam(required = false, defaultValue = "6") Integer months) {
-        Map<String, Object> data = statisticsService.getMonthlyTrend(months);
-        return Result.ok(data);
-    }
-
-    /**
      * 获取就业状态分布数据
      */
     @GetMapping("/employment-status-distribution")
@@ -249,5 +238,42 @@ public class StatisticsController {
     public Result<List<Map<String, Object>>> getCompanyStats() {
         List<Map<String, Object>> data = statisticsService.getCompanyStats();
         return Result.ok(data);
+    }
+
+    /**
+     * 获取职位统计数据
+     */
+    @GetMapping("/position-stats")
+    @ApiOperation("获取职位统计数据")
+    public Result<List<Map<String, Object>>> getPositionStats() {
+        List<Map<String, Object>> data = statisticsService.getPositionStats();
+        return Result.ok(data);
+    }
+
+    /**
+     * 获取招聘漏斗数据
+     */
+    @GetMapping("/funnel-data")
+    @ApiOperation("获取招聘漏斗数据")
+    public Result<?> getFunnelData() {
+        return Result.ok(statisticsService.getFunnelData());
+    }
+
+    /**
+     * 获取热门职位
+     */
+    @GetMapping("/top-positions")
+    @ApiOperation("获取热门职位")
+    public Result<?> getTopPositions(@RequestParam(defaultValue = "10") Integer limit) {
+        return Result.ok(statisticsService.getTopPositions(limit));
+    }
+
+    /**
+     * 获取状态分布数据
+     */
+    @GetMapping("/status-distribution")
+    @ApiOperation("获取状态分布数据")
+    public Result<?> getStatusDistribution() {
+        return Result.ok(statisticsService.getStatusDistribution());
     }
 }

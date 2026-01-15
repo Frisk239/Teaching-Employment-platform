@@ -13,15 +13,6 @@ export const statisticsApi = {
   },
 
   /**
-   * 获取月度就业趋势数据
-   */
-  getMonthlyTrend: (months = 6) => {
-    return http.get<any>('/statistics/monthly-trend', {
-      params: { months },
-    })
-  },
-
-  /**
    * 获取就业状态分布数据
    */
   getEmploymentStatusDistribution: () => {
@@ -74,5 +65,28 @@ export const statisticsApi = {
     return http.get<any>('/statistics/company-ranking', {
       params: { limit },
     })
+  },
+
+  /**
+   * 获取招聘漏斗数据
+   */
+  getFunnelData: () => {
+    return http.get<any>('/statistics/funnel-data')
+  },
+
+  /**
+   * 获取热门职位
+   */
+  getTopPositions: (limit = 10) => {
+    return http.get<any>('/statistics/top-positions', {
+      params: { limit },
+    })
+  },
+
+  /**
+   * 获取状态分布数据
+   */
+  getStatusDistribution: () => {
+    return http.get<any>('/statistics/status-distribution')
   },
 }
