@@ -111,10 +111,16 @@ public class StudentDashboardController {
     @GetMapping("/courses/{studentId}")
     @ApiOperation("获取我的课程列表")
     public Result<List<Map<String, Object>>> getMyCourses(@PathVariable Long studentId) {
-        List<Course> courses = courseService.getCoursesByStudentId(studentId);
+        // 获取学员的课程关联记录(包含进度信息)
+        List<CourseStudent> courseStudents = courseStudentService.getCoursesByStudentId(studentId);
 
-        List<Map<String, Object>> result = courses.stream()
-                .map(course -> {
+        List<Map<String, Object>> result = courseStudents.stream()
+                .map(cs -> {
+                    Course course = courseService.getById(cs.getCourseId());
+                    if (course == null) {
+                        return null;
+                    }
+
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", course.getId());
                     map.put("name", course.getCourseName());
@@ -130,8 +136,8 @@ public class StudentDashboardController {
                         // TODO: 可以关联查询教师名称
                     }
 
-                    // 计算课程进度（基于课时）
-                    map.put("progress", 75); // TODO: 根据实际课时完成情况计算
+                    // 从CourseStudent表获取实际进度
+                    map.put("progress", cs.getProgress() != null ? cs.getProgress() : 0);
 
                     // 统计课程作业
                     long homeworkCount = homeworkService.lambdaQuery()
@@ -141,6 +147,7 @@ public class StudentDashboardController {
 
                     return map;
                 })
+                .filter(m -> m != null)
                 .collect(Collectors.toList());
 
         return Result.ok(result);
@@ -155,19 +162,46 @@ public class StudentDashboardController {
             @PathVariable Long courseId,
             @PathVariable Long studentId) {
 
-        Course course = courseService.getById(courseId);
+        // 使用getCourseWithDetails获取包含关联信息的课程对象
+        Course course = courseService.getCourseWithDetails(courseId);
         if (course == null) {
             return Result.error("课程不存在");
         }
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", course.getId());
-        data.put("name", course.getCourseName());
-        data.put("code", course.getCourseCode());
+        // 兼容前端期望的字段名
+        data.put("courseName", course.getCourseName());
+        data.put("name", course.getCourseName());  // 同时保留name字段
+        data.put("courseCode", course.getCourseCode());
+        data.put("code", course.getCourseCode());  // 同时保留code字段
         data.put("type", course.getCourseType());
         data.put("credit", course.getCredit());
         data.put("totalHours", course.getTotalHours());
         data.put("description", course.getDescription());
+        data.put("startDate", course.getStartDate());
+        data.put("endDate", course.getEndDate());
+        data.put("maxStudents", course.getMaxStudents());
+        data.put("currentStudents", course.getCurrentStudents());
+        data.put("status", course.getStatus());
+
+        // 从Course对象的关联字段获取教师、学校、教室名称
+        data.put("teacherName", course.getTeacherName() != null ? course.getTeacherName() : "-");
+        data.put("schoolName", course.getSchoolName() != null ? course.getSchoolName() : "-");
+        data.put("classroomName", course.getClassroomName() != null ? course.getClassroomName() : "-");
+
+        // 从CourseStudent表获取学员的学习进度
+        CourseStudent courseStudent = courseStudentService.lambdaQuery()
+                .eq(CourseStudent::getCourseId, courseId)
+                .eq(CourseStudent::getStudentId, studentId)
+                .one();
+
+        if (courseStudent != null) {
+            data.put("progress", courseStudent.getProgress() != null ? courseStudent.getProgress() : 0);
+            data.put("enrollmentDate", courseStudent.getEnrollmentDate());
+        } else {
+            data.put("progress", 0);
+        }
 
         // 获取课程的作业列表
         List<Homework> homeworks = homeworkService.lambdaQuery()

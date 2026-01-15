@@ -220,6 +220,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
+          // 我的课程（学员专用）
+          {
+            path: '/teaching/my-courses',
+            name: 'TeachingMyCourses',
+            component: () => import('@/views/course/MyCourses.vue'),
+            meta: {
+              title: '我的课程',
+              icon: 'Reading',
+              roles: ['user'],
+            },
+          },
         ],
       },
 

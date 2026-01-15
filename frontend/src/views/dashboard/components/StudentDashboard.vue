@@ -127,7 +127,7 @@
                 <el-icon><Reading /></el-icon>
                 <span class="card-title">我的课程</span>
               </div>
-              <el-button type="primary" size="small" text @click="$router.push('/teaching/courses')">
+              <el-button type="primary" size="small" text @click="$router.push('/teaching/my-courses')">
                 查看全部
               </el-button>
             </div>

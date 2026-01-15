@@ -356,7 +356,18 @@ const allMenus: MenuItem[] = [
     path: '/teaching/assignments',
     icon: DocumentAdd,
     parentId: 7,
-    sort: 6,
+    sort: 9,
+    status: '1',
+    type: '2',
+  },
+  // 我的课程（学员专用）
+  {
+    id: 27,
+    name: '我的课程',
+    path: '/teaching/my-courses',
+    icon: Collection,
+    parentId: 7,
+    sort: 10,
     status: '1',
     type: '2',
   },
@@ -441,7 +452,7 @@ const roleMenuPermissions: Record<string, string[]> = {
   user: [
     '/dashboard',
     '/teaching',
-    '/teaching/courses',
+    '/teaching/my-courses',
     '/teaching/assignments',
     '/teaching/daily-reports',
     '/employment',
