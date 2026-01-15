@@ -5,12 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.teaching.employment.entity.JobApplication;
-import com.teaching.employment.entity.WrittenTest;
+import com.teaching.employment.entity.*;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.WrittenTestMapper;
-import com.teaching.employment.service.JobApplicationService;
-import com.teaching.employment.service.WrittenTestService;
+import com.teaching.employment.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +26,9 @@ public class WrittenTestServiceImpl extends ServiceImpl<WrittenTestMapper, Writt
 
     private final WrittenTestMapper writtenTestMapper;
     private final JobApplicationService jobApplicationService;
+    private final PositionService positionService;
+    private final StudentService studentService;
+    private final UserService userService;
 
     @Override
     public IPage<WrittenTest> getWrittenTestPage(Integer current, Integer size, Long applicationId, Long positionId,
@@ -50,7 +51,12 @@ public class WrittenTestServiceImpl extends ServiceImpl<WrittenTestMapper, Writt
 
         wrapper.orderByDesc(WrittenTest::getCreateTime);
 
-        return writtenTestMapper.selectPage(page, wrapper);
+        IPage<WrittenTest> resultPage = writtenTestMapper.selectPage(page, wrapper);
+
+        // 填充关联字段信息
+        resultPage.getRecords().forEach(this::fillWrittenTestDetails);
+
+        return resultPage;
     }
 
     @Override
@@ -186,5 +192,35 @@ public class WrittenTestServiceImpl extends ServiceImpl<WrittenTestMapper, Writt
         }
 
         return result;
+    }
+
+    /**
+     * 填充笔试的关联数据
+     */
+    private WrittenTest fillWrittenTestDetails(WrittenTest test) {
+        if (test == null) {
+            return null;
+        }
+
+        // 填充学生姓名
+        if (test.getStudentId() != null) {
+            Student student = studentService.getById(test.getStudentId());
+            if (student != null && student.getUserId() != null) {
+                User user = userService.getById(student.getUserId());
+                if (user != null && user.getRealName() != null) {
+                    test.setStudentName(user.getRealName());
+                }
+            }
+        }
+
+        // 填充职位名称
+        if (test.getPositionId() != null) {
+            Position position = positionService.getById(test.getPositionId());
+            if (position != null) {
+                test.setPositionName(position.getPositionName());
+            }
+        }
+
+        return test;
     }
 }

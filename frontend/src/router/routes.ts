@@ -271,11 +271,11 @@ export const routes: RouteRecordRaw[] = [
           {
             path: '/employment/written-tests',
             name: 'EmploymentWrittenTests',
-            component: () => import('@/views/employment/WrittenTest.vue'),
+            component: () => import('@/views/employment/WrittenTestManagement.vue'),
             meta: {
               title: '笔试管理',
               icon: 'Edit',
-              roles: ['admin', 'enterprise_contact', 'user'],
+              roles: ['admin', 'college_head', 'teacher', 'enterprise_contact'],
             },
           },
           // 面试管理（管理员、学院负责人、企业对接人、学员）
