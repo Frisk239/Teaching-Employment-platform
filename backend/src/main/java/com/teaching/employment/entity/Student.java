@@ -112,6 +112,12 @@ public class Student implements Serializable {
     private School school;
 
     /**
+     * 学生姓名（关联查询时使用，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private String name;
+
+    /**
      * 学校名称（关联查询时使用，不映射到数据库字段）
      */
     @TableField(exist = false)

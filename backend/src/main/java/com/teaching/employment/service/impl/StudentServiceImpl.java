@@ -125,7 +125,9 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         // 填充数据到学员对象
         students.forEach(student -> {
             student.setSchoolName(schoolMap.get(student.getSchoolId()));
-            student.setRealName(userMap.get(student.getUserId()));
+            String realName = userMap.get(student.getUserId());
+            student.setRealName(realName);
+            student.setName(realName); // 同时设置name字段,供前端下拉框使用
         });
 
         System.out.println("========== DEBUG: 填充完成 ==========");

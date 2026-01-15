@@ -91,6 +91,12 @@ public class JobApplication implements Serializable {
     private String studentName;
 
     /**
+     * 学生电话
+     */
+    @TableField(exist = false)
+    private String studentPhone;
+
+    /**
      * 企业名称
      */
     @TableField(exist = false)

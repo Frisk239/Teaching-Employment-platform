@@ -35,8 +35,13 @@
         >
           <el-option label="全部状态" value=""></el-option>
           <el-option label="待审核" value="pending"></el-option>
-          <el-option label="面试中" value="interview"></el-option>
-          <el-option label="已通过" value="accepted"></el-option>
+          <el-option label="已筛选" value="screened"></el-option>
+          <el-option label="笔试通过" value="test_passed"></el-option>
+          <el-option label="笔试失败" value="test_failed"></el-option>
+          <el-option label="面试通过" value="interview_passed"></el-option>
+          <el-option label="面试失败" value="interview_failed"></el-option>
+          <el-option label="已发offer" value="offered"></el-option>
+          <el-option label="已入职" value="hired"></el-option>
           <el-option label="已拒绝" value="rejected"></el-option>
         </el-select>
 
@@ -134,7 +139,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { applicationApi } from '@/api'
+import { applicationApi } from '@/api/application'
 
 // 加载状态
 const loading = ref(false)
@@ -186,8 +191,13 @@ const totalPages = computed(() => {
 const getStatusLabel = (status: string) => {
   const map: Record<string, string> = {
     'pending': '待审核',
-    'interview': '面试中',
-    'accepted': '已通过',
+    'screened': '已筛选',
+    'test_passed': '笔试通过',
+    'test_failed': '笔试失败',
+    'interview_passed': '面试通过',
+    'interview_failed': '面试失败',
+    'offered': '已发offer',
+    'hired': '已入职',
     'rejected': '已拒绝'
   }
   return map[status] || status
@@ -221,8 +231,19 @@ const handlePageChange = (page: number) => {
 }
 
 const handleView = (row: any) => {
-  ElMessage.info('查看申请详情')
-  // TODO: 打开详情对话框
+  // 显示完整的学生信息
+  const studentInfo = `
+    学生姓名: ${row.studentName || '未知'}
+    联系电话: ${row.studentPhone || '未知'}
+    申请职位: ${row.positionName || '未知职位'}
+    所属企业: ${row.companyName || '未知企业'}
+    申请状态: ${getStatusLabel(row.status)}
+    申请时间: ${row.applyTime || '未知'}
+  `
+  ElMessageBox.alert(studentInfo, '求职申请详情', {
+    confirmButtonText: '关闭',
+    type: 'info'
+  })
 }
 
 const handleApprove = async (row: any) => {
@@ -237,17 +258,24 @@ const handleApprove = async (row: any) => {
       }
     )
 
-    // TODO: 调用后端 API
-    // await applicationApi.approveApplication(row.id)
+    // 调用后端 API 更新状态为已通过
+    await applicationApi.update({
+      id: row.id,
+      status: 'accepted',
+      currentStage: 'offer'
+    })
 
+    // 更新本地数据
     const index = applications.value.findIndex((a: any) => a.id === row.id)
     if (index > -1) {
       applications.value[index].status = 'accepted'
     }
 
     ElMessage.success('已通过申请!')
-  } catch (error) {
-    // 用户取消
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '操作失败')
+    }
   }
 }
 
@@ -263,17 +291,24 @@ const handleReject = async (row: any) => {
       }
     )
 
-    // TODO: 调用后端 API
-    // await applicationApi.rejectApplication(row.id)
+    // 调用后端 API 更新状态为已拒绝
+    await applicationApi.update({
+      id: row.id,
+      status: 'rejected',
+      currentStage: 'resume'
+    })
 
+    // 更新本地数据
     const index = applications.value.findIndex((a: any) => a.id === row.id)
     if (index > -1) {
       applications.value[index].status = 'rejected'
     }
 
     ElMessage.success('已拒绝申请!')
-  } catch (error) {
-    // 用户取消
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '操作失败')
+    }
   }
 }
 
@@ -294,42 +329,36 @@ const handleExport = async () => {
 const loadApplications = async () => {
   loading.value = true
   try {
-    // TODO: 调用后端 API
-    // const data = await applicationApi.getApplicationList()
-    // applications.value = data
+    // 调用后端 API 获取分页数据
+    const response = await applicationApi.getPage({
+      current: currentPage.value,
+      size: 100, // 先获取所有数据，前端进行筛选
+    }) as any
 
-    // 模拟数据
-    applications.value = [
-      {
-        id: 1,
-        studentName: '张三',
-        studentPhone: '13800138000',
-        positionName: 'Java开发工程师',
-        companyName: '阿里巴巴',
-        status: 'pending',
-        applyTime: '2025-01-10'
-      },
-      {
-        id: 2,
-        studentName: '李四',
-        studentPhone: '13900139000',
-        positionName: 'Vue.js前端开发',
-        companyName: '腾讯科技',
-        status: 'interview',
-        applyTime: '2025-01-08'
-      },
-      {
-        id: 3,
-        studentName: '王五',
-        studentPhone: '13700137000',
-        positionName: 'Python数据分析',
-        companyName: '字节跳动',
-        status: 'accepted',
-        applyTime: '2025-01-05'
-      }
-    ]
-  } catch (error) {
-    ElMessage.error('加载失败')
+    // 响应拦截器已经返回了 data，所以 response 就是分页结果
+    if (response && response.records) {
+      // 格式化数据，添加 applyTime 字段
+      applications.value = response.records.map((app: any) => ({
+        id: app.id,
+        studentName: app.studentName || '未知',
+        studentPhone: app.studentPhone || '未知',
+        positionName: app.positionName || '未知职位',
+        companyName: app.companyName || '未知企业',
+        status: app.status || 'pending',
+        applyTime: app.applicationTime ? new Date(app.applicationTime).toISOString().split('T')[0] : '',
+        // 保留原始数据
+        ...app
+      }))
+      total.value = response.total || 0
+    } else {
+      applications.value = []
+      total.value = 0
+    }
+  } catch (error: any) {
+    console.error('加载申请列表失败:', error)
+    ElMessage.error(error.message || '加载失败')
+    applications.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -458,14 +487,39 @@ onMounted(() => {
     color: oklch(0.60 0.18 45);
   }
 
-  &.status-tag-interview {
+  &.status-tag-screened {
     background: oklch(0.92 0.04 220);
     color: oklch(0.55 0.15 220);
   }
 
-  &.status-tag-accepted {
+  &.status-tag-test_passed {
     background: oklch(0.92 0.04 150);
     color: oklch(0.55 0.15 150);
+  }
+
+  &.status-tag-test_failed {
+    background: oklch(0.95 0.02 25);
+    color: oklch(0.55 0.22 25);
+  }
+
+  &.status-tag-interview_passed {
+    background: oklch(0.92 0.04 280);
+    color: oklch(0.55 0.15 280);
+  }
+
+  &.status-tag-interview_failed {
+    background: oklch(0.95 0.02 25);
+    color: oklch(0.55 0.22 25);
+  }
+
+  &.status-tag-offered {
+    background: oklch(0.92 0.04 150);
+    color: oklch(0.55 0.15 150);
+  }
+
+  &.status-tag-hired {
+    background: oklch(0.92 0.04 120);
+    color: oklch(0.55 0.15 120);
   }
 
   &.status-tag-rejected {

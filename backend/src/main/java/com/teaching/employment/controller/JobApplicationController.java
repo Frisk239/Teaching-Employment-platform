@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.JobApplication;
 import com.teaching.employment.service.JobApplicationService;
+import com.teaching.employment.service.PositionService;
+import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.CompanyService;
+import com.teaching.employment.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -23,6 +27,10 @@ import org.springframework.web.bind.annotation.*;
 public class JobApplicationController {
 
     private final JobApplicationService jobApplicationService;
+    private final PositionService positionService;
+    private final StudentService studentService;
+    private final CompanyService companyService;
+    private final UserService userService;
 
     /**
      * 分页查询求职申请列表
@@ -89,7 +97,60 @@ public class JobApplicationController {
     @ApiOperation("根据ID查询申请")
     public Result<JobApplication> getJobApplicationById(@PathVariable Long id) {
         JobApplication application = jobApplicationService.getById(id);
+        if (application == null) {
+            return Result.error("申请不存在");
+        }
+
+        // 手动填充关联数据
+        application = fillApplicationDetails(application);
+
         return Result.ok(application);
+    }
+
+    /**
+     * 填充申请的关联数据
+     */
+    private JobApplication fillApplicationDetails(JobApplication application) {
+        if (application == null) {
+            return null;
+        }
+
+        // 填充职位名称
+        if (application.getPositionId() != null) {
+            com.teaching.employment.entity.Position position = positionService.getById(application.getPositionId());
+            if (position != null) {
+                application.setPositionName(position.getPositionName());
+                // 填充企业名称
+                if (position.getCompanyId() != null) {
+                    com.teaching.employment.entity.Company company = companyService.getById(position.getCompanyId());
+                    if (company != null) {
+                        application.setCompanyName(company.getCompanyName());
+                    }
+                }
+            }
+        }
+
+        // 填充学生姓名和电话
+        if (application.getStudentId() != null) {
+            com.teaching.employment.entity.Student student = studentService.getById(application.getStudentId());
+            if (student != null) {
+                application.setStudentPhone(student.getPhone());
+
+                // 填充学生真实姓名
+                if (student.getUserId() != null) {
+                    com.teaching.employment.entity.User user = userService.getById(student.getUserId());
+                    if (user != null && user.getRealName() != null) {
+                        application.setStudentName(user.getRealName());
+                    } else {
+                        application.setStudentName("学生" + student.getId());
+                    }
+                } else {
+                    application.setStudentName("学生" + student.getId());
+                }
+            }
+        }
+
+        return application;
     }
 
     /**
@@ -146,13 +207,28 @@ public class JobApplicationController {
     }
 
     /**
-     * 删除申请
+     * 删除申请（物理删除）
      */
     @DeleteMapping("/{id}")
     @ApiOperation("删除申请")
     public Result<Void> deleteJobApplication(@PathVariable Long id) {
-        boolean success = jobApplicationService.removeById(id);
-        return success ? Result.ok("删除成功") : Result.error("删除失败");
+        // 使用物理删除而不是逻辑删除
+        int result = jobApplicationService.getBaseMapper().deleteById(id);
+        return result > 0 ? Result.ok("删除成功") : Result.error("删除失败");
+    }
+
+    /**
+     * 批量删除申请（物理删除）
+     */
+    @DeleteMapping("/batch")
+    @ApiOperation("批量删除申请")
+    public Result<Void> batchDeleteJobApplication(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        // 使用物理删除而不是逻辑删除
+        int result = jobApplicationService.getBaseMapper().deleteBatchIds(ids);
+        return result > 0 ? Result.ok("批量删除成功") : Result.error("批量删除失败");
     }
 
     /**

@@ -150,18 +150,19 @@ export interface RecruitmentQueryParams {
 // ============ 求职申请相关 ============
 export interface Application {
   id?: number
-  studentName: string
-  positionId: number
-  companyName: string
-  positionName: string
+  studentId?: number
+  positionId?: number
+  resumeId?: number
+  status?: string // pending, screened, test_passed, test_failed, interview_passed, interview_failed, offered, hired, rejected
+  currentStage?: string // resume, test, interview, offer, hired
   applicationTime?: string
-  resume?: Record<string, any>
-  applicationStatus: number
-  interviewTime?: string
-  interviewResult?: string
-  offerStatus?: string
-  createTime?: string
-  updateTime?: string
+  hrRemark?: string
+  // 关联字段（不映射到数据库）
+  studentName?: string
+  studentPhone?: string
+  positionName?: string
+  companyName?: string
+  applyTime?: string // 前端显示用的格式化时间
 }
 
 export interface ApplicationSubmitForm {
@@ -173,12 +174,14 @@ export interface ApplicationSubmitForm {
 }
 
 export interface ApplicationQueryParams {
+  current?: number
+  size?: number
   studentName?: string
-  positionName?: string
-  companyName?: string
-  applicationStatus?: number
-  page?: number
-  pageSize?: number
+  positionId?: number
+  studentId?: number
+  companyId?: number
+  status?: string
+  currentStage?: string
 }
 
 // ============ 学生相关 ============

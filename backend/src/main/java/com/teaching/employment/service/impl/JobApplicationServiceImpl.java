@@ -126,13 +126,21 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
                 }
             }
 
-            // 填充学生姓名
+            // 填充学生姓名和电话
             if (application.getStudentId() != null) {
                 Student student = studentService.getById(application.getStudentId());
-                if (student != null && student.getUserId() != null) {
-                    User user = userService.getById(student.getUserId());
-                    if (user != null) {
-                        application.setStudentName(user.getUsername());
+                if (student != null) {
+                    // 填充学生电话
+                    application.setStudentPhone(student.getPhone());
+
+                    // 填充学生真实姓名
+                    if (student.getUserId() != null) {
+                        User user = userService.getById(student.getUserId());
+                        if (user != null && user.getRealName() != null) {
+                            application.setStudentName(user.getRealName());
+                        } else {
+                            application.setStudentName("学生" + student.getId());
+                        }
                     } else {
                         application.setStudentName("学生" + student.getId());
                     }
@@ -305,5 +313,52 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
         }
 
         return result;
+    }
+
+    /**
+     * 填充单个申请的详细信息
+     */
+    private JobApplication fillApplicationDetails(JobApplication application) {
+        if (application == null) {
+            return null;
+        }
+
+        // 填充职位名称和企业名称
+        if (application.getPositionId() != null) {
+            Position position = positionService.getById(application.getPositionId());
+            if (position != null) {
+                application.setPositionName(position.getPositionName());
+                // 填充企业名称
+                if (position.getCompanyId() != null) {
+                    Company company = companyService.getById(position.getCompanyId());
+                    if (company != null) {
+                        application.setCompanyName(company.getCompanyName());
+                    }
+                }
+            }
+        }
+
+        // 填充学生姓名和电话
+        if (application.getStudentId() != null) {
+            Student student = studentService.getById(application.getStudentId());
+            if (student != null) {
+                // 填充学生电话
+                application.setStudentPhone(student.getPhone());
+
+                // 填充学生真实姓名
+                if (student.getUserId() != null) {
+                    User user = userService.getById(student.getUserId());
+                    if (user != null && user.getRealName() != null) {
+                        application.setStudentName(user.getRealName());
+                    } else {
+                        application.setStudentName("学生" + student.getId());
+                    }
+                } else {
+                    application.setStudentName("学生" + student.getId());
+                }
+            }
+        }
+
+        return application;
     }
 }

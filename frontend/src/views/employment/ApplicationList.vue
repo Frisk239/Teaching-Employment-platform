@@ -17,6 +17,7 @@
           <el-select
             v-model="searchForm.companyId"
             placeholder="请选择企业"
+            
             clearable
             style="width: 200px"
           >
@@ -183,12 +184,15 @@
     >
       <el-form :model="formData" :rules="formRules" ref="formRef" label-width="100px">
         <el-form-item label="学生" prop="studentId">
+          <template v-if="dialogMode === 'view'">
+            <el-input :value="formData.studentName || '请选择学生'" disabled />
+          </template>
           <el-select
+            v-else
             v-model="formData.studentId"
             placeholder="请选择学生"
             filterable
             style="width: 100%"
-            :disabled="dialogMode === 'view'"
           >
             <el-option
               v-for="student in studentList"
@@ -199,13 +203,16 @@
           </el-select>
         </el-form-item>
         <el-form-item label="职位" prop="positionId">
+          <template v-if="dialogMode === 'view'">
+            <el-input :value="formData.positionName || '请选择职位'" disabled />
+          </template>
           <el-select
+            v-else
             v-model="formData.positionId"
             placeholder="请选择职位"
             filterable
             style="width: 100%"
             @change="handlePositionChange"
-            :disabled="dialogMode === 'view'"
           >
             <el-option
               v-for="position in positionList"
@@ -450,7 +457,9 @@ const dialogTitle = computed(() => {
 const formData = reactive({
   id: undefined as number | undefined,
   studentId: undefined as number | undefined,
+  studentName: '',
   positionId: undefined as number | undefined,
+  positionName: '',
   companyId: undefined as number | undefined,
   companyName: '',
   resumeId: undefined as number | undefined,
@@ -566,29 +575,47 @@ const handleAdd = () => {
 
 // 查看
 const handleView = async (row: any) => {
-  dialogMode.value = 'view'
-  dialogVisible.value = true
   try {
     const response = await getJobApplicationByIdApi(row.id)
-    if (response.code === 200) {
-      Object.assign(formData, response.data)
+
+    // axios拦截器已经返回了 res.data,所以 response 直接就是数据对象
+    if (response && response.id) {
+      // 先重置表单
+      resetForm()
+      // 然后填充数据
+      Object.assign(formData, response)
+      // 最后打开对话框
+      dialogMode.value = 'view'
+      dialogVisible.value = true
+    } else {
+      ElMessage.error('获取申请详情失败: 数据格式错误')
     }
   } catch (error) {
     console.error('获取申请详情失败:', error)
+    ElMessage.error('获取申请详情失败')
   }
 }
 
 // 编辑
 const handleEdit = async (row: any) => {
-  dialogMode.value = 'edit'
-  dialogVisible.value = true
   try {
     const response = await getJobApplicationByIdApi(row.id)
-    if (response.code === 200) {
-      Object.assign(formData, response.data)
+
+    // axios拦截器已经返回了 res.data,所以 response 直接就是数据对象
+    if (response && response.id) {
+      // 先重置表单
+      resetForm()
+      // 然后填充数据
+      Object.assign(formData, response)
+      // 最后打开对话框
+      dialogMode.value = 'edit'
+      dialogVisible.value = true
+    } else {
+      ElMessage.error('获取申请详情失败: 数据格式错误')
     }
   } catch (error) {
     console.error('获取申请详情失败:', error)
+    ElMessage.error('获取申请详情失败')
   }
 }
 
@@ -740,7 +767,9 @@ const handlePositionChange = () => {
 const resetForm = () => {
   formData.id = undefined
   formData.studentId = undefined
+  formData.studentName = ''
   formData.positionId = undefined
+  formData.positionName = ''
   formData.companyId = undefined
   formData.companyName = ''
   formData.resumeId = undefined
