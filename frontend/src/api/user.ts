@@ -91,3 +91,13 @@ export function uploadAvatarApi(file: File) {
     }
   })
 }
+
+/**
+ * 删除用户
+ */
+export function deleteUserApi(id: number) {
+  return request<Result<void>>({
+    url: `/user/${id}`,
+    method: 'delete'
+  })
+}

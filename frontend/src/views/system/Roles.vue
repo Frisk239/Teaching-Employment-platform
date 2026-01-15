@@ -14,16 +14,6 @@
           <el-button type="primary" :icon="Plus" @click="handleAdd">
             新增角色
           </el-button>
-
-          <!-- 批量删除 -->
-          <el-button
-            type="danger"
-            :icon="Delete"
-            :disabled="selectedIds.length === 0"
-            @click="handleBatchDelete"
-          >
-            批量删除
-          </el-button>
         </div>
 
         <div class="toolbar-right">
@@ -136,16 +126,6 @@
               @click="handleAssignPermissions(row)"
             >
               分配权限
-            </el-button>
-            <el-button
-              v-permission="'system:role:delete'"
-              type="danger"
-              size="small"
-              link
-              :icon="Delete"
-              @click="handleDelete(row)"
-            >
-              删除
             </el-button>
           </template>
         </el-table-column>
@@ -282,7 +262,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import {
   Plus,
   Delete,
@@ -733,49 +713,6 @@ const handleAdd = () => {
 const handleEdit = (row: Role) => {
   Object.assign(formData, row)
   dialogVisible.value = true
-}
-
-// 删除角色
-const handleDelete = async (row: Role) => {
-  try {
-    await ElMessageBox.confirm(`确定要删除角色 "${row.name}" 吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-
-    // TODO: 调用实际的API
-    // await roleApi.delete(row.id)
-
-    roles.value = roles.value.filter((r) => r.id !== row.id)
-    ElMessage.success('删除成功')
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '删除失败')
-    }
-  }
-}
-
-// 批量删除
-const handleBatchDelete = async () => {
-  try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个角色吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-
-    // TODO: 调用实际的API
-    // await roleApi.batchDelete(selectedIds.value)
-
-    roles.value = roles.value.filter((r) => !selectedIds.value.includes(r.id))
-    selectedIds.value = []
-    ElMessage.success('批量删除成功')
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '批量删除失败')
-    }
-  }
 }
 
 // 状态变化

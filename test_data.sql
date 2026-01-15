@@ -1,98 +1,261 @@
--- =============================================
--- 测试数据脚本
--- 用于API测试的教师、学生、课程等数据
--- =============================================
-
+-- 插入测试职位数据
 USE teaching_employment_platform;
 
--- =============================================
--- 1. 创建测试用户（教师和学生）
--- =============================================
-INSERT INTO t_user (username, password, real_name, role_id, status, phone, email) VALUES
-('teacher001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '张老师', 3, 1, '13800138001', 'teacher001@test.com'),
-('teacher002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '李老师', 3, 1, '13800138002', 'teacher002@test.com'),
-('student001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '王小明', 4, 1, '13900139001', 'student001@test.com'),
-('student002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '李小红', 4, 1, '13900139002', 'student002@test.com'),
-('student003', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '赵小刚', 4, 1, '13900139003', 'student003@test.com');
+-- 插入职位数据
+INSERT INTO t_recruitment_position (
+    company_id,
+    position_name,
+    position_type,
+    work_city,
+    salary_min,
+    salary_max,
+    salary_unit,
+    education_require,
+    experience_require,
+    description,
+    requirements,
+    tech_stack,
+    recruit_num,
+    hired_count,
+    application_count,
+    status,
+    publish_time,
+    deadline,
+    create_time,
+    update_time
+) VALUES
+-- 职位1: Java开发工程师
+(
+    1,
+    'Java后端开发工程师',
+    'fulltime',
+    '北京',
+    15000,
+    25000,
+    'month',
+    'bachelor',
+    '3-5年',
+    '负责公司核心业务系统的开发和维护，参与系统架构设计和技术选型。',
+    '1. 熟练掌握Java语言，熟悉Spring、SpringBoot、MyBatis等框架\n2. 熟悉MySQL、Redis等数据库技术\n3. 熟悉分布式系统设计和微服务架构\n4. 良好的沟通能力和团队协作精神',
+    'Java,Spring,SpringBoot,MyBatis,MySQL,Redis,Spring Cloud',
+    5,
+    2,
+    15,
+    'active',
+    '2024-01-15 10:00:00',
+    '2024-06-30',
+    '2024-01-15 10:00:00',
+    '2024-01-15 10:00:00'
+),
+-- 职位2: 前端开发工程师
+(
+    1,
+    '前端开发工程师',
+    'fulltime',
+    '上海',
+    12000,
+    20000,
+    'month',
+    'bachelor',
+    '1-3年',
+    '负责公司产品的前端开发工作，实现页面交互和视觉效果。',
+    '1. 精通HTML、CSS、JavaScript，熟悉Vue/React框架\n2. 熟悉前端工程化工具，如Webpack、Vite等\n3. 良好的代码规范和文档编写能力\n4. 了解响应式设计和移动端开发',
+    'Vue,React,TypeScript,Webpack,Vite,Element Plus,Ant Design',
+    3,
+    1,
+    28,
+    'active',
+    '2024-01-10 09:00:00',
+    '2024-05-31',
+    '2024-01-10 09:00:00',
+    '2024-01-10 09:00:00'
+),
+-- 职位3: Python算法工程师
+(
+    2,
+    'Python算法工程师',
+    'fulltime',
+    '深圳',
+    20000,
+    35000,
+    'month',
+    'master',
+    '3-5年',
+    '负责机器学习算法的研发和优化，参与AI产品开发。',
+    '1. 熟练掌握Python，熟悉TensorFlow/PyTorch等深度学习框架\n2. 熟悉机器学习常用算法，如分类、回归、聚类等\n3. 熟悉NLP或计算机视觉者优先\n4. 有实际项目经验者优先',
+    'Python,TensorFlow,PyTorch,Machine Learning,Deep Learning,NLP,Scikit-learn',
+    2,
+    0,
+    8,
+    'active',
+    '2024-01-12 14:00:00',
+    '2024-07-15',
+    '2024-01-12 14:00:00',
+    '2024-01-12 14:00:00'
+),
+-- 职位4: 实习生
+(
+    1,
+    '软件测试实习生',
+    'internship',
+    '北京',
+    3000,
+    5000,
+    'month',
+    'junior_college',
+    '不限',
+    '协助测试工程师进行软件功能测试和性能测试。',
+    '1. 计算机相关专业在读学生\n2. 了解软件测试基本流程和方法\n3. 有责任心，学习能力强\n4. 每周至少实习3天',
+    'Software Testing,Selenium,JUnit,TestNG,MySQL,BUG Tracking',
+    10,
+    3,
+    42,
+    'active',
+    '2024-01-08 11:00:00',
+    '2024-04-30',
+    '2024-01-08 11:00:00',
+    '2024-01-08 11:00:00'
+),
+-- 职位5: 产品经理
+(
+    2,
+    '互联网产品经理',
+    'fulltime',
+    '杭州',
+    18000,
+    30000,
+    'month',
+    'bachelor',
+    '3-5年',
+    '负责公司产品规划和设计，推动产品迭代和优化。',
+    '1. 3年以上互联网产品经验\n2. 熟悉产品设计和用户体验\n3. 优秀的沟通协调能力和项目管理能力\n4. 有B端产品经验者优先',
+    'Product Management,Product Design,UX/UI,Agile,Scrum,Data Analysis,Axure,Sketch',
+    1,
+    0,
+    5,
+    'draft',
+    NULL,
+    '2024-08-31',
+    '2024-01-14 16:00:00',
+    '2024-01-14 16:00:00'
+),
+-- 职位6: 运维工程师
+(
+    1,
+    'DevOps运维工程师',
+    'fulltime',
+    '北京',
+    13000,
+    22000,
+    'month',
+    'bachelor',
+    '2-4年',
+    '负责系统运维和自动化部署，保障系统稳定运行。',
+    '1. 熟悉Linux系统管理\n2. 熟悉Docker、Kubernetes等容器技术\n3. 熟悉CI/CD流程和工具\n4. 熟悉监控和日志系统',
+    'Linux,Docker,Kubernetes,Jenkins,GitLab CI,Prometheus,Grafana,Ansible,Shell,Python',
+    2,
+    2,
+    12,
+    'active',
+    '2024-01-05 10:30:00',
+    '2024-06-15',
+    '2024-01-05 10:30:00',
+    '2024-01-05 10:30:00'
+),
+-- 职位7: 数据分析师
+(
+    3,
+    '数据分析师',
+    'fulltime',
+    '广州',
+    14000,
+    23000,
+    'month',
+    'bachelor',
+    '2-4年',
+    '负责业务数据分析和报表制作，为决策提供数据支持。',
+    '1. 熟悉SQL和数据查询\n2. 熟悉Python/R等数据分析工具\n3. 熟悉数据可视化工具\n4. 良好的业务理解能力和逻辑思维',
+    'SQL,Python,R,Pandas,NumPy,Matplotlib,Tableau,Power BI,Excel,Data Mining',
+    3,
+    1,
+    18,
+    'paused',
+    '2023-12-20 09:00:00',
+    '2024-03-31',
+    '2023-12-20 09:00:00',
+    '2024-01-10 15:00:00'
+),
+-- 职位8: UI设计师
+(
+    2,
+    'UI/UX设计师',
+    'fulltime',
+    '深圳',
+    10000,
+    18000,
+    'month',
+    'bachelor',
+    '1-3年',
+    '负责产品界面设计和用户体验优化。',
+    '1. 熟练使用Figma、Sketch等设计工具\n2. 具备良好的审美能力和创意思维\n3. 了解交互设计原则和用户体验\n4. 有移动端产品设计经验',
+    'Figma,Sketch,Adobe XD,Photoshop,Illustrator,Prototyping,User Research,Interaction Design',
+    2,
+    2,
+    22,
+    'active',
+    '2024-01-11 13:00:00',
+    '2024-05-20',
+    '2024-01-11 13:00:00',
+    '2024-01-11 13:00:00'
+),
+-- 职位9: 全栈开发工程师
+(
+    3,
+    '全栈开发工程师',
+    'fulltime',
+    '成都',
+    16000,
+    28000,
+    'month',
+    'bachelor',
+    '3-5年',
+    '负责前后端开发和系统架构设计。',
+    '1. 精通至少一种前端框架和一种后端语言\n2. 熟悉数据库设计和优化\n3. 熟悉微服务架构\n4. 具备良好的系统设计能力',
+    'Vue,React,Node.js,Java,Spring,MySQL,MongoDB,Redis,DevOps,System Design',
+    2,
+    0,
+    9,
+    'active',
+    '2024-01-09 15:30:00',
+    '2024-07-01',
+    '2024-01-09 15:30:00',
+    '2024-01-09 15:30:00'
+),
+-- 职位10: 移动端开发工程师
+(
+    1,
+    'iOS开发工程师',
+    'fulltime',
+    '北京',
+    15000,
+    26000,
+    'month',
+    'bachelor',
+    '2-4年',
+    '负责iOS应用开发和维护。',
+    '1. 精通Swift/Objective-C\n2. 熟悉iOS SDK和开发工具\n3. 有完整iOS项目开发经验\n4. 了解App上架流程',
+    'Swift,Objective-C,iOS,UIKit,SwiftUI,Xcode,CocoaPods,RESTful API,MVC,MVVM',
+    2,
+    1,
+    14,
+    'active',
+    '2024-01-07 11:00:00',
+    '2024-06-01',
+    '2024-01-07 11:00:00',
+    '2024-01-07 11:00:00'
+);
 
--- =============================================
--- 2. 创建教师信息
--- =============================================
-INSERT INTO t_teacher (user_id, teacher_no, school_id, department, title, education, specialty, gender, status) VALUES
-(2, 'T20240001', 1, '计算机系', '教授', '博士', '人工智能', 1, 1),
-(3, 'T20240002', 1, '软件工程系', '副教授', '博士', '软件工程', 0, 1);
-
--- =============================================
--- 3. 创建学生信息
--- =============================================
-INSERT INTO t_student (user_id, student_no, school_id, grade, major, class_name, gender, enrollment_date, status) VALUES
-(4, 'S20240001', 1, '2021级', '计算机科学与技术', '计科2101', 1, '2021-09-01', 1),
-(5, 'S20240002', 1, '2021级', '软件工程', '软件2101', 0, '2021-09-01', 1),
-(6, 'S20240003', 1, '2021级', '数据科学', '数据2101', 1, '2021-09-01', 1);
-
--- =============================================
--- 4. 创建课程信息
--- =============================================
-INSERT INTO t_course (course_name, course_code, course_type, school_id, teacher_id, description, credit, total_hours, max_students, status) VALUES
-('Java程序设计', 'CS101', 'regular', 1, 1, '学习Java编程基础知识和面向对象编程思想', 4.0, 64, 50, 'ongoing'),
-('数据结构与算法', 'CS201', 'regular', 1, 1, '学习常用数据结构和算法设计', 3.5, 56, 40, 'ongoing'),
-('Web开发技术', 'CS301', 'regular', 1, 2, '学习前端和后端Web开发技术', 3.0, 48, 30, 'pending');
-
--- =============================================
--- 5. 创建选课记录
--- =============================================
-INSERT INTO t_course_student (course_id, student_id, enrollment_date, status, progress) VALUES
-(1, 1, NOW(), 1, 0.00),
-(1, 2, NOW(), 1, 0.00),
-(2, 1, NOW(), 1, 0.00),
-(2, 3, NOW(), 1, 0.00);
-
--- =============================================
--- 6. 创建作业信息
--- =============================================
-INSERT INTO t_homework (course_id, teacher_id, title, description, homework_type, max_score, deadline, status) VALUES
-(1, 1, '第一次作业：Java基础', '完成Java基础练习题', 'assignment', 100, '2026-02-28 23:59:59', 'published'),
-(1, 1, '第二次作业：面向对象', '完成面向对象编程练习', 'assignment', 100, '2026-03-15 23:59:59', 'published'),
-(2, 1, '算法设计作业', '设计并实现常见算法', 'project', 100, '2026-03-31 23:59:59', 'published');
-
--- =============================================
--- 7. 创建企业信息
--- =============================================
-INSERT INTO t_company (company_name, industry, scale, province, city, address, contact_person, contact_phone, email, website, description, status) VALUES
-('阿里巴巴集团', '互联网', 'large', '浙江省', '杭州市', '杭州市余杭区', '张HR', '0571-12345678', 'hr@alibaba.com', 'https://www.alibaba.com', '阿里巴巴集团是全球领先的互联网公司', 1),
-('腾讯科技', '互联网', 'large', '广东省', '深圳市', '深圳市南山区', '李HR', '0755-87654321', 'hr@tencent.com', 'https://www.tencent.com', '腾讯是中国领先的互联网增值服务提供商', 1),
-('字节跳动', '互联网', 'large', '北京市', '北京市', '北京市海淀区', '王HR', '010-12345678', 'hr@bytedance.com', 'https://www.bytedance.com', '字节跳动是全球知名的科技公司', 1);
-
--- =============================================
--- 8. 创建职位信息
--- =============================================
-INSERT INTO t_position (company_id, position_name, position_type, department, salary_min, salary_max, city, recruitment_count, education_requirement, work_experience, description, requirements, status) VALUES
-(1, 'Java开发工程师', 'full_time', '技术部', 15000, 25000, '杭州市', 10, '本科', '1-3年', '负责后端系统开发', '熟悉Java、Spring框架，有良好的编程基础', 'active'),
-(1, '前端开发工程师', 'full_time', '技术部', 12000, 20000, '杭州市', 5, '本科', '1-3年', '负责前端页面开发', '熟悉Vue、React等前端框架', 'active'),
-(2, '软件开发工程师', 'full_time', '技术部', 18000, 30000, '深圳市', 15, '本科', '1-3年', '负责软件开发和维护', '熟悉C++/Java/Python，有良好的编程能力', 'active'),
-(3, '算法工程师', 'full_time', 'AI Lab', 20000, 35000, '北京市', 8, '硕士', '1-3年', '负责算法研发和优化', '熟悉机器学习、深度学习算法', 'active');
-
--- =============================================
--- 9. 创建简历信息
--- =============================================
-INSERT INTO t_resume (student_id, name, gender, phone, email, education, school, major, graduation_date, skills, project_experience, internship_experience, status) VALUES
-(1, '王小明', 1, '13900139001', 'student001@test.com', '本科', '科技大学', '计算机科学与技术', '2025-06-30', 'Java, Python, MySQL, Vue.js', '校园管理系统、电商平台', '阿里巴巴实习3个月', 1),
-(2, '李小红', 0, '13900139002', 'student002@test.com', '本科', '科技大学', '软件工程', '2025-06-30', 'Java, Spring Boot, React, MongoDB', '在线教育平台、社交媒体应用', '腾讯实习4个月', 1),
-(3, '赵小刚', 1, '13900139003', 'student003@test.com', '本科', '科技大学', '数据科学', '2025-06-30', 'Python, TensorFlow, PyTorch, SQL', '推荐系统、数据分析项目', '字节跳动实习6个月', 1);
-
--- =============================================
--- 10. 创建求职申请
--- =============================================
-INSERT INTO t_application (position_id, student_id, resume_id, apply_date, status) VALUES
-(1, 1, 1, NOW(), 'pending'),
-(2, 2, 2, NOW(), 'pending'),
-(4, 3, 3, NOW(), 'pending');
-
-COMMIT;
-
-SELECT '测试数据插入完成！' AS message;
-SELECT COUNT(*) AS teacher_count FROM t_teacher;
-SELECT COUNT(*) AS student_count FROM t_student;
-SELECT COUNT(*) AS course_count FROM t_course;
-SELECT COUNT(*) AS company_count FROM t_company;
-SELECT COUNT(*) AS position_count FROM t_position;
+-- 查询插入的数据
+SELECT id, position_name, position_type, work_city, salary_min, salary_max, salary_unit, status, hired_count, application_count
+FROM t_recruitment_position
+ORDER BY id;

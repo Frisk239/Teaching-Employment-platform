@@ -280,6 +280,7 @@ import {
   RefreshRight,
   View,
 } from '@element-plus/icons-vue'
+import { deleteUserApi } from '@/api/user'
 
 // 用户接口定义
 interface User {
@@ -536,11 +537,9 @@ const handleDelete = async (row: User) => {
       type: 'warning',
     })
 
-    // TODO: 调用实际的API
-    // await userApi.delete(row.id)
-
-    users.value = users.value.filter((u) => u.id !== row.id)
+    await deleteUserApi(row.id)
     ElMessage.success('删除成功')
+    loadUsers()
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error(error.message || '删除失败')

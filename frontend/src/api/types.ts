@@ -67,6 +67,54 @@ export interface CompanyQueryParams {
 }
 
 // ============ 招聘职位相关 ============
+export interface Position {
+  id?: number
+  companyId?: number
+  companyName?: string
+  positionName: string
+  positionType: 'fulltime' | 'parttime' | 'internship'
+  city: string
+  salaryMin?: number
+  salaryMax?: number
+  salaryUnit?: 'month' | 'year' | 'day' | 'hour'
+  education?: 'junior_college' | 'bachelor' | 'master' | 'doctor' | 'unlimited'
+  experience?: string
+  description?: string
+  requirements?: string
+  techStack?: string
+  capabilityRadar?: string
+  recruitCount?: number
+  hiredCount?: number
+  applicationCount?: number
+  status: 'draft' | 'active' | 'paused' | 'closed'
+  publishTime?: string
+  deadline?: string
+  createTime?: string
+  updateTime?: string
+}
+
+export interface PositionQueryParams {
+  current?: number
+  size?: number
+  companyId?: number
+  positionType?: string
+  city?: string
+  education?: string
+  status?: string
+  keyword?: string
+  salaryMin?: number
+  salaryMax?: number
+}
+
+export interface PageResult<T> {
+  records: T[]
+  total: number
+  size: number
+  current: number
+  pages: number
+}
+
+// 保留旧的Recruitment类型以兼容旧代码
 export interface Recruitment {
   id?: number
   companyName: string

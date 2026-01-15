@@ -234,13 +234,24 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'enterprise_contact'],
             },
           },
-          // 岗位管理（所有就业相关角色）
+          // 岗位管理（管理员）
+          {
+            path: '/employment/position-management',
+            name: 'EmploymentPositionManagement',
+            component: () => import('@/views/employment/PositionManagement.vue'),
+            meta: {
+              title: '岗位管理',
+              icon: 'Briefcase',
+              roles: ['admin'],
+            },
+          },
+          // 岗位列表（所有就业相关角色）
           {
             path: '/employment/positions',
             name: 'EmploymentPositions',
             component: () => import('@/views/employment/PositionList.vue'),
             meta: {
-              title: '岗位管理',
+              title: '岗位列表',
               icon: 'Briefcase',
               roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
             },

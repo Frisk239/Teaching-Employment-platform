@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.teaching.employment.entity.Company;
 import com.teaching.employment.entity.Position;
 import com.teaching.employment.exception.BusinessException;
+import com.teaching.employment.mapper.CompanyMapper;
 import com.teaching.employment.mapper.PositionMapper;
 import com.teaching.employment.service.PositionService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 招聘职位Service实现类
@@ -29,6 +33,7 @@ import java.util.Map;
 public class PositionServiceImpl extends ServiceImpl<PositionMapper, Position> implements PositionService {
 
     private final PositionMapper positionMapper;
+    private final CompanyMapper companyMapper;
 
     @Override
     public IPage<Position> getPositionPage(Integer current, Integer size, Long companyId, String positionType,
@@ -64,7 +69,44 @@ public class PositionServiceImpl extends ServiceImpl<PositionMapper, Position> i
 
         wrapper.orderByDesc(Position::getPublishTime);
 
-        return positionMapper.selectPage(page, wrapper);
+        IPage<Position> resultPage = positionMapper.selectPage(page, wrapper);
+
+        // 填充企业名称
+        fillCompanyNames(resultPage.getRecords());
+
+        return resultPage;
+    }
+
+    /**
+     * 填充职位列表中的企业名称
+     */
+    private void fillCompanyNames(List<Position> positions) {
+        if (positions == null || positions.isEmpty()) {
+            return;
+        }
+
+        // 获取所有企业ID
+        List<Long> companyIds = positions.stream()
+                .map(Position::getCompanyId)
+                .filter(id -> id != null)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (companyIds.isEmpty()) {
+            return;
+        }
+
+        // 批量查询企业信息
+        List<Company> companies = companyMapper.selectBatchIds(companyIds);
+        Map<Long, String> companyMap = companies.stream()
+                .collect(Collectors.toMap(Company::getId, Company::getCompanyName));
+
+        // 填充企业名称
+        positions.forEach(position -> {
+            if (position.getCompanyId() != null) {
+                position.setCompanyName(companyMap.get(position.getCompanyId()));
+            }
+        });
     }
 
     @Override

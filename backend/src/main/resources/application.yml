@@ -94,10 +94,10 @@ mybatis-plus:
     db-config:
       # 主键类型
       id-type: auto
-      # 逻辑删除字段
-      logic-delete-field: isDeleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
+      # 逻辑删除配置已禁用,使用物理删除
+      # logic-delete-field: isDeleted
+      # logic-delete-value: 1
+      # logic-not-delete-value: 0
       # 插入时自动填充
       insert-strategy: not_null
       # 更新时自动填充

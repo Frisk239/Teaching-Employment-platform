@@ -132,15 +132,6 @@
             >
               编辑
             </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              link
-              :icon="Delete"
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -308,6 +299,7 @@ import {
   Fold,
   Picture,
 } from '@element-plus/icons-vue'
+import { deleteMenuApi } from '@/api/menu'
 
 // 导入所有 Element Plus 图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
@@ -635,32 +627,6 @@ const handleAddChild = (row: MenuItem) => {
 const handleEdit = (row: MenuItem) => {
   Object.assign(formData, row)
   dialogVisible.value = true
-}
-
-// 删除菜单
-const handleDelete = async (row: MenuItem) => {
-  try {
-    const hasChildren = row.children && row.children.length > 0
-    const message = hasChildren
-      ? `该菜单包含 ${row.children.length} 个子菜单，确定要删除吗？删除后子菜单也将被删除。`
-      : `确定要删除菜单 "${row.name}" 吗？`
-
-    await ElMessageBox.confirm(message, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-
-    // TODO: 调用实际的API
-    // await menuApi.delete(row.id)
-
-    ElMessage.success('删除成功')
-    await loadMenus()
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '删除失败')
-    }
-  }
 }
 
 // 状态变化

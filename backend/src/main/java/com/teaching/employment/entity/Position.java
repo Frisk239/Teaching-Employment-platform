@@ -92,7 +92,6 @@ public class Position implements Serializable {
     private LocalDate deadline;
 
     @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
     private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")

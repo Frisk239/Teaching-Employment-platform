@@ -106,13 +106,13 @@
             </el-button>
             <el-button
               v-if="!row.children"
-              type="danger"
+              type="primary"
               size="small"
               link
-              :icon="Delete"
-              @click="handleDelete(row)"
+              :icon="Edit"
+              @click="handleEdit(row)"
             >
-              删除
+              编辑
             </el-button>
           </template>
         </el-table-column>
@@ -155,16 +155,6 @@
                   @click="handleEdit(data)"
                 >
                   编辑
-                </el-button>
-                <el-button
-                  v-if="!data.children"
-                  type="danger"
-                  size="small"
-                  link
-                  :icon="Delete"
-                  @click="handleDelete(data)"
-                >
-                  删除
                 </el-button>
               </div>
             </div>
@@ -244,22 +234,10 @@ import {
   Search,
   Refresh,
   Setting,
-  User,
-  Lock,
-  Menu,
-  School,
-  House,
   Collection,
-  Avatar,
-  Checked,
-  DocumentAdd,
   OfficeBuilding,
-  Management,
-  Briefcase,
-  Edit as EditIcon,
-  DataAnalysis,
-  ChatDotRound,
 } from '@element-plus/icons-vue'
+import { deletePermissionApi } from '@/api/permission'
 
 // 权限树节点接口
 interface PermissionTreeNode {
@@ -460,27 +438,6 @@ const handleEdit = (row: any) => {
   }
 
   dialogVisible.value = true
-}
-
-// 删除权限
-const handleDelete = async (row: any) => {
-  try {
-    await ElMessageBox.confirm(`确定要删除权限 "${row.label}" 吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-
-    // TODO: 调用实际的API
-    // await permissionApi.delete(row.key)
-
-    ElMessage.success('删除成功')
-    await loadPermissions()
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '删除失败')
-    }
-  }
 }
 
 // 提交表单
