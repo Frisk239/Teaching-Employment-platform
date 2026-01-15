@@ -282,7 +282,7 @@ export const routes: RouteRecordRaw[] = [
           {
             path: '/employment/interviews',
             name: 'EmploymentInterviews',
-            component: () => import('@/views/employment/Interview.vue'),
+            component: () => import('@/views/employment/InterviewManagement.vue'),
             meta: {
               title: '面试管理',
               icon: 'ChatDotRound',

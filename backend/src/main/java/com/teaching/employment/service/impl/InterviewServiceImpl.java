@@ -10,6 +10,7 @@ import com.teaching.employment.entity.JobApplication;
 import com.teaching.employment.entity.Position;
 import com.teaching.employment.entity.Student;
 import com.teaching.employment.entity.Company;
+import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.InterviewMapper;
 import com.teaching.employment.service.CompanyService;
@@ -17,6 +18,7 @@ import com.teaching.employment.service.InterviewService;
 import com.teaching.employment.service.JobApplicationService;
 import com.teaching.employment.service.PositionService;
 import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.UserService;
 import com.teaching.employment.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,7 @@ public class InterviewServiceImpl extends ServiceImpl<InterviewMapper, Interview
     private final PositionService positionService;
     private final StudentService studentService;
     private final CompanyService companyService;
+    private final UserService userService;
     private final EmailUtil emailUtil;
 
     @Override
@@ -65,7 +68,48 @@ public class InterviewServiceImpl extends ServiceImpl<InterviewMapper, Interview
 
         wrapper.orderByDesc(Interview::getCreateTime);
 
-        return interviewMapper.selectPage(page, wrapper);
+        IPage<Interview> resultPage = interviewMapper.selectPage(page, wrapper);
+
+        // 填充关联字段
+        resultPage.getRecords().forEach(this::fillInterviewDetails);
+
+        return resultPage;
+    }
+
+    /**
+     * 填充面试的关联字段(学生姓名、职位名称、公司名称)
+     */
+    private Interview fillInterviewDetails(Interview interview) {
+        if (interview == null) return null;
+
+        // 填充学生姓名
+        if (interview.getStudentId() != null) {
+            Student student = studentService.getById(interview.getStudentId());
+            if (student != null && student.getUserId() != null) {
+                User user = userService.getById(student.getUserId());
+                if (user != null && user.getRealName() != null) {
+                    interview.setStudentName(user.getRealName());
+                }
+            }
+        }
+
+        // 填充职位名称和公司名称
+        if (interview.getPositionId() != null) {
+            Position position = positionService.getById(interview.getPositionId());
+            if (position != null) {
+                interview.setPositionName(position.getPositionName());
+
+                // 填充公司名称
+                if (position.getCompanyId() != null) {
+                    Company company = companyService.getById(position.getCompanyId());
+                    if (company != null) {
+                        interview.setCompanyName(company.getCompanyName());
+                    }
+                }
+            }
+        }
+
+        return interview;
     }
 
     @Override
