@@ -187,7 +187,7 @@ export const routes: RouteRecordRaw[] = [
               roles: ['college_head', 'teacher'],
             },
           },
-          // 日报管理（管理员、学院负责人、教师、学员）
+          // 日报管理（管理员、学院负责人、教师）
           {
             path: '/teaching/daily-reports',
             name: 'TeachingDailyReports',
@@ -195,7 +195,18 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '日报管理',
               icon: 'DocumentCopy',
-              roles: ['admin', 'college_head', 'teacher', 'user'],
+              roles: ['admin', 'college_head', 'teacher'],
+            },
+          },
+          // 我的日报（学员专用）
+          {
+            path: '/teaching/my-daily-reports',
+            name: 'TeachingMyDailyReports',
+            component: () => import('@/views/teaching/MyDailyReports.vue'),
+            meta: {
+              title: '我的日报',
+              icon: 'Document',
+              roles: ['user'],
             },
           },
           // 我的作业（学员专用）
