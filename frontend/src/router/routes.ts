@@ -176,17 +176,6 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head'],
             },
           },
-          // 作业批改（学院负责人、教师、学员）
-          {
-            path: '/teaching/homework-grading',
-            name: 'TeachingHomeworkGrading',
-            component: () => import('@/views/teaching/HomeworkGrading.vue'),
-            meta: {
-              title: '作业批改',
-              icon: 'Checked',
-              roles: ['college_head', 'teacher', 'user'],
-            },
-          },
           // 作业发布（学院负责人、教师）
           {
             path: '/teaching/homework-publish',
@@ -220,15 +209,27 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
-          // 我的课程（学员专用）
+          // 我的课程（学员专用 - 课程表）
           {
             path: '/teaching/my-courses',
             name: 'TeachingMyCourses',
-            component: () => import('@/views/course/MyCourses.vue'),
+            component: () => import('@/views/teaching/MyTimetable.vue'),
             meta: {
               title: '我的课程',
               icon: 'Reading',
               roles: ['user'],
+            },
+          },
+          // 课程列表（学员专用）
+          {
+            path: '/teaching/course-list',
+            name: 'TeachingCourseList',
+            component: () => import('@/views/course/MyCourses.vue'),
+            meta: {
+              title: '课程列表',
+              icon: 'List',
+              roles: ['user'],
+              hidden: true,
             },
           },
         ],
@@ -275,10 +276,10 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '岗位列表',
               icon: 'Briefcase',
-              roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+              roles: ['admin', 'college_head', 'user', 'enterprise_contact'],
             },
           },
-          // 求职管理（管理员、学院负责人、教师、企业对接人、学员）
+          // 求职管理（管理员、学院负责人、企业对接人、学员）
           {
             path: '/employment/applications',
             name: 'EmploymentApplications',
@@ -286,10 +287,10 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '求职管理',
               icon: 'User',
-              roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+              roles: ['admin', 'college_head', 'user', 'enterprise_contact'],
             },
           },
-          // 笔试管理（管理员、企业对接人、学员）
+          // 笔试管理（管理员、企业对接人）
           {
             path: '/employment/written-tests',
             name: 'EmploymentWrittenTests',
@@ -297,7 +298,7 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '笔试管理',
               icon: 'Edit',
-              roles: ['admin', 'college_head', 'teacher', 'enterprise_contact'],
+              roles: ['admin', 'college_head', 'enterprise_contact'],
             },
           },
           // 面试管理（管理员、学院负责人、企业对接人、学员）

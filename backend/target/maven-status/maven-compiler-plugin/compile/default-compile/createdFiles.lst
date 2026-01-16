@@ -1,4 +1,5 @@
 com\teaching\employment\excel\StudentExcel.class
+com\teaching\employment\service\impl\TimetableServiceImpl.class
 com\teaching\employment\service\InterviewService.class
 com\teaching\employment\entity\Role.class
 com\teaching\employment\mapper\UserMapper.class
@@ -14,6 +15,7 @@ com\teaching\employment\mapper\RoleMapper.class
 com\teaching\employment\service\PermissionService.class
 com\teaching\employment\controller\UserController$UpdateProfileRequest.class
 com\teaching\employment\service\impl\TeacherServiceImpl.class
+com\teaching\employment\controller\TimetableController.class
 com\teaching\employment\entity\Question.class
 com\teaching\employment\entity\User.class
 com\teaching\employment\service\impl\CourseRecordServiceImpl.class
@@ -99,6 +101,7 @@ com\teaching\employment\service\TeacherService.class
 com\teaching\employment\controller\NotificationController.class
 com\teaching\employment\mapper\HomeworkSubmissionMapper.class
 com\teaching\employment\service\impl\MenuServiceImpl.class
+com\teaching\employment\service\TimetableService.class
 com\teaching\employment\entity\Permission.class
 com\teaching\employment\controller\StatisticsController.class
 com\teaching\employment\mapper\ResumeMapper.class
@@ -150,6 +153,7 @@ com\teaching\employment\service\impl\StudentServiceImpl.class
 com\teaching\employment\mapper\OfferMapper.class
 com\teaching\employment\service\ExamService.class
 com\teaching\employment\controller\CourseController.class
+com\teaching\employment\entity\Timetable.class
 com\teaching\employment\service\StudentService.class
 com\teaching\employment\config\MyBatisPlusConfig.class
 com\teaching\employment\controller\CompanyController.class
@@ -158,6 +162,7 @@ com\teaching\employment\service\impl\HomeworkServiceImpl.class
 com\teaching\employment\service\WrittenTestService.class
 com\teaching\employment\enums\ApplicationStatusEnum.class
 com\teaching\employment\controller\StudentController.class
+com\teaching\employment\mapper\TimetableMapper.class
 com\teaching\employment\service\StudentExamRecordService.class
 com\teaching\employment\common\Result.class
 com\teaching\employment\controller\TeacherController.class
