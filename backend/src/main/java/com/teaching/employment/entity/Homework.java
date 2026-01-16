@@ -93,6 +93,12 @@ public class Homework implements Serializable {
     private Integer pendingCount;
 
     /**
+     * 提交信息（学生查询作业时的提交记录）
+     */
+    @TableField(exist = false)
+    private HomeworkSubmission submission;
+
+    /**
      * 元数据（用于存储额外的运行时数据，如学生是否已提交）
      */
     @TableField(exist = false)

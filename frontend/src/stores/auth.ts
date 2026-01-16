@@ -51,13 +51,14 @@ export const useAuthStore = defineStore('auth', () => {
         storage.setItem('token', data.token)
       }
 
-      // data 包含 { token, user, roleCode, studentId }
-      // 我们需要保存 user 对象,并确保包含 roleCode 和 studentId
+      // data 包含 { token, user, roleCode, studentId, teacherId }
+      // 我们需要保存 user 对象,并确保包含 roleCode, studentId 和 teacherId
       if (data.user) {
         user.value = {
           ...data.user,
           roleCode: data.roleCode || data.user.roleCode,
-          studentId: data.studentId  // 保存学员ID
+          studentId: data.studentId,  // 保存学员ID
+          teacherId: data.teacherId   // 保存教师ID
         }
         storage.setItem('user', JSON.stringify(user.value))
       }
@@ -162,15 +163,16 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('开始验证token...')
         // 调用API验证token并获取最新用户信息
         const response = await authApi.getCurrentUser()
-        const { user: userData, roleCode, studentId } = response
-        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode, 'studentId:', studentId)
+        const { user: userData, roleCode, studentId, teacherId } = response
+        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode, 'studentId:', studentId, 'teacherId:', teacherId)
 
-        // 保存用户信息,确保roleCode和studentId不被覆盖
-        // 优先使用API返回的顶层roleCode和studentId
+        // 保存用户信息,确保roleCode、studentId和teacherId不被覆盖
+        // 优先使用API返回的顶层roleCode、studentId和teacherId
         user.value = {
           ...userData,
           roleCode: roleCode || userData.roleCode,
-          studentId: studentId
+          studentId: studentId,
+          teacherId: teacherId
         }
         console.log('合并后的user.value:', user.value)
 
@@ -198,11 +200,12 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const getCurrentUser = async (): Promise<User | null> => {
     try {
-      const { user: userData, roleCode, studentId } = await authApi.getCurrentUser()
+      const { user: userData, roleCode, studentId, teacherId } = await authApi.getCurrentUser()
       user.value = {
         ...userData,
         roleCode: roleCode || userData.roleCode,
-        studentId: studentId
+        studentId: studentId,
+        teacherId: teacherId
       }
       localStorage.setItem('user', JSON.stringify(user.value))
       return user.value

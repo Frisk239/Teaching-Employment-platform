@@ -7,8 +7,15 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -167,6 +174,90 @@ public class FileUploadController {
         } catch (IOException e) {
             log.error("文件删除失败", e);
             return Result.error("文件删除失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 下载文件
+     */
+    @GetMapping("/download/**")
+    @ApiOperation("下载文件")
+    public ResponseEntity<Resource> downloadFile(HttpServletRequest request) {
+        try {
+            // 获取相对路径（去掉 /file/download/ 前缀）
+            String requestURI = request.getRequestURI();
+            String relativePath = requestURI.substring("/api/file/download/".length());
+
+            if (relativePath.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // 构建文件路径
+            Path targetPath = Paths.get(uploadPath, relativePath);
+
+            // 检查文件是否存在
+            if (!Files.exists(targetPath) || !Files.isReadable(targetPath)) {
+                log.warn("文件不存在或不可读: {}", relativePath);
+                return ResponseEntity.notFound().build();
+            }
+
+            // 创建资源
+            Resource resource = new FileSystemResource(targetPath);
+
+            // 获取文件名
+            String filename = targetPath.getFileName().toString();
+
+            // 确定内容类型
+            String contentType = determineContentType(filename);
+
+            // 构建响应
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            log.error("文件下载失败", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 确定文件内容类型
+     */
+    private String determineContentType(String filename) {
+        String extension = getFileExtension(filename).toLowerCase();
+
+        switch (extension) {
+            case "pdf":
+                return "application/pdf";
+            case "doc":
+                return "application/msword";
+            case "docx":
+                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "xls":
+                return "application/vnd.ms-excel";
+            case "xlsx":
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "ppt":
+                return "application/vnd.ms-powerpoint";
+            case "pptx":
+                return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            case "txt":
+                return "text/plain";
+            case "jpg":
+            case "jpeg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
+            case "gif":
+                return "image/gif";
+            case "zip":
+                return "application/zip";
+            case "rar":
+                return "application/x-rar-compressed";
+            default:
+                return "application/octet-stream";
         }
     }
 

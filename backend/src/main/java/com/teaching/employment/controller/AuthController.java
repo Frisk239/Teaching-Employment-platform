@@ -3,8 +3,10 @@ package com.teaching.employment.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.Student;
+import com.teaching.employment.entity.Teacher;
 import com.teaching.employment.entity.User;
 import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.TeacherService;
 import com.teaching.employment.service.UserService;
 import com.teaching.employment.utils.JwtUtil;
 import io.swagger.annotations.Api;
@@ -32,6 +34,7 @@ public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final StudentService studentService;
+    private final TeacherService teacherService;
 
     /**
      * 用户登录
@@ -62,6 +65,16 @@ public class AuthController {
                 );
                 if (student != null) {
                     data.put("studentId", student.getId());
+                }
+            }
+
+            // 如果是教师角色,查询并返回teacherId
+            if (user.getRoleId() == 3) {
+                Teacher teacher = teacherService.getOne(
+                    new LambdaQueryWrapper<Teacher>().eq(Teacher::getUserId, user.getId())
+                );
+                if (teacher != null) {
+                    data.put("teacherId", teacher.getId());
                 }
             }
 
@@ -130,6 +143,16 @@ public class AuthController {
                 );
                 if (student != null) {
                     data.put("studentId", student.getId());
+                }
+            }
+
+            // 如果是教师角色,查询并返回teacherId
+            if (user.getRoleId() == 3) {
+                Teacher teacher = teacherService.getOne(
+                    new LambdaQueryWrapper<Teacher>().eq(Teacher::getUserId, user.getId())
+                );
+                if (teacher != null) {
+                    data.put("teacherId", teacher.getId());
                 }
             }
 

@@ -191,7 +191,7 @@ export const routes: RouteRecordRaw[] = [
           {
             path: '/teaching/homework-publish',
             name: 'TeachingHomeworkPublish',
-            component: () => import('@/views/teaching/HomeworkPublish.vue'),
+            component: () => import('@/views/teaching/HomeworkManagement.vue'),
             meta: {
               title: '作业发布',
               icon: 'DocumentAdd',
@@ -213,7 +213,7 @@ export const routes: RouteRecordRaw[] = [
           {
             path: '/teaching/assignments',
             name: 'TeachingAssignments',
-            component: () => import('@/views/teaching/Assignments.vue'),
+            component: () => import('@/views/teaching/MyHomework.vue'),
             meta: {
               title: '我的作业',
               icon: 'DocumentAdd',

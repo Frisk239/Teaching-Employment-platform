@@ -88,6 +88,12 @@ public class HomeworkSubmission implements Serializable {
     private String studentName;
 
     /**
+     * 学号（来自学生表）
+     */
+    @TableField(exist = false)
+    private String studentNo;
+
+    /**
      * 是否逾期提交
      */
     @TableField(exist = false)

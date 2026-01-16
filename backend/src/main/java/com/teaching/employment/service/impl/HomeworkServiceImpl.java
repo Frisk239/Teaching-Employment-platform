@@ -110,6 +110,8 @@ public class HomeworkServiceImpl extends ServiceImpl<HomeworkMapper, Homework> i
                 homework.setMeta(new HashMap<>());
             }
             homework.getMeta().put("submitted", submission != null);
+            // 设置submission对象，供前端显示提交详情
+            homework.setSubmission(submission);
         });
 
         return result;

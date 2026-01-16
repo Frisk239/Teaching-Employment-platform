@@ -7,10 +7,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.Homework;
 import com.teaching.employment.entity.HomeworkSubmission;
+import com.teaching.employment.entity.Student;
+import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.HomeworkSubmissionMapper;
 import com.teaching.employment.service.HomeworkService;
 import com.teaching.employment.service.HomeworkSubmissionService;
+import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,12 @@ public class HomeworkSubmissionServiceImpl extends ServiceImpl<HomeworkSubmissio
     @Autowired
     private HomeworkService homeworkService;
 
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private UserService userService;
+
     @Override
     public IPage<HomeworkSubmission> getSubmissionPage(Integer current, Integer size, Long homeworkId, Long studentId, String status) {
         Page<HomeworkSubmission> page = new Page<>(current, size);
@@ -54,10 +64,24 @@ public class HomeworkSubmissionServiceImpl extends ServiceImpl<HomeworkSubmissio
 
         IPage<HomeworkSubmission> result = homeworkSubmissionMapper.selectPage(page, wrapper);
 
-        // 填充作业信息和判断是否逾期
+        // 填充作业信息、学生信息和判断是否逾期
         result.getRecords().forEach(submission -> {
+            // 填充作业信息
             Homework homework = homeworkService.getById(submission.getHomeworkId());
             submission.setHomework(homework);
+
+            // 填充学生信息
+            Student student = studentService.getById(submission.getStudentId());
+            submission.setStudent(student);
+            if (student != null) {
+                submission.setStudentNo(student.getStudentNo());
+
+                // 从User表获取学生姓名
+                User user = userService.getById(student.getUserId());
+                if (user != null) {
+                    submission.setStudentName(user.getRealName());
+                }
+            }
 
             // 判断是否逾期提交
             if (submission.getSubmitTime() != null && homework.getDeadline() != null) {

@@ -21,7 +21,7 @@ public interface UserMapper extends BaseMapper<User> {
      * @param username 用户名
      * @return 用户信息
      */
-    @Select("SELECT u.*, r.role_code, r.role_name, s.school_name " +
+    @Select("SELECT u.*, r.role_code AS roleCode, r.role_name, s.school_name " +
             "FROM t_user u " +
             "LEFT JOIN t_role r ON u.role_id = r.id " +
             "LEFT JOIN t_school s ON u.school_id = s.id " +
@@ -34,7 +34,7 @@ public interface UserMapper extends BaseMapper<User> {
      * @param userId 用户ID
      * @return 用户信息
      */
-    @Select("SELECT u.*, r.role_code, r.role_name, s.school_name " +
+    @Select("SELECT u.*, r.role_code AS roleCode, r.role_name, s.school_name " +
             "FROM t_user u " +
             "LEFT JOIN t_role r ON u.role_id = r.id " +
             "LEFT JOIN t_school s ON u.school_id = s.id " +
