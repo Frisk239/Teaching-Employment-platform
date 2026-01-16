@@ -217,7 +217,7 @@ import {
   ArrowRight,
   Lightning
 } from '@element-plus/icons-vue'
-import axios from 'axios'
+import request from '@/utils/request'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -305,7 +305,7 @@ const submitGrade = async () => {
 
   submitting.value = true
   try {
-    await axios.post('/api/teacher-dashboard/grade-homework', {
+    await request.post('/teacher-dashboard/grade-homework', {
       submissionId: gradeForm.value.submissionId,
       score: gradeForm.value.score,
       comment: gradeForm.value.comment
@@ -328,12 +328,13 @@ const submitGrade = async () => {
 const loadStats = async () => {
   try {
     console.log('正在加载统计数据，teacherId:', teacherId.value)
-    const response = await axios.get(`/api/teacher-dashboard/stats/${teacherId.value}`)
-    console.log('统计数据响应:', response.data)
-    if (response.data.code === 200) {
-      stats.value = response.data.data
-    } else {
-      console.error('统计数据返回错误:', response.data)
+    const response = await request.get(`/teacher-dashboard/stats/${teacherId.value}`)
+    console.log('统计数据响应:', response)
+    stats.value = response || {
+      myCourses: 0,
+      myStudents: 0,
+      pendingHomework: 0,
+      gradedHomework: 0
     }
   } catch (error: any) {
     console.error('加载统计数据失败:', error)
@@ -346,13 +347,9 @@ const loadCourses = async () => {
   loading.value = true
   try {
     console.log('正在加载课程列表，teacherId:', teacherId.value)
-    const response = await axios.get(`/api/teacher-dashboard/courses/${teacherId.value}`)
-    console.log('课程列表响应:', response.data)
-    if (response.data.code === 200) {
-      myCourses.value = response.data.data || []
-    } else {
-      console.error('课程列表返回错误:', response.data)
-    }
+    const response = await request.get(`/teacher-dashboard/courses/${teacherId.value}`)
+    console.log('课程列表响应:', response)
+    myCourses.value = response || []
   } catch (error: any) {
     console.error('加载课程列表失败:', error)
     console.error('错误详情:', error.response?.data)
@@ -365,15 +362,12 @@ const loadCourses = async () => {
 const loadPendingHomework = async () => {
   try {
     console.log('正在加载待批改作业，teacherId:', teacherId.value)
-    const response = await axios.get(`/api/teacher-dashboard/pending-homework/${teacherId.value}`, {
+    const response = await request.get(`/teacher-dashboard/pending-homework/${teacherId.value}`, {
       params: { current: 1, size: 10 }
     })
-    console.log('待批改作业响应:', response.data)
-    if (response.data.code === 200) {
-      pendingHomeworkList.value = response.data.data.records || []
-    } else {
-      console.error('待批改作业返回错误:', response.data)
-    }
+    console.log('待批改作业响应:', response)
+    // response是分页对象，包含records, total等字段
+    pendingHomeworkList.value = response?.records || []
   } catch (error: any) {
     console.error('加载待批改作业失败:', error)
     console.error('错误详情:', error.response?.data)
