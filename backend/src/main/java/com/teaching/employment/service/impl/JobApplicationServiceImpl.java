@@ -111,11 +111,16 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
 
         // 填充关联字段信息
         resultPage.getRecords().forEach(application -> {
-            // 填充职位名称
+            // 填充职位名称、薪资、工作城市
             if (application.getPositionId() != null) {
                 Position position = positionService.getById(application.getPositionId());
                 if (position != null) {
                     application.setPositionName(position.getPositionName());
+                    // 填充薪资信息
+                    application.setSalaryMin(position.getSalaryMin());
+                    application.setSalaryMax(position.getSalaryMax());
+                    // 填充工作城市
+                    application.setWorkCity(position.getWorkCity());
                     // 填充企业名称
                     if (position.getCompanyId() != null) {
                         Company company = companyService.getById(position.getCompanyId());
@@ -323,11 +328,16 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
             return null;
         }
 
-        // 填充职位名称和企业名称
+        // 填充职位名称、薪资、工作城市、企业名称
         if (application.getPositionId() != null) {
             Position position = positionService.getById(application.getPositionId());
             if (position != null) {
                 application.setPositionName(position.getPositionName());
+                // 填充薪资信息
+                application.setSalaryMin(position.getSalaryMin());
+                application.setSalaryMax(position.getSalaryMax());
+                // 填充工作城市
+                application.setWorkCity(position.getWorkCity());
                 // 填充企业名称
                 if (position.getCompanyId() != null) {
                     Company company = companyService.getById(position.getCompanyId());

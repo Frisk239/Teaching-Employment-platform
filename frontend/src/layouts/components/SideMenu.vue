@@ -283,25 +283,14 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
-  // 招聘岗位管理(管理员专用)
+  // 企业职位管理(企业对接人专用)
   {
-    id: 18,
-    name: '岗位管理',
-    path: '/employment/position-management',
+    id: 29,
+    name: '职位管理',
+    path: '/employment/enterprise-positions',
     icon: Briefcase,
     parentId: 16,
     sort: 2,
-    status: '1',
-    type: '2',
-  },
-  // 岗位列表(所有就业相关角色)
-  {
-    id: 23,
-    name: '岗位列表',
-    path: '/employment/positions',
-    icon: Briefcase,
-    parentId: 16,
-    sort: 3,
     status: '1',
     type: '2',
   },
@@ -310,6 +299,17 @@ const allMenus: MenuItem[] = [
     id: 19,
     name: '求职管理',
     path: '/employment/applications',
+    icon: User,
+    parentId: 16,
+    sort: 4,
+    status: '1',
+    type: '2',
+  },
+  // 我的求职（学员专用）
+  {
+    id: 30,
+    name: '我的求职',
+    path: '/employment/my-applications',
     icon: User,
     parentId: 16,
     sort: 4,
@@ -414,7 +414,6 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/daily-reports',
     '/employment',
     '/employment/companies',
-    '/employment/position-management',
     '/employment/applications',
     '/employment/written-tests',
     '/employment/interviews',
@@ -431,7 +430,6 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/homework-publish',
     '/teaching/daily-reports',
     '/employment',
-    '/employment/positions',
     '/employment/statistics',
   ],
   teacher: [
@@ -450,8 +448,7 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/assignments',
     '/teaching/my-daily-reports',
     '/employment',
-    '/employment/positions',
-    '/employment/applications',
+    '/employment/my-applications',
     '/employment/written-tests',
     '/employment/interviews',
     '/employment/offers',
@@ -460,12 +457,10 @@ const roleMenuPermissions: Record<string, string[]> = {
   enterprise_contact: [
     '/dashboard',
     '/employment',
-    '/employment/companies',
-    '/employment/positions',
+    '/employment/enterprise-positions',
     '/employment/applications',
     '/employment/written-tests',
     '/employment/interviews',
-    '/employment/statistics',
   ],
 }
 

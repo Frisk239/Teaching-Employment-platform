@@ -279,6 +279,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin'],
             },
           },
+          // 企业职位管理（企业对接人）
+          {
+            path: '/employment/enterprise-positions',
+            name: 'EmploymentEnterprisePositions',
+            component: () => import('@/views/employment/EnterprisePositionManagement.vue'),
+            meta: {
+              title: '职位管理',
+              icon: 'Briefcase',
+              roles: ['enterprise_contact'],
+            },
+          },
           // 岗位列表（所有就业相关角色）
           {
             path: '/employment/positions',
@@ -290,7 +301,7 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head', 'user', 'enterprise_contact'],
             },
           },
-          // 求职管理（管理员、学院负责人、企业对接人、学员）
+          // 求职管理（管理员、学院负责人、企业对接人）
           {
             path: '/employment/applications',
             name: 'EmploymentApplications',
@@ -298,7 +309,18 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '求职管理',
               icon: 'User',
-              roles: ['admin', 'college_head', 'user', 'enterprise_contact'],
+              roles: ['admin', 'college_head', 'enterprise_contact'],
+            },
+          },
+          // 我的求职（学员专用）
+          {
+            path: '/employment/my-applications',
+            name: 'EmploymentMyApplications',
+            component: () => import('@/views/employment/MyApplications.vue'),
+            meta: {
+              title: '我的求职',
+              icon: 'User',
+              roles: ['user'],
             },
           },
           // 笔试管理（管理员、企业对接人）

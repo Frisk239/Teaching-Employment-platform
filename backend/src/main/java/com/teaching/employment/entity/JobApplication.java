@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -101,4 +102,22 @@ public class JobApplication implements Serializable {
      */
     @TableField(exist = false)
     private String companyName;
+
+    /**
+     * 最低薪资（从职位信息中获取）
+     */
+    @TableField(exist = false)
+    private BigDecimal salaryMin;
+
+    /**
+     * 最高薪资（从职位信息中获取）
+     */
+    @TableField(exist = false)
+    private BigDecimal salaryMax;
+
+    /**
+     * 工作城市（从职位信息中获取）
+     */
+    @TableField(exist = false)
+    private String workCity;
 }
