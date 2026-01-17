@@ -120,7 +120,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
                     application.setSalaryMin(position.getSalaryMin());
                     application.setSalaryMax(position.getSalaryMax());
                     // 填充工作城市
-                    application.setWorkCity(position.getWorkCity());
+                    application.setWorkCity(position.getCity());
                     // 填充企业名称
                     if (position.getCompanyId() != null) {
                         Company company = companyService.getById(position.getCompanyId());
@@ -337,7 +337,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
                 application.setSalaryMin(position.getSalaryMin());
                 application.setSalaryMax(position.getSalaryMax());
                 // 填充工作城市
-                application.setWorkCity(position.getWorkCity());
+                application.setWorkCity(position.getCity());
                 // 填充企业名称
                 if (position.getCompanyId() != null) {
                     Company company = companyService.getById(position.getCompanyId());
