@@ -49,6 +49,9 @@ public class User implements Serializable {
     @ApiModelProperty(value = "所属学校ID")
     private Long schoolId;
 
+    @ApiModelProperty(value = "所属企业ID（企业对接人专用）")
+    private Long companyId;
+
     @ApiModelProperty(value = "状态：1-正常 0-停用")
     private Integer status;
 

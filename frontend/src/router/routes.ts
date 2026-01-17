@@ -165,6 +165,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head', 'teacher'],
             },
           },
+          // 学员档案（学院负责人专用）
+          {
+            path: '/teaching/student-profile',
+            name: 'TeachingStudentProfile',
+            component: () => import('@/views/teaching/StudentProfile.vue'),
+            meta: {
+              title: '学员档案',
+              icon: 'Document',
+              roles: ['college_head'],
+            },
+          },
           // 教师管理（管理员、学院负责人）
           {
             path: '/teaching/teachers',
@@ -241,6 +252,28 @@ export const routes: RouteRecordRaw[] = [
               icon: 'List',
               roles: ['user'],
               hidden: true,
+            },
+          },
+          // 教学资料管理（教师专用）
+          {
+            path: '/teaching/teaching-materials',
+            name: 'TeachingTeachingMaterials',
+            component: () => import('@/views/teaching/TeachingMaterials.vue'),
+            meta: {
+              title: '教学资料',
+              icon: 'Folder',
+              roles: ['teacher'],
+            },
+          },
+          // 学生就业情况（教师专用）
+          {
+            path: '/teaching/student-employment',
+            name: 'TeachingStudentEmployment',
+            component: () => import('@/views/teaching/StudentEmployment.vue'),
+            meta: {
+              title: '学生就业情况',
+              icon: 'TrendCharts',
+              roles: ['teacher'],
             },
           },
         ],
@@ -411,6 +444,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['enterprise_contact'],
             },
           },
+          // 就业统计（学院负责人专用）
+          {
+            path: '/employment/statistics',
+            name: 'EmploymentStatistics',
+            component: () => import('@/views/employment/Statistics.vue'),
+            meta: {
+              title: '统计',
+              icon: 'DataAnalysis',
+              roles: ['college_head'],
+            },
+          },
         ],
       },
 
@@ -418,7 +462,7 @@ export const routes: RouteRecordRaw[] = [
       {
         path: '/profile',
         name: 'Profile',
-        component: () => import('@/views/profile/Profile.vue'),
+        component: () => import('@/views/Profile.vue'),
         meta: {
           title: '个人中心',
           icon: 'User',

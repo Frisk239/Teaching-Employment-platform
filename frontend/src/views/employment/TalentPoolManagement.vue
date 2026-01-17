@@ -433,6 +433,9 @@ import {
   Plus, Refresh, Search, Delete, User, Star, ChatDotRound, Flag
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { useAuthStore } from '@/stores'
+
+const authStore = useAuthStore()
 
 // 统计数据
 const stats = ref({
@@ -506,7 +509,7 @@ const loadTalentPool = async () => {
     const response: any = await request.get('/talent-pool/page', {
       params: {
         ...queryParams,
-        companyId: 1 // 应从用户信息获取
+        companyId: authStore.user?.companyId
       }
     })
     talentList.value = response.records || []
@@ -521,7 +524,9 @@ const loadTalentPool = async () => {
 // 加载统计
 const loadStats = async () => {
   try {
-    const response: any = await request.get('/talent-pool/stats/company/1')
+    const companyId = authStore.user?.companyId
+    if (!companyId) return
+    const response: any = await request.get(`/talent-pool/stats/company/${companyId}`)
     stats.value = response
   } catch (error) {
     console.error('加载统计失败', error)
@@ -640,7 +645,7 @@ const handleSubmit = async () => {
     try {
       await request.post('/talent-pool', {
         ...formData,
-        companyId: 1
+        companyId: authStore.user?.companyId
       })
       ElMessage.success('添加成功')
       dialogVisible.value = false

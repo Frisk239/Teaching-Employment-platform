@@ -28,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
     // 最后尝试 role 字段本身
     return user.value?.role || 'user'
   })
+  const userId = computed(() => user.value?.id || null)
   const userName = computed(() => user.value?.realName || user.value?.username || '')
   const userAvatar = computed(() => user.value?.avatar || '')
   const permissions = computed(() => user.value?.permissions || [])
@@ -51,14 +52,15 @@ export const useAuthStore = defineStore('auth', () => {
         storage.setItem('token', data.token)
       }
 
-      // data 包含 { token, user, roleCode, studentId, teacherId }
-      // 我们需要保存 user 对象,并确保包含 roleCode, studentId 和 teacherId
+      // data 包含 { token, user, roleCode, studentId, teacherId, companyId }
+      // 我们需要保存 user 对象,并确保包含 roleCode, studentId, teacherId 和 companyId
       if (data.user) {
         user.value = {
           ...data.user,
           roleCode: data.roleCode || data.user.roleCode,
           studentId: data.studentId,  // 保存学员ID
-          teacherId: data.teacherId   // 保存教师ID
+          teacherId: data.teacherId,  // 保存教师ID
+          companyId: data.companyId   // 保存企业ID
         }
         storage.setItem('user', JSON.stringify(user.value))
       }
@@ -163,16 +165,17 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('开始验证token...')
         // 调用API验证token并获取最新用户信息
         const response = await authApi.getCurrentUser()
-        const { user: userData, roleCode, studentId, teacherId } = response
-        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode, 'studentId:', studentId, 'teacherId:', teacherId)
+        const { user: userData, roleCode, studentId, teacherId, companyId } = response
+        console.log('Token验证成功,用户数据:', userData, 'roleCode:', roleCode, 'studentId:', studentId, 'teacherId:', teacherId, 'companyId:', companyId)
 
-        // 保存用户信息,确保roleCode、studentId和teacherId不被覆盖
-        // 优先使用API返回的顶层roleCode、studentId和teacherId
+        // 保存用户信息,确保roleCode、studentId、teacherId和companyId不被覆盖
+        // 优先使用API返回的顶层roleCode、studentId、teacherId和companyId
         user.value = {
           ...userData,
           roleCode: roleCode || userData.roleCode,
           studentId: studentId,
-          teacherId: teacherId
+          teacherId: teacherId,
+          companyId: companyId
         }
         console.log('合并后的user.value:', user.value)
 
@@ -200,12 +203,13 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const getCurrentUser = async (): Promise<User | null> => {
     try {
-      const { user: userData, roleCode, studentId, teacherId } = await authApi.getCurrentUser()
+      const { user: userData, roleCode, studentId, teacherId, companyId } = await authApi.getCurrentUser()
       user.value = {
         ...userData,
         roleCode: roleCode || userData.roleCode,
         studentId: studentId,
-        teacherId: teacherId
+        teacherId: teacherId,
+        companyId: companyId
       }
       localStorage.setItem('user', JSON.stringify(user.value))
       return user.value
@@ -269,6 +273,7 @@ export const useAuthStore = defineStore('auth', () => {
     // 计算属性
     isLoggedIn,
     userRole,
+    userId,
     userName,
     userAvatar,
     permissions,

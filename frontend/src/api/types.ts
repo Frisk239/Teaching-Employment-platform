@@ -25,6 +25,8 @@ export interface User {
   permissions?: string[]
   schoolId?: number
   studentId?: number  // 学员ID,仅当用户角色为学员时有值
+  teacherId?: number  // 教师ID,仅当用户角色为教师时有值
+  companyId?: number  // 企业ID,仅当用户角色为企业对接人时有值
   status?: number
   createTime?: string
   updateTime?: string

@@ -72,6 +72,8 @@ import {
   ChatDotRound,
   Bell,
   Star,
+  Folder,
+  TrendCharts,
 } from '@element-plus/icons-vue'
 
 interface MenuItem {
@@ -260,6 +262,39 @@ const allMenus: MenuItem[] = [
     icon: DocumentCopy,
     parentId: 7,
     sort: 8,
+    status: '1',
+    type: '2',
+  },
+  // 教学资料管理（教师专用）
+  {
+    id: 36,
+    name: '教学资料',
+    path: '/teaching/teaching-materials',
+    icon: Folder,
+    parentId: 7,
+    sort: 9,
+    status: '1',
+    type: '2',
+  },
+  // 学生就业情况（教师专用）
+  {
+    id: 37,
+    name: '学生就业情况',
+    path: '/teaching/student-employment',
+    icon: TrendCharts,
+    parentId: 7,
+    sort: 10,
+    status: '1',
+    type: '2',
+  },
+  // 学员档案（学院负责人专用）
+  {
+    id: 38,
+    name: '学员档案',
+    path: '/teaching/student-profile',
+    icon: Document,
+    parentId: 7,
+    sort: 11,
     status: '1',
     type: '2',
   },
@@ -474,18 +509,16 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/employment/applications',
     '/employment/written-tests',
     '/employment/interviews',
-    '/employment/statistics',
   ],
   college_head: [
     '/dashboard',
     '/teaching',
-    '/teaching/schools',
     '/teaching/classrooms',
     '/teaching/courses',
     '/teaching/students',
     '/teaching/teachers',
-    '/teaching/homework-publish',
     '/teaching/daily-reports',
+    '/teaching/student-profile',
     '/employment',
     '/employment/statistics',
   ],
@@ -497,6 +530,8 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/students',
     '/teaching/homework-publish',
     '/teaching/daily-reports',
+    '/teaching/teaching-materials',
+    '/teaching/student-employment',
   ],
   user: [
     '/dashboard',

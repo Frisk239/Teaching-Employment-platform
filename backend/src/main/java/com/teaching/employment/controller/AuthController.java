@@ -78,6 +78,11 @@ public class AuthController {
                 }
             }
 
+            // 如果是企业对接人角色,直接返回companyId（从user对象中获取）
+            if (user.getRoleId() == 5 && user.getCompanyId() != null) {
+                data.put("companyId", user.getCompanyId());
+            }
+
             return Result.ok("登录成功", data);
         } catch (Exception e) {
             log.error("登录失败: {}", e.getMessage());
@@ -154,6 +159,11 @@ public class AuthController {
                 if (teacher != null) {
                     data.put("teacherId", teacher.getId());
                 }
+            }
+
+            // 如果是企业对接人角色,直接返回companyId（从user对象中获取）
+            if (user.getRoleId() == 5 && user.getCompanyId() != null) {
+                data.put("companyId", user.getCompanyId());
             }
 
             return Result.ok(data);

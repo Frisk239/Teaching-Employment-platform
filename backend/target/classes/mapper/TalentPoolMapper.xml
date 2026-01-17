@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teaching.employment.mapper.TalentPoolMapper">
+
+    <!-- 分页查询人才库列表（关联查询学员信息） -->
+    <select id="selectTalentPoolPage" resultType="com.teaching.employment.entity.TalentPool">
+        SELECT
+            tp.id,
+            tp.company_id,
+            tp.student_id,
+            tp.resume_id,
+            tp.source,
+            tp.source_id,
+            tp.position_name,
+            tp.tags,
+            tp.category,
+            tp.skill_tags,
+            tp.experience_level,
+            tp.education,
+            tp.expected_salary_min,
+            tp.expected_salary_max,
+            tp.expected_city,
+            tp.rating,
+            tp.priority,
+            tp.status,
+            tp.last_contact_date,
+            tp.last_contact_method,
+            tp.next_contact_date,
+            tp.remark,
+            tp.contact_count,
+            tp.create_time,
+            tp.update_time,
+            -- 关联学员信息
+            s.user_id,
+            u.username as student_name,
+            s.major,
+            sc.school_name,
+            u.avatar as student_avatar,
+            s.phone as student_phone,
+            s.email as student_email
+        FROM t_talent_pool tp
+        LEFT JOIN t_student s ON tp.student_id = s.id
+        LEFT JOIN t_user u ON s.user_id = u.id
+        LEFT JOIN t_school sc ON s.school_id = sc.id
+        <where>
+            tp.is_deleted = 0
+            <if test="companyId != null">
+                AND tp.company_id = #{companyId}
+            </if>
+            <if test="category != null and category != ''">
+                AND tp.category = #{category}
+            </if>
+            <if test="status != null and status != ''">
+                AND tp.status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND tp.priority = #{priority}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    u.username LIKE CONCAT('%', #{keyword}, '%')
+                    OR tp.position_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR tp.tags LIKE CONCAT('%', #{keyword}, '%')
+                    OR tp.skill_tags LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY
+            CASE tp.priority
+                WHEN 'urgent' THEN 1
+                WHEN 'high' THEN 2
+                WHEN 'normal' THEN 3
+                WHEN 'low' THEN 4
+                ELSE 5
+            END ASC,
+            tp.rating DESC,
+            tp.create_time DESC
+    </select>
+
+</mapper>
