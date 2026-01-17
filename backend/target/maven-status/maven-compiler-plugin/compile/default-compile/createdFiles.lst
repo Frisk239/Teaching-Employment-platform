@@ -28,6 +28,7 @@ com\teaching\employment\entity\CourseStudent.class
 com\teaching\employment\excel\StudentImportListener.class
 com\teaching\employment\mapper\PermissionMapper.class
 com\teaching\employment\utils\ExcelUtil$StudentImportTemplate.class
+com\teaching\employment\service\TalentPoolService.class
 com\teaching\employment\controller\PermissionController.class
 com\teaching\employment\entity\Student.class
 com\teaching\employment\mapper\ClassroomMapper.class
@@ -57,6 +58,7 @@ com\teaching\employment\service\ClassroomService.class
 com\teaching\employment\controller\ExamController.class
 com\teaching\employment\controller\QuestionController.class
 com\teaching\employment\service\impl\ResumeServiceImpl.class
+com\teaching\employment\entity\OfferTemplate.class
 com\teaching\employment\service\HomeworkSubmissionService.class
 com\teaching\employment\controller\HomeworkSubmissionController.class
 com\teaching\employment\mapper\ExamMapper.class
@@ -77,8 +79,10 @@ com\teaching\employment\utils\ExcelUtil.class
 com\teaching\employment\utils\JwtUtil.class
 com\teaching\employment\mapper\StudentMapper.class
 com\teaching\employment\mapper\NotificationMapper.class
+com\teaching\employment\mapper\TalentPoolMapper.class
 com\teaching\employment\mapper\SchoolMapper.class
 com\teaching\employment\EmploymentPlatformApplication.class
+com\teaching\employment\controller\TalentPoolController.class
 com\teaching\employment\entity\Course.class
 com\teaching\employment\service\QuestionService.class
 com\teaching\employment\utils\ExcelUtil$TeacherExportTemplate.class
@@ -99,6 +103,7 @@ com\teaching\employment\service\CourseService.class
 com\teaching\employment\controller\StudentExamRecordController.class
 com\teaching\employment\service\TeacherService.class
 com\teaching\employment\controller\NotificationController.class
+com\teaching\employment\entity\TalentPool.class
 com\teaching\employment\mapper\HomeworkSubmissionMapper.class
 com\teaching\employment\service\impl\MenuServiceImpl.class
 com\teaching\employment\service\TimetableService.class
@@ -122,6 +127,7 @@ com\teaching\employment\service\impl\JobApplicationServiceImpl.class
 com\teaching\employment\controller\InterviewController.class
 com\teaching\employment\service\HomeworkService.class
 com\teaching\employment\controller\ResumeController.class
+com\teaching\employment\service\impl\TalentPoolServiceImpl.class
 com\teaching\employment\service\StatisticsService.class
 com\teaching\employment\enums\RoleTypeEnum.class
 com\teaching\employment\controller\AuthController.class

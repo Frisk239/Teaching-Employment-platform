@@ -6,6 +6,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\TeacherServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\StudentExamRecordService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\PositionServiceImpl.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\TalentPool.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\enums\RoleTypeEnum.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\DailyReportMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\RoleMenuRelationServiceImpl.java
@@ -21,6 +22,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\ResumeService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\TimetableController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\OfferMapper.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\TalentPoolMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\JobApplicationMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\SchoolMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\TimetableServiceImpl.java
@@ -39,6 +41,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\ExamServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\StudentController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\Student.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\TalentPoolService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\ClassroomController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\Offer.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\HomeworkMapper.java
@@ -93,6 +96,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\config\MyMetaObjectHandler.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\NotificationMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\StudentService.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\TalentPoolController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\HomeworkService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\StatisticsService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\config\Knife4jConfig.java
@@ -123,6 +127,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\JobApplicationService.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\enums\CourseTypeEnum.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\constants\RoleConstants.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\TalentPoolServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\CourseController.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\MenuMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\UserController.java
@@ -137,6 +142,7 @@ C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employmen
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\StudentExamRecordMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\InterviewServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\ExamService.java
+C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\OfferTemplate.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\CompanyServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\mapper\PermissionMapper.java
 C:\Users\LeiYu\Desktop\code\front end code\project2 - 副本2\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\StudentServiceImpl.java

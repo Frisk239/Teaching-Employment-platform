@@ -323,7 +323,7 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
-          // 笔试管理（管理员、企业对接人）
+          // 笔试管理（管理员、学院负责人、企业对接人）
           {
             path: '/employment/written-tests',
             name: 'EmploymentWrittenTests',
@@ -334,7 +334,18 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head', 'enterprise_contact'],
             },
           },
-          // 面试管理（管理员、学院负责人、企业对接人、学员）
+          // 我的笔试（学员专用）
+          {
+            path: '/employment/my-written-tests',
+            name: 'EmploymentMyWrittenTests',
+            component: () => import('@/views/employment/MyWrittenTests.vue'),
+            meta: {
+              title: '我的笔试',
+              icon: 'Edit',
+              roles: ['user'],
+            },
+          },
+          // 面试管理（管理员、学院负责人、企业对接人）
           {
             path: '/employment/interviews',
             name: 'EmploymentInterviews',
@@ -342,7 +353,18 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '面试管理',
               icon: 'ChatDotRound',
-              roles: ['admin', 'college_head', 'enterprise_contact', 'user'],
+              roles: ['admin', 'college_head', 'enterprise_contact'],
+            },
+          },
+          // 我的面试（学员专用）
+          {
+            path: '/employment/my-interviews',
+            name: 'EmploymentMyInterviews',
+            component: () => import('@/views/employment/MyInterviews.vue'),
+            meta: {
+              title: '我的面试',
+              icon: 'ChatDotRound',
+              roles: ['user'],
             },
           },
           // 我的Offer（学员专用）
@@ -354,6 +376,39 @@ export const routes: RouteRecordRaw[] = [
               title: '我的Offer',
               icon: 'Checked',
               roles: ['user'],
+            },
+          },
+          // Offer管理（企业对接人）
+          {
+            path: '/employment/enterprise-offers',
+            name: 'EmploymentEnterpriseOffers',
+            component: () => import('@/views/employment/EnterpriseOfferManagement.vue'),
+            meta: {
+              title: 'Offer管理',
+              icon: 'Document',
+              roles: ['enterprise_contact'],
+            },
+          },
+          // 人才库（企业对接人）
+          {
+            path: '/employment/talent-pool',
+            name: 'EmploymentTalentPool',
+            component: () => import('@/views/employment/TalentPoolManagement.vue'),
+            meta: {
+              title: '人才库',
+              icon: 'Star',
+              roles: ['enterprise_contact'],
+            },
+          },
+          // 企业资料（企业对接人）
+          {
+            path: '/enterprise/profile',
+            name: 'EnterpriseProfile',
+            component: () => import('@/views/employment/EnterpriseProfileManagement.vue'),
+            meta: {
+              title: '企业资料',
+              icon: 'Management',
+              roles: ['enterprise_contact'],
             },
           },
         ],

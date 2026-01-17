@@ -61,6 +61,7 @@ import {
   Collection,
   Avatar,
   Checked,
+  Document,
   DocumentAdd,
   DocumentCopy,
   OfficeBuilding,
@@ -70,6 +71,7 @@ import {
   DataAnalysis,
   ChatDotRound,
   Bell,
+  Star,
 } from '@element-plus/icons-vue'
 
 interface MenuItem {
@@ -307,12 +309,12 @@ const allMenus: MenuItem[] = [
   },
   // 我的求职（学员专用）
   {
-    id: 30,
+    id: 33,
     name: '我的求职',
     path: '/employment/my-applications',
     icon: User,
     parentId: 16,
-    sort: 4,
+    sort: 12,
     status: '1',
     type: '2',
   },
@@ -327,6 +329,17 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
+  // 我的笔试（学员专用）
+  {
+    id: 34,
+    name: '我的笔试',
+    path: '/employment/my-written-tests',
+    icon: Edit,
+    parentId: 16,
+    sort: 13,
+    status: '1',
+    type: '2',
+  },
   // 面试管理
   {
     id: 21,
@@ -335,6 +348,17 @@ const allMenus: MenuItem[] = [
     icon: ChatDotRound,
     parentId: 16,
     sort: 6,
+    status: '1',
+    type: '2',
+  },
+  // 我的面试（学员专用）
+  {
+    id: 35,
+    name: '我的面试',
+    path: '/employment/my-interviews',
+    icon: ChatDotRound,
+    parentId: 16,
+    sort: 14,
     status: '1',
     type: '2',
   },
@@ -379,6 +403,39 @@ const allMenus: MenuItem[] = [
     icon: Checked,
     parentId: 16,
     sort: 8,
+    status: '1',
+    type: '2',
+  },
+  // Offer管理（企业对接人）
+  {
+    id: 30,
+    name: 'Offer管理',
+    path: '/employment/enterprise-offers',
+    icon: Document,
+    parentId: 16,
+    sort: 12,
+    status: '1',
+    type: '2',
+  },
+  // 人才库（企业对接人）
+  {
+    id: 31,
+    name: '人才库',
+    path: '/employment/talent-pool',
+    icon: Star,
+    parentId: 16,
+    sort: 13,
+    status: '1',
+    type: '2',
+  },
+  // 企业资料（企业对接人）
+  {
+    id: 32,
+    name: '企业资料',
+    path: '/enterprise/profile',
+    icon: Management,
+    parentId: 16,
+    sort: 15,
     status: '1',
     type: '2',
   },
@@ -449,8 +506,8 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/my-daily-reports',
     '/employment',
     '/employment/my-applications',
-    '/employment/written-tests',
-    '/employment/interviews',
+    '/employment/my-written-tests',
+    '/employment/my-interviews',
     '/employment/offers',
     '/profile',
   ],
@@ -461,6 +518,9 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/employment/applications',
     '/employment/written-tests',
     '/employment/interviews',
+    '/employment/enterprise-offers',
+    '/employment/talent-pool',
+    '/enterprise/profile',
   ],
 }
 
