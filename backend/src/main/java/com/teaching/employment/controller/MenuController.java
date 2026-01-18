@@ -99,6 +99,16 @@ public class MenuController {
     }
 
     /**
+     * 批量删除菜单
+     */
+    @DeleteMapping("/batch")
+    @ApiOperation("批量删除菜单")
+    public Result<Void> batchDelete(@RequestBody List<Long> ids) {
+        boolean success = menuService.removeByIds(ids);
+        return success ? Result.ok("批量删除成功") : Result.error("批量删除失败");
+    }
+
+    /**
      * 为角色分配菜单
      */
     @PostMapping("/assign")

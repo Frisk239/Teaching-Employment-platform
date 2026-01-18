@@ -98,6 +98,13 @@ public class RoleController {
         return success ? Result.ok("删除成功") : Result.error("删除失败");
     }
 
+    @ApiOperation("批量删除角色")
+    @DeleteMapping("/batch")
+    public Result<Void> batchDelete(@RequestBody List<Long> ids) {
+        boolean success = roleService.removeByIds(ids);
+        return success ? Result.ok("批量删除成功") : Result.error("批量删除失败");
+    }
+
     @ApiOperation("分配菜单权限给角色")
     @PostMapping("/assign-menus")
     public Result<String> assignMenus(@RequestBody Map<String, Object> params) {
