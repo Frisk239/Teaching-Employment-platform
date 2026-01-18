@@ -262,7 +262,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   Plus,
   Delete,
@@ -287,17 +287,17 @@ import {
   DataAnalysis,
   ChatDotRound,
 } from '@element-plus/icons-vue'
-
-// 角色接口定义
-interface Role {
-  id: number
-  name: string
-  code: string
-  description: string
-  status: number
-  permissions?: string[]
-  createTime?: string
-}
+import {
+  getRolePageApi,
+  createRoleApi,
+  updateRoleApi,
+  deleteRoleApi,
+  assignMenusApi,
+  assignPermissionsApi,
+  getRoleMenuIdsApi,
+  getRolePermissionIdsApi
+} from '@/api/role'
+import type { Role } from '@/api/types'
 
 // 权限树节点接口
 interface PermissionTreeNode {
@@ -607,75 +607,13 @@ const formatDate = (dateStr?: string) => {
 const loadRoles = async () => {
   loading.value = true
   try {
-    // TODO: 调用实际的API
-    // const data = await roleApi.list()
-
-    // 模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    roles.value = [
-      {
-        id: 1,
-        name: '管理员',
-        code: 'admin',
-        description: '系统管理员，拥有最高权限',
-        status: 1,
-        permissions: ['*'],
-        createTime: '2024-01-01 10:00:00',
-      },
-      {
-        id: 2,
-        name: '学院负责人',
-        code: 'college_head',
-        description: '学院负责人，管理学校相关事务',
-        status: 1,
-        permissions: [
-          'teaching:school:view:own',
-          'teaching:course:view:school',
-          'teaching:student:view:school',
-        ],
-        createTime: '2024-01-02 10:00:00',
-      },
-      {
-        id: 3,
-        name: '教师',
-        code: 'teacher',
-        description: '教师，管理课程和学员',
-        status: 1,
-        permissions: [
-          'teaching:course:view:own',
-          'teaching:student:view:class',
-          'teaching:homework:grade:own',
-        ],
-        createTime: '2024-01-03 10:00:00',
-      },
-      {
-        id: 4,
-        name: '学员',
-        code: 'user',
-        description: '学员，查看课程和提交作业',
-        status: 1,
-        permissions: [
-          'teaching:course:view:selected',
-          'teaching:homework:view:own',
-          'employment:position:apply',
-        ],
-        createTime: '2024-01-04 10:00:00',
-      },
-      {
-        id: 5,
-        name: '企业对接人',
-        code: 'enterprise_contact',
-        description: '企业对接人，管理企业招聘事务',
-        status: 1,
-        permissions: [
-          'employment:company:view:own',
-          'employment:position:manage',
-          'employment:application:process',
-        ],
-        createTime: '2024-01-05 10:00:00',
-      },
-    ]
+    const { data } = await getRolePageApi({
+      current: currentPage.value,
+      size: 100, // 先获取所有数据，前端进行分页和搜索
+    })
+    roles.value = data.records || []
   } catch (error: any) {
+    console.error('加载角色列表失败:', error)
     ElMessage.error(error.message || '加载角色列表失败')
   } finally {
     loading.value = false
@@ -718,11 +656,10 @@ const handleEdit = (row: Role) => {
 // 状态变化
 const handleStatusChange = async (row: Role) => {
   try {
-    // TODO: 调用实际的API
-    // await roleApi.updateStatus(row.id, row.status)
-
+    await updateRoleApi({ id: row.id, status: row.status } as Role)
     ElMessage.success(row.status === 1 ? '已启用' : '已禁用')
   } catch (error: any) {
+    console.error('状态更新失败:', error)
     ElMessage.error(error.message || '状态更新失败')
     // 恢复原状态
     row.status = row.status === 1 ? 0 : 1
@@ -755,18 +692,25 @@ const handleSavePermissions = async () => {
     const halfCheckedKeys = permissionTreeRef.value?.getHalfCheckedKeys() || []
     const allPermissions = [...checkedKeys, ...halfCheckedKeys]
 
-    // TODO: 调用实际的API
-    // await roleApi.assignPermissions(currentRole.value.id, allPermissions)
+    // 注意: 当前权限树使用的是权限码字符串,但后端API需要权限ID数字
+    // 需要先实现一个API来查询权限码到ID的映射,或者修改权限树数据结构
+    // TODO: 实现权限码到ID的映射逻辑
+    // const permissionIds = await mapPermissionCodesToIds(allPermissions)
+    // await assignPermissionsApi({
+    //   roleId: currentRole.value.id,
+    //   permissionIds: permissionIds
+    // })
 
     // 更新本地数据
     const role = roles.value.find(r => r.id === currentRole.value!.id)
     if (role) {
-      role.permissions = allPermissions
+      role.permissions = allPermissions as any
     }
 
     ElMessage.success('权限分配成功')
     permissionDialogVisible.value = false
   } catch (error: any) {
+    console.error('保存权限失败:', error)
     ElMessage.error(error.message || '保存权限失败')
   } finally {
     submitting.value = false
@@ -781,24 +725,24 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
-    // TODO: 调用实际的API
+    // 创建表单数据的副本
+    const formDataCopy = { ...formData }
+
     if (isEdit.value) {
-      // await roleApi.update(formData.id, formData)
-      const index = roles.value.findIndex((r) => r.id === formData.id)
-      if (index !== -1) {
-        roles.value[index] = { ...roles.value[index], ...formData } as Role
-      }
-      ElMessage.success('更新成功')
+      // 更新角色
+      await updateRoleApi(formDataCopy as Role)
+      ElMessage.success('角色更新成功')
     } else {
-      // const data = await roleApi.create(formData)
-      // roles.value.unshift(data)
-      ElMessage.success('创建成功')
+      // 创建新角色
+      await createRoleApi(formDataCopy as Role)
+      ElMessage.success('角色创建成功')
     }
 
     dialogVisible.value = false
     await loadRoles()
   } catch (error: any) {
     if (error !== false) {
+      console.error('保存角色失败:', error)
       ElMessage.error(error.message || '操作失败')
     }
   } finally {
