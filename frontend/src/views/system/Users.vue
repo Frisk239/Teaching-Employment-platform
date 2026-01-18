@@ -57,7 +57,7 @@
     <el-card class="table-card" shadow="never">
       <el-table
         v-loading="loading"
-        :data="paginatedUsers"
+        :data="users"
         border
         stripe
         @selection-change="handleSelectionChange"
@@ -170,7 +170,7 @@
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
           :page-sizes="[10, 20, 50, 100]"
-          :total="filteredUsers.length"
+          :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -280,7 +280,15 @@ import {
   RefreshRight,
   View,
 } from '@element-plus/icons-vue'
-import { deleteUserApi } from '@/api/user'
+import {
+  getUserPageApi,
+  createUserApi,
+  updateUserApi,
+  deleteUserApi,
+  batchDeleteUserApi,
+  exportUsersApi,
+  resetPasswordApi,
+} from '@/api/user'
 
 // 用户接口定义
 interface User {
@@ -314,6 +322,7 @@ const searchKeyword = ref('')
 const selectedIds = ref<number[]>([])
 const currentPage = ref(1)
 const pageSize = ref(10)
+const pagination = reactive({ total: 0 })
 
 // 对话框相关
 const dialogVisible = ref(false)
@@ -362,29 +371,6 @@ const uploadUrl = computed(() => {
   return `${import.meta.env.VITE_API_BASE_URL}/file/upload`
 })
 
-// 计算属性 - 过滤后的用户列表
-const filteredUsers = computed(() => {
-  if (!searchKeyword.value) {
-    return users.value
-  }
-
-  const keyword = searchKeyword.value.toLowerCase()
-  return users.value.filter(
-    (user) =>
-      user.username.toLowerCase().includes(keyword) ||
-      (user.realName && user.realName.toLowerCase().includes(keyword)) ||
-      (user.phone && user.phone.includes(keyword)) ||
-      (user.email && user.email.toLowerCase().includes(keyword))
-  )
-})
-
-// 计算属性 - 分页后的用户列表
-const paginatedUsers = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize.value
-  const endIndex = startIndex + pageSize.value
-  return filteredUsers.value.slice(startIndex, endIndex)
-})
-
 // 角色标签类型
 const getRoleTagType = (roleCode?: string) => {
   const typeMap: Record<string, string> = {
@@ -420,59 +406,18 @@ const formatDate = (dateStr?: string) => {
 const loadUsers = async () => {
   loading.value = true
   try {
-    // TODO: 调用实际的API
-    // const data = await userApi.list({ current: currentPage.value, size: pageSize.value })
-
-    // 模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    users.value = [
-      {
-        id: 1,
-        username: 'admin',
-        realName: '系统管理员',
-        phone: '13800138000',
-        email: 'admin@example.com',
-        roleId: 1,
-        roleCode: 'admin',
-        roleName: '管理员',
-        schoolId: 1,
-        schoolName: '福建师范大学',
-        avatar: '',
-        status: 1,
-        createTime: '2024-01-01 10:00:00',
-      },
-      {
-        id: 2,
-        username: 'teacher01',
-        realName: '张老师',
-        phone: '13800138001',
-        email: 'teacher01@example.com',
-        roleId: 3,
-        roleCode: 'teacher',
-        roleName: '教师',
-        schoolId: 1,
-        schoolName: '福建师范大学',
-        avatar: '',
-        status: 1,
-        createTime: '2024-01-02 10:00:00',
-      },
-      {
-        id: 3,
-        username: 'student01',
-        realName: '李同学',
-        phone: '13800138002',
-        email: 'student01@example.com',
-        roleId: 5,
-        roleCode: 'user',
-        roleName: '学员',
-        schoolId: 1,
-        schoolName: '福建师范大学',
-        avatar: '',
-        status: 1,
-        createTime: '2024-01-03 10:00:00',
-      },
-    ]
+    const params = {
+      current: currentPage.value,
+      size: pageSize.value,
+      keyword: searchKeyword.value || undefined,
+      roleId: undefined,
+    }
+    const data = await getUserPageApi(params)
+    users.value = data.records || []
+    // 更新分页总数
+    pagination.total = data.total || 0
   } catch (error: any) {
+    console.error('加载用户列表失败:', error)
     ElMessage.error(error.message || '加载用户列表失败')
   } finally {
     loading.value = false
@@ -498,6 +443,7 @@ const loadSchools = async () => {
 // 搜索
 const handleSearch = () => {
   currentPage.value = 1
+  loadUsers()
 }
 
 // 选择变化
@@ -509,11 +455,13 @@ const handleSelectionChange = (selection: User[]) => {
 const handleSizeChange = (val: number) => {
   pageSize.value = val
   currentPage.value = 1
+  loadUsers()
 }
 
 // 当前页变化
 const handleCurrentChange = (val: number) => {
   currentPage.value = val
+  loadUsers()
 }
 
 // 新增用户
@@ -549,30 +497,56 @@ const handleDelete = async (row: User) => {
 
 // 批量删除
 const handleBatchDelete = async () => {
+  if (selectedIds.value.length === 0) {
+    ElMessage.warning('请先选择要删除的用户')
+    return
+  }
+
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedIds.value.length} 个用户吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedIds.value.length} 个用户吗？`,
+      '批量删除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
 
-    // TODO: 调用实际的API
-    // await userApi.batchDelete(selectedIds.value)
-
-    users.value = users.value.filter((u) => !selectedIds.value.includes(u.id))
-    selectedIds.value = []
+    await batchDeleteUserApi(selectedIds.value)
     ElMessage.success('批量删除成功')
+    selectedIds.value = []
+    await loadUsers()
   } catch (error: any) {
     if (error !== 'cancel') {
+      console.error('批量删除失败:', error)
       ElMessage.error(error.message || '批量删除失败')
     }
   }
 }
 
 // 导出用户
-const handleExport = () => {
-  // TODO: 实现导出功能
-  ElMessage.info('导出功能开发中...')
+const handleExport = async () => {
+  try {
+    const blob = await exportUsersApi({
+      current: currentPage.value,
+      size: pageSize.value,
+      keyword: searchKeyword.value,
+    })
+
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([blob]))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `users_${Date.now()}.xlsx`
+    link.click()
+    window.URL.revokeObjectURL(url)
+
+    ElMessage.success('导出成功')
+  } catch (error: any) {
+    console.error('导出失败:', error)
+    ElMessage.error(error.message || '导出失败')
+  }
 }
 
 // 状态变化
@@ -604,18 +578,21 @@ const handleDropdownCommand = async (command: string, row: User) => {
 // 重置密码
 const handleResetPassword = async (row: User) => {
   try {
-    await ElMessageBox.confirm(`确定要重置用户 "${row.username}" 的密码吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
+    await ElMessageBox.confirm(
+      `确定要重置用户 "${row.username}" 的密码吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
 
-    // TODO: 调用实际的API
-    // await userApi.resetPassword(row.id)
-
+    await resetPasswordApi(row.id, '123456')
     ElMessage.success('密码已重置为：123456')
   } catch (error: any) {
     if (error !== 'cancel') {
+      console.error('重置密码失败:', error)
       ElMessage.error(error.message || '重置密码失败')
     }
   }
@@ -635,24 +612,23 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
-    // TODO: 调用实际的API
+    const formDataCopy = { ...formData }
+
     if (isEdit.value) {
-      // await userApi.update(formData.id, formData)
-      const index = users.value.findIndex((u) => u.id === formData.id)
-      if (index !== -1) {
-        users.value[index] = { ...users.value[index], ...formData } as User
-      }
-      ElMessage.success('更新成功')
+      // 更新用户
+      await updateUserApi(formDataCopy)
+      ElMessage.success('用户更新成功')
     } else {
-      // const data = await userApi.create(formData)
-      // users.value.unshift(data)
-      ElMessage.success('创建成功')
+      // 创建新用户
+      await createUserApi(formDataCopy)
+      ElMessage.success('用户创建成功')
     }
 
     dialogVisible.value = false
     await loadUsers()
   } catch (error: any) {
     if (error !== false) {
+      console.error('保存用户失败:', error)
       ElMessage.error(error.message || '操作失败')
     }
   } finally {

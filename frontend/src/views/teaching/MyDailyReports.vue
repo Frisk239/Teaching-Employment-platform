@@ -137,10 +137,6 @@
                 <el-icon><Timer /></el-icon>
                 <span>{{ report.studyHours ? `${report.studyHours}小时` : '-' }}</span>
               </div>
-              <div class="meta-item">
-                <el-icon><Notebook /></el-icon>
-                <span>{{ report.codeLines ? `${report.codeLines}行` : '-' }}</span>
-              </div>
               <div v-if="report.rating" class="meta-item rating">
                 <el-rate
                   v-model="report.rating"
@@ -270,36 +266,38 @@
           />
         </el-form-item>
 
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="学习时长" prop="studyHours">
-              <el-input-number
-                v-model="writeForm.studyHours"
-                :min="0"
-                :max="24"
-                :precision="1"
-                style="width: 100%"
-              />
-              <span style="margin-left: 10px">小时</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="代码行数">
-              <el-input-number
-                v-model="writeForm.codeLines"
-                :min="0"
-                style="width: 100%"
-              />
-              <span style="margin-left: 10px">行</span>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="附件URL">
-          <el-input
-            v-model="writeForm.attachmentUrl"
-            placeholder="截图、代码等附件链接(可选)"
+        <el-form-item label="学习时长" prop="studyHours">
+          <el-input-number
+            v-model="writeForm.studyHours"
+            :min="0"
+            :max="24"
+            :precision="1"
+            style="width: 200px"
           />
+          <span style="margin-left: 10px">小时</span>
+        </el-form-item>
+
+        <el-form-item label="附件上传">
+          <el-upload
+            class="upload-demo"
+            :action="uploadAction"
+            :headers="uploadHeaders"
+            :on-success="handleUploadSuccess"
+            :on-remove="handleUploadRemove"
+            :file-list="fileList"
+            :limit="1"
+            drag
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              将文件拖到此处，或<em>点击上传</em>
+            </div>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持常见文档格式，单个文件不超过10MB
+              </div>
+            </template>
+          </el-upload>
         </el-form-item>
       </el-form>
 
@@ -330,9 +328,6 @@
           </el-descriptions-item>
           <el-descriptions-item label="学习时长">
             {{ currentReport.studyHours ? `${currentReport.studyHours} 小时` : '-' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="代码行数" :span="2">
-            {{ currentReport.codeLines ? `${currentReport.codeLines} 行` : '-' }}
           </el-descriptions-item>
         </el-descriptions>
 
@@ -462,9 +457,15 @@ const writeForm = reactive({
   problems: '',
   tomorrowPlan: '',
   studyHours: undefined as number | undefined,
-  codeLines: undefined as number | undefined,
   attachmentUrl: '',
 })
+
+// 文件上传相关
+const fileList = ref<any[]>([])
+const uploadAction = import.meta.env.VITE_API_BASE_URL + '/api/file/upload'
+const uploadHeaders = computed(() => ({
+  Authorization: `Bearer ${authStore.token}`,
+}))
 
 const writeRules: FormRules = {
   reportDate: [{ required: true, message: '请选择日报日期', trigger: 'change' }],
@@ -560,10 +561,19 @@ const handleEdit = (row: DailyReport) => {
     problems: row.problems,
     tomorrowPlan: row.tomorrowPlan,
     studyHours: row.studyHours,
-    codeLines: row.codeLines,
     attachmentUrl: row.attachmentUrl,
   })
   writeDialogVisible.value = true
+
+  // 如果有附件URL，设置文件列表
+  if (row.attachmentUrl) {
+    fileList.value = [{
+      name: '已上传文件',
+      url: row.attachmentUrl,
+    }]
+  } else {
+    fileList.value = []
+  }
 }
 
 // 关闭写日报对话框
@@ -577,9 +587,24 @@ const handleWriteDialogClose = () => {
     problems: '',
     tomorrowPlan: '',
     studyHours: undefined,
-    codeLines: undefined,
     attachmentUrl: '',
   })
+  fileList.value = []
+}
+
+// 文件上传成功回调
+const handleUploadSuccess = (response: any) => {
+  if (response.code === 200) {
+    writeForm.attachmentUrl = response.data
+    ElMessage.success('文件上传成功')
+  } else {
+    ElMessage.error(response.message || '文件上传失败')
+  }
+}
+
+// 文件删除回调
+const handleUploadRemove = () => {
+  writeForm.attachmentUrl = ''
 }
 
 // 保存草稿
