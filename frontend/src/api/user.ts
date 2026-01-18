@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import { http } from '@/utils/request'
 import type { Result, IPage } from './types'
 
 export interface User {
@@ -37,43 +37,28 @@ export interface UserPageParams {
  * 获取用户分页列表
  */
 export function getUserPageApi(params: UserPageParams) {
-  return request<Result<IPage<User>>>({
-    url: '/user/page',
-    method: 'get',
-    params
-  })
+  return http.get<IPage<User>>('/user/page', { params })
 }
 
 /**
  * 根据ID获取用户详情
  */
 export function getUserByIdApi(id: number) {
-  return request<Result<User>>({
-    url: `/user/${id}`,
-    method: 'get'
-  })
+  return http.get<User>(`/user/${id}`)
 }
 
 /**
  * 更新用户资料
  */
 export function updateProfileApi(data: User) {
-  return request<Result<void>>({
-    url: '/user/profile',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/user/profile', data)
 }
 
 /**
  * 修改密码
  */
 export function updatePasswordApi(data: UpdatePasswordData) {
-  return request<Result<void>>({
-    url: '/user/password',
-    method: 'put',
-    data
-  })
+  return http.put<void>('/user/password', data)
 }
 
 /**
@@ -82,66 +67,42 @@ export function updatePasswordApi(data: UpdatePasswordData) {
 export function uploadAvatarApi(file: File) {
   const formData = new FormData()
   formData.append('file', file)
-  return request<Result<string>>({
-    url: '/user/avatar',
-    method: 'post',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
+  return http.post<string>('/user/avatar', formData)
 }
 
 /**
  * 删除用户
  */
 export function deleteUserApi(id: number) {
-  return request<Result<void>>({
-    url: `/user/${id}`,
-    method: 'delete'
-  })
+  return http.delete<void>(`/user/${id}`)
 }
 
 /**
  * 创建用户
  */
 export function createUserApi(data: User) {
-  return request<Result<void>>({
-    url: '/user',
-    method: 'post',
-    data
-  })
+  return http.post<void>('/user', data)
 }
 
 /**
  * 更新用户
  */
-export function updateUserApi(id: number, data: User) {
-  return request<Result<void>>({
-    url: `/user/${id}`,
-    method: 'put',
-    data
-  })
+export function updateUserApi(data: User) {
+  return http.put<void>('/user', data)
 }
 
 /**
  * 批量删除用户
  */
 export function batchDeleteUserApi(ids: number[]) {
-  return request<Result<void>>({
-    url: '/user/batch',
-    method: 'delete',
-    data: ids
-  })
+  return http.delete<void>('/user/batch', { data: ids })
 }
 
 /**
  * 导出用户
  */
-export function exportUsersApi(params?: any) {
-  return request<Blob>({
-    url: '/user/export',
-    method: 'get',
+export function exportUsersApi(params?: UserPageParams) {
+  return http.get('/user/export', {
     params,
     responseType: 'blob'
   })
@@ -151,9 +112,5 @@ export function exportUsersApi(params?: any) {
  * 重置密码
  */
 export function resetPasswordApi(id: number, newPassword: string) {
-  return request<Result<void>>({
-    url: `/user/${id}/password`,
-    method: 'put',
-    data: { newPassword }
-  })
+  return http.put<void>(`/user/${id}/password`, { newPassword })
 }

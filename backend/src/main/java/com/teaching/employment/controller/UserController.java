@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.User;
 import com.teaching.employment.service.UserService;
+import com.teaching.employment.utils.ExcelUtil;
+import com.teaching.employment.utils.PasswordUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -11,6 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 用户管理控制器
@@ -178,5 +184,41 @@ public class UserController {
         public void setEmail(String email) {
             this.email = email;
         }
+    }
+
+    /**
+     * 批量删除用户
+     */
+    @DeleteMapping("/batch")
+    @ApiOperation("批量删除用户")
+    public Result<Void> batchDelete(@RequestBody List<Long> ids) {
+        boolean success = userService.removeByIds(ids);
+        return success ? Result.ok("批量删除成功") : Result.error("批量删除失败");
+    }
+
+    /**
+     * 导出用户
+     */
+    @GetMapping("/export")
+    @ApiOperation("导出用户")
+    public void exportUsers(HttpServletResponse response) throws IOException {
+        List<User> users = userService.list();
+        ExcelUtil.export(response, "用户数据", users, User.class);
+    }
+
+    /**
+     * 重置密码
+     */
+    @PutMapping("/{id}/password")
+    @ApiOperation("重置密码")
+    public Result<Void> resetPassword(@PathVariable Long id, @RequestBody Map<String, String> params) {
+        String newPassword = params.get("newPassword");
+        User user = userService.getById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        user.setPassword(PasswordUtil.encrypt(newPassword));
+        boolean success = userService.updateById(user);
+        return success ? Result.ok("密码重置成功") : Result.error("密码重置失败");
     }
 }
