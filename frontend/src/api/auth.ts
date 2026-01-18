@@ -65,6 +65,19 @@ export const authApi = {
   },
 
   /**
+   * 更新学员个人信息（学号、简历等）
+   */
+  updateStudentProfile: (data: {
+    studentNumber?: string
+    resumeUrl?: string
+    realName?: string
+    phone?: string
+    email?: string
+  }) => {
+    return http.put('/auth/update-student-profile', data)
+  },
+
+  /**
    * 刷新 Token
    */
   refreshToken: (refreshToken: string) => {

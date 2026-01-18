@@ -1,0 +1,52 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.teaching:employment-platform >------------------
+[INFO] Building Teaching Employment Platform 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ employment-platform ---
+[INFO] Deleting C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\target
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ employment-platform ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 29 resources
+[INFO] 
+[INFO] --- compiler:3.10.1:compile (default-compile) @ employment-platform ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 199 source files to C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\target\classes
+[INFO] /C:/Users/LeiYu/Desktop/code/front end code/Teaching-Employment-platform/backend/src/main/java/com/teaching/employment/controller/StatisticsController.java: C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\StatisticsController.java使用或覆盖了已过时的 API。
+[INFO] /C:/Users/LeiYu/Desktop/code/front end code/Teaching-Employment-platform/backend/src/main/java/com/teaching/employment/controller/StatisticsController.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/LeiYu/Desktop/code/front end code/Teaching-Employment-platform/backend/src/main/java/com/teaching/employment/controller/UserController.java:[220,38] 找不到符号
+  符号:   方法 encrypt(java.lang.String)
+  位置: 类 com.teaching.employment.utils.PasswordUtil
+[ERROR] /C:/Users/LeiYu/Desktop/code/front end code/Teaching-Employment-platform/backend/src/main/java/com/teaching/employment/controller/InterviewController.java:[284,18] 找不到符号
+  符号:   方法 setFeedback(java.lang.String)
+  位置: 类型为com.teaching.employment.entity.Interview的变量 interview
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.219 s
+[INFO] Finished at: 2026-01-18T15:31:05+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.10.1:compile (default-compile) on project employment-platform: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/LeiYu/Desktop/code/front end code/Teaching-Employment-platform/backend/src/main/java/com/teaching/employment/controller/UserController.java:[220,38] 找不到符号
+[ERROR]   符号:   方法 encrypt(java.lang.String)
+[ERROR]   位置: 类 com.teaching.employment.utils.PasswordUtil
+[ERROR] /C:/Users/LeiYu/Desktop/code/front end code/Teaching-Employment-platform/backend/src/main/java/com/teaching/employment/controller/InterviewController.java:[284,18] 找不到符号
+[ERROR]   符号:   方法 setFeedback(java.lang.String)
+[ERROR]   位置: 类型为com.teaching.employment.entity.Interview的变量 interview
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -37,9 +37,6 @@ public class Role implements Serializable {
     @ApiModelProperty(value = "状态：1-正常 0-停用")
     private Integer status;
 
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    private Integer isDeleted;
-
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
@@ -47,4 +44,10 @@ public class Role implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    /**
+     * 权限ID列表（关联查询时使用，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private List<Long> permissions;
 }

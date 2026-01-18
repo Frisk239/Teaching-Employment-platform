@@ -1,0 +1,153 @@
+package com.teaching.employment.service.impl;
+
+import com.teaching.employment.entity.Interview;
+import com.teaching.employment.entity.User;
+import com.teaching.employment.service.EmailService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import javax.mail.internet.MimeMessage;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * 邮件发送服务实现类
+ *
+ * @author Teaching Employment Platform Team
+ * @since 2026-01-18
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class EmailServiceImpl implements EmailService {
+
+    private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+    @Override
+    public void sendInterviewInviteEmail(String to, Interview interview, User student) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("【面试邀请】" + interview.getCompanyName() + " - " + interview.getPositionName());
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            String interviewTime = interview.getInterviewTime() != null
+                ? sdf.format(interview.getInterviewTime())
+                : "待定";
+
+            Context context = new Context();
+            context.setVariable("studentName", student.getRealName());
+            context.setVariable("companyName", interview.getCompanyName());
+            context.setVariable("positionName", interview.getPositionName());
+            context.setVariable("interviewTime", interviewTime);
+            context.setVariable("interviewType", "online".equals(interview.getInterviewType()) ? "线上面试" : "线下面试");
+            context.setVariable("interviewUrl", interview.getInterviewUrl());
+            context.setVariable("location", interview.getLocation());
+
+            String htmlContent = templateEngine.process("email/interview-invite", context);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("面试邀请邮件发送成功: to={}, interviewId={}", to, interview.getId());
+        } catch (Exception e) {
+            log.error("发送面试邀请邮件失败: to={}, error={}", to, e.getMessage(), e);
+            throw new RuntimeException("发送邮件失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendInterviewResultEmail(String to, Interview interview, User student, boolean isPassed) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("【面试结果】" + interview.getCompanyName() + " - " + interview.getPositionName());
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
+            String resultDate = sdf.format(new Date());
+
+            Context context = new Context();
+            context.setVariable("studentName", student.getRealName());
+            context.setVariable("companyName", interview.getCompanyName());
+            context.setVariable("positionName", interview.getPositionName());
+            context.setVariable("isPassed", isPassed);
+            context.setVariable("resultText", isPassed ? "恭喜您，面试通过！" : "很遗憾，面试未通过");
+            context.setVariable("resultDate", resultDate);
+            context.setVariable("feedback", interview.getFeedback());
+            context.setVariable("score", interview.getScore());
+
+            String htmlContent = templateEngine.process("email/interview-result", context);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("面试结果邮件发送成功: to={}, interviewId={}, passed={}", to, interview.getId(), isPassed);
+        } catch (Exception e) {
+            log.error("发送面试结果邮件失败: to={}, error={}", to, e.getMessage(), e);
+            throw new RuntimeException("发送邮件失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendInterviewAcceptedEmail(String to, Interview interview, User student) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("【面试确认】" + student.getRealName() + " 已接受面试邀请");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            String interviewTime = interview.getInterviewTime() != null
+                ? sdf.format(interview.getInterviewTime())
+                : "待定";
+
+            StringBuilder text = new StringBuilder();
+            text.append("学员 ").append(student.getRealName()).append(" 已接受面试邀请\n\n");
+            text.append("职位：").append(interview.getPositionName()).append("\n");
+            text.append("面试时间：").append(interviewTime).append("\n");
+            text.append("联系方式：").append(student.getPhone()).append("\n");
+            text.append("邮箱：").append(student.getEmail()).append("\n\n");
+            text.append("请及时安排面试。");
+
+            message.setText(text.toString());
+
+            mailSender.send(message);
+            log.info("面试接受确认邮件发送成功: to={}, interviewId={}", to, interview.getId());
+        } catch (Exception e) {
+            log.error("发送面试接受确认邮件失败: to={}, error={}", to, e.getMessage(), e);
+            throw new RuntimeException("发送邮件失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void sendTestEmail(String to) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("【测试邮件】教学就业平台");
+            message.setText("这是一封测试邮件，用于验证邮件服务配置是否正确。\n\n如果您收到此邮件，说明邮件服务配置成功！");
+
+            mailSender.send(message);
+            log.info("测试邮件发送成功: to={}", to);
+        } catch (Exception e) {
+            log.error("发送测试邮件失败: to={}, error={}", to, e.getMessage(), e);
+            throw new RuntimeException("发送测试邮件失败: " + e.getMessage());
+        }
+    }
+}

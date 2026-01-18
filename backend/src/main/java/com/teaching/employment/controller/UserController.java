@@ -3,7 +3,9 @@ package com.teaching.employment.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.User;
+import com.teaching.employment.entity.Role;
 import com.teaching.employment.service.UserService;
+import com.teaching.employment.service.RoleService;
 import com.teaching.employment.utils.ExcelUtil;
 import com.teaching.employment.utils.PasswordUtil;
 import io.swagger.annotations.Api;
@@ -31,6 +33,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final RoleService roleService;
 
     /**
      * 分页查询用户列表
@@ -203,6 +206,19 @@ public class UserController {
     @ApiOperation("导出用户")
     public void exportUsers(HttpServletResponse response) throws IOException {
         List<User> users = userService.list();
+        System.out.println("========== 导出用户数量: " + users.size() + " ==========");
+
+        // 填充roleCode字段
+        for (User user : users) {
+            if (user.getRoleId() != null) {
+                Role role = roleService.getById(user.getRoleId());
+                if (role != null) {
+                    user.setRoleCode(role.getRoleCode());
+                }
+            }
+            System.out.println("用户: " + user.getUsername() + ", 角色: " + user.getRoleCode());
+        }
+
         ExcelUtil.export(response, "用户数据", users, User.class);
     }
 

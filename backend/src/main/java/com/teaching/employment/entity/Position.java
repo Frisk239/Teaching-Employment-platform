@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
  * @since 2026-01-12
  */
 @Data
-@TableName("t_recruitment_position")
+@TableName("t_position")
 @ApiModel(description = "招聘职位信息")
 public class Position implements Serializable {
 

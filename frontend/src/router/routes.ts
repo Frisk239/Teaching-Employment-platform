@@ -209,6 +209,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['admin', 'college_head', 'teacher'],
             },
           },
+          // 学员个人中心（学员专用）
+          {
+            path: '/student/profile',
+            name: 'StudentProfile',
+            component: () => import('@/views/student/StudentProfile.vue'),
+            meta: {
+              title: '个人中心',
+              icon: 'User',
+              roles: ['user'],
+            },
+          },
           // 我的日报（学员专用）
           {
             path: '/teaching/my-daily-reports',
@@ -239,6 +250,17 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '我的课程',
               icon: 'Reading',
+              roles: ['user'],
+            },
+          },
+          // 我的考试（学员专用）
+          {
+            path: '/teaching/my-exams',
+            name: 'TeachingMyExams',
+            component: () => import('@/views/student/MyExams.vue'),
+            meta: {
+              title: '我的考试',
+              icon: 'Edit',
               roles: ['user'],
             },
           },

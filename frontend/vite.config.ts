@@ -26,16 +26,21 @@ export default defineConfig({
   },
   server: {
     port: 8081,
+    // 允许访问项目根目录外的文件
+    fs: {
+      strict: false,
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-      },
-      '/system': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
     },
+  },
+  // 预览服务器配置
+  preview: {
+    port: 8081,
   },
   css: {
     preprocessorOptions: {
@@ -43,5 +48,8 @@ export default defineConfig({
         additionalData: `@use "@/styles/variables.scss" as *;`,
       },
     },
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia'],
   },
 })

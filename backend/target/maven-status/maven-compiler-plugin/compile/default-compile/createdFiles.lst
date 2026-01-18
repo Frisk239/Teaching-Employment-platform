@@ -3,6 +3,7 @@ com\teaching\employment\entity\Role.class
 com\teaching\employment\service\CourseRecordService.class
 com\teaching\employment\config\CorsConfig.class
 com\example\teaching\employment\platform\model\dto\DashboardStatsDTO.class
+com\teaching\employment\entity\Education.class
 com\teaching\employment\controller\CollegeHeadDashboardController.class
 com\teaching\employment\mapper\PositionMapper.class
 com\teaching\employment\mapper\WrittenTestMapper.class
@@ -35,6 +36,7 @@ com\teaching\employment\service\ClassroomService.class
 com\teaching\employment\controller\ExamController.class
 com\teaching\employment\controller\QuestionController.class
 com\teaching\employment\controller\HomeworkSubmissionController.class
+com\teaching\employment\mapper\EducationMapper.class
 com\teaching\employment\service\impl\CourseStudentServiceImpl.class
 com\teaching\employment\entity\DailyReport.class
 com\teaching\employment\service\impl\WrittenTestServiceImpl.class
@@ -72,7 +74,9 @@ com\teaching\employment\service\impl\TeachingMaterialServiceImpl.class
 com\teaching\employment\service\CourseStudentService.class
 com\teaching\employment\service\DailyReportService.class
 com\teaching\employment\service\impl\InterviewServiceImpl.class
+com\teaching\employment\mapper\InternshipMapper.class
 com\teaching\employment\service\impl\JobApplicationServiceImpl.class
+com\teaching\employment\service\impl\EducationServiceImpl.class
 com\teaching\employment\controller\InterviewController.class
 com\teaching\employment\controller\TeachingMaterialController.class
 com\teaching\employment\service\StatisticsService.class
@@ -80,6 +84,7 @@ com\teaching\employment\entity\RolePermissionRelation.class
 com\example\teaching\employment\platform\model\dto\DailyReportDTO.class
 com\teaching\employment\model\dto\DashboardStatsDTO.class
 com\teaching\employment\entity\JobApplication.class
+com\teaching\employment\service\InternshipService.class
 com\teaching\employment\service\impl\SchoolServiceImpl.class
 com\teaching\employment\entity\HomeworkSubmission.class
 com\teaching\employment\exception\GlobalExceptionHandler.class
@@ -118,6 +123,7 @@ com\teaching\employment\mapper\ClassroomMapper.class
 com\teaching\employment\mapper\MenuMapper.class
 com\teaching\employment\mapper\QuestionMapper.class
 com\teaching\employment\service\ResumeService.class
+com\teaching\employment\service\EducationService.class
 com\teaching\employment\mapper\TeacherMapper.class
 com\teaching\employment\controller\DailyReportController.class
 com\teaching\employment\mapper\CourseRecordMapper.class
@@ -135,6 +141,7 @@ com\teaching\employment\mapper\ExamMapper.class
 com\teaching\employment\controller\SchoolController.class
 com\teaching\employment\service\impl\HomeworkSubmissionServiceImpl.class
 com\teaching\employment\mapper\CourseMapper.class
+com\teaching\employment\entity\Internship.class
 com\teaching\employment\exception\BusinessException.class
 com\teaching\employment\service\impl\RoleMenuRelationServiceImpl.class
 com\teaching\employment\utils\ExcelUtil.class
@@ -158,6 +165,7 @@ com\teaching\employment\service\OfferService.class
 com\teaching\employment\service\MenuService.class
 com\teaching\employment\service\impl\StatisticsServiceImpl.class
 com\teaching\employment\service\impl\CompanyServiceImpl.class
+com\teaching\employment\service\impl\InternshipServiceImpl.class
 com\teaching\employment\controller\RoleController.class
 com\teaching\employment\controller\UserController.class
 com\teaching\employment\util\EmailUtil.class
@@ -166,6 +174,7 @@ com\teaching\employment\controller\ResumeController.class
 com\teaching\employment\service\impl\TalentPoolServiceImpl.class
 com\teaching\employment\model\dto\StudentAttentionDTO.class
 com\teaching\employment\enums\RoleTypeEnum.class
+com\teaching\employment\controller\EducationController.class
 com\teaching\employment\controller\AuthController.class
 com\teaching\employment\controller\MenuController.class
 com\teaching\employment\entity\Exam.class
@@ -191,6 +200,7 @@ com\teaching\employment\service\impl\HomeworkServiceImpl.class
 com\teaching\employment\enums\ApplicationStatusEnum.class
 com\teaching\employment\service\StudentExamRecordService.class
 com\teaching\employment\common\Result.class
+com\teaching\employment\controller\InternshipController.class
 com\example\teaching\employment\platform\service\impl\DashboardServiceImpl.class
 com\teaching\employment\controller\TeacherController.class
 com\teaching\employment\service\CompanyService.class

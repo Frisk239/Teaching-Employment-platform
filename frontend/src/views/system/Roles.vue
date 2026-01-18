@@ -54,20 +54,20 @@
         <el-table-column prop="id" label="ID" width="80" align="center" />
 
         <!-- 角色名列 -->
-        <el-table-column prop="name" label="角色名称" min-width="150">
+        <el-table-column prop="roleName" label="角色名称" min-width="150">
           <template #default="{ row }">
             <div class="role-name">
-              <el-tag :type="getRoleTagType(row.code)" size="large">
-                {{ row.name }}
+              <el-tag :type="getRoleTagType(row.roleCode)" size="large">
+                {{ row.roleName }}
               </el-tag>
             </div>
           </template>
         </el-table-column>
 
         <!-- 角色编码列 -->
-        <el-table-column prop="code" label="角色编码" min-width="150">
+        <el-table-column prop="roleCode" label="角色编码" min-width="150">
           <template #default="{ row }">
-            <el-tag type="info" size="small">{{ row.code }}</el-tag>
+            <el-tag type="info" size="small">{{ row.roleCode }}</el-tag>
           </template>
         </el-table-column>
 
@@ -159,16 +159,16 @@
         :rules="formRules"
         label-width="100px"
       >
-        <el-form-item label="角色名称" prop="name">
+        <el-form-item label="角色名称" prop="roleName">
           <el-input
-            v-model="formData.name"
+            v-model="formData.roleName"
             placeholder="请输入角色名称"
           />
         </el-form-item>
 
-        <el-form-item label="角色编码" prop="code">
+        <el-form-item label="角色编码" prop="roleCode">
           <el-input
-            v-model="formData.code"
+            v-model="formData.roleCode"
             placeholder="请输入角色编码（英文）"
             :disabled="isEdit"
           />
@@ -344,19 +344,19 @@ const selectedPermissionCount = ref(0)
 // 表单数据
 const formData = reactive<Partial<Role>>({
   id: undefined,
-  name: '',
-  code: '',
+  roleName: '',
+  roleCode: '',
   description: '',
   status: 1,
 })
 
 // 表单验证规则
 const formRules: FormRules = {
-  name: [
+  roleName: [
     { required: true, message: '请输入角色名称', trigger: 'blur' },
     { min: 2, max: 20, message: '角色名称长度在 2 到 20 个字符', trigger: 'blur' },
   ],
-  code: [
+  roleCode: [
     { required: true, message: '请输入角色编码', trigger: 'blur' },
     { min: 2, max: 50, message: '角色编码长度在 2 到 50 个字符', trigger: 'blur' },
     { pattern: /^[a-z_][a-z0-9_]*$/, message: '角色编码只能包含小写字母、数字和下划线，且必须以字母或下划线开头', trigger: 'blur' },
@@ -583,8 +583,8 @@ const filteredRoles = computed(() => {
   const keyword = searchKeyword.value.toLowerCase()
   return roles.value.filter(
     (role) =>
-      role.name.toLowerCase().includes(keyword) ||
-      role.code.toLowerCase().includes(keyword) ||
+      role.roleName.toLowerCase().includes(keyword) ||
+      role.roleCode.toLowerCase().includes(keyword) ||
       (role.description && role.description.toLowerCase().includes(keyword))
   )
 })
@@ -619,7 +619,7 @@ const formatDate = (dateStr?: string) => {
 const loadRoles = async () => {
   loading.value = true
   try {
-    const { data } = await getRolePageApi({
+    const data = await getRolePageApi({
       current: currentPage.value,
       size: 100, // 先获取所有数据，前端进行分页和搜索
     })
@@ -635,7 +635,7 @@ const loadRoles = async () => {
 // 加载权限列表
 const loadPermissions = async () => {
   try {
-    const { data } = await getAllPermissionsApi()
+    const data = await getAllPermissionsApi()
     // 扁平化树形结构以便于查找
     const flattenPermissions = (nodes: Permission[]): Permission[] => {
       const result: Permission[] = []
@@ -705,7 +705,7 @@ const handleAssignPermissions = async (row: Role) => {
   currentRole.value = row
   try {
     // 从服务器获取角色当前的权限ID列表
-    const { data: permissionIds } = await getRolePermissionIdsApi(row.id)
+    const permissionIds = await getRolePermissionIdsApi(row.id)
     // 将权限ID转换为权限码,用于在树中显示选中状态
     checkedPermissions.value = permissionIds
       .map(id => {
@@ -814,8 +814,8 @@ const resetForm = () => {
   formRef.value?.resetFields()
   Object.assign(formData, {
     id: undefined,
-    name: '',
-    code: '',
+    roleName: '',
+    roleCode: '',
     description: '',
     status: 1,
   })

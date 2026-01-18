@@ -1,0 +1,50 @@
+package com.teaching.employment.service;
+
+import com.teaching.employment.entity.Interview;
+import com.teaching.employment.entity.User;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+/**
+ * 邮件发送服务接口
+ *
+ * @author Teaching Employment Platform Team
+ * @since 2026-01-18
+ */
+public interface EmailService {
+
+    /**
+     * 发送面试邀请邮件
+     *
+     * @param to      收件人邮箱
+     * @param interview 面试信息
+     * @param student 学员信息
+     */
+    void sendInterviewInviteEmail(String to, Interview interview, User student);
+
+    /**
+     * 发送面试结果邮件
+     *
+     * @param to         收件人邮箱
+     * @param interview  面试信息
+     * @param student    学员信息
+     * @param isPassed   是否通过
+     */
+    void sendInterviewResultEmail(String to, Interview interview, User student, boolean isPassed);
+
+    /**
+     * 发送面试接受确认邮件（给企业）
+     *
+     * @param to         企业邮箱
+     * @param interview  面试信息
+     * @param student    学员信息
+     */
+    void sendInterviewAcceptedEmail(String to, Interview interview, User student);
+
+    /**
+     * 发送测试邮件
+     *
+     * @param to 收件人邮箱
+     */
+    void sendTestEmail(String to);
+}

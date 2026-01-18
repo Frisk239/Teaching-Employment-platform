@@ -181,4 +181,50 @@ public class AuthController {
     public Result<Void> logout() {
         return Result.ok("退出成功");
     }
+
+    /**
+     * 更新学员个人信息（学号、简历等）
+     */
+    @PutMapping("/update-student-profile")
+    @ApiOperation("更新学员个人信息")
+    public Result<Void> updateStudentProfile(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> request) {
+        try {
+            String actualToken = token.replace("Bearer ", "");
+            Long userId = jwtUtil.getUserIdFromToken(actualToken);
+
+            User user = userService.getById(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+
+            // 更新学号
+            if (request.containsKey("studentNumber")) {
+                user.setStudentNumber(request.get("studentNumber"));
+            }
+
+            // 更新简历URL
+            if (request.containsKey("resumeUrl")) {
+                user.setResumeUrl(request.get("resumeUrl"));
+            }
+
+            // 更新其他基本信息
+            if (request.containsKey("realName")) {
+                user.setRealName(request.get("realName"));
+            }
+            if (request.containsKey("phone")) {
+                user.setPhone(request.get("phone"));
+            }
+            if (request.containsKey("email")) {
+                user.setEmail(request.get("email"));
+            }
+
+            boolean success = userService.updateById(user);
+            return success ? Result.ok("更新成功") : Result.error("更新失败");
+        } catch (Exception e) {
+            log.error("更新个人信息失败: {}", e.getMessage());
+            return Result.error("更新失败: " + e.getMessage());
+        }
+    }
 }

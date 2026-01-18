@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.User;
+import com.teaching.employment.entity.Role;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.UserMapper;
+import com.teaching.employment.service.RoleService;
 import com.teaching.employment.service.UserService;
 import com.teaching.employment.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final UserMapper userMapper;
+    private final RoleService roleService;
 
     @Override
     public User login(String username, String password) {
@@ -69,7 +72,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         wrapper.orderByDesc(User::getCreateTime);
-        return userMapper.selectPage(page, wrapper);
+        IPage<User> resultPage = userMapper.selectPage(page, wrapper);
+
+        // Fill roleCode for each user
+        for (User user : resultPage.getRecords()) {
+            if (user.getRoleId() != null) {
+                Role role = roleService.getById(user.getRoleId());
+                if (role != null) {
+                    user.setRoleCode(role.getRoleCode());
+                }
+            }
+        }
+
+        return resultPage;
     }
 
     @Override

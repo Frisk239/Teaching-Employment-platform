@@ -69,16 +69,7 @@
         <el-table-column prop="id" label="ID" width="80" align="center" />
 
         <!-- 用户名列 -->
-        <el-table-column prop="username" label="用户名" min-width="120">
-          <template #default="{ row }">
-            <div class="user-info">
-              <el-avatar :size="32" :src="row.avatar">
-                {{ row.realName ? row.realName.charAt(0) : row.username.charAt(0) }}
-              </el-avatar>
-              <span class="username">{{ row.username }}</span>
-            </div>
-          </template>
-        </el-table-column>
+        <el-table-column prop="username" label="用户名" min-width="120" />
 
         <!-- 姓名列 -->
         <el-table-column prop="realName" label="姓名" min-width="100" />
@@ -97,9 +88,6 @@
             </el-tag>
           </template>
         </el-table-column>
-
-        <!-- 学校列 -->
-        <el-table-column prop="schoolName" label="所属学校" min-width="150" />
 
         <!-- 状态列 -->
         <el-table-column prop="status" label="状态" width="100" align="center">
@@ -230,30 +218,6 @@
             <el-option label="企业对接人" :value="5" />
           </el-select>
         </el-form-item>
-
-        <el-form-item label="所属学校" prop="schoolId">
-          <el-select v-model="formData.schoolId" placeholder="请选择学校" style="width: 100%">
-            <el-option
-              v-for="school in schools"
-              :key="school.id"
-              :label="school.name"
-              :value="school.id"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="头像" prop="avatar">
-          <el-upload
-            class="avatar-uploader"
-            :action="uploadUrl"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-          >
-            <img v-if="formData.avatar" :src="formData.avatar" class="avatar" />
-            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-          </el-upload>
-        </el-form-item>
       </el-form>
 
       <template #footer>
@@ -289,7 +253,6 @@ import {
   exportUsersApi,
   resetPasswordApi,
 } from '@/api/user'
-import { getSchoolListApi } from '@/api/school'
 
 // 用户接口定义
 interface User {
@@ -309,16 +272,9 @@ interface User {
   createTime?: string
 }
 
-// 学校接口定义
-interface School {
-  id: number
-  name: string
-}
-
 // 响应式数据
 const loading = ref(false)
 const users = ref<User[]>([])
-const schools = ref<School[]>([])
 const searchKeyword = ref('')
 const selectedIds = ref<number[]>([])
 const currentPage = ref(1)
@@ -341,8 +297,6 @@ const formData = reactive<Partial<User>>({
   phone: '',
   email: '',
   roleId: undefined,
-  schoolId: undefined,
-  avatar: '',
   status: 1,
 })
 
@@ -366,11 +320,6 @@ const formRules: FormRules = {
   ],
   roleId: [{ required: true, message: '请选择角色', trigger: 'change' }],
 }
-
-// 上传地址
-const uploadUrl = computed(() => {
-  return `${import.meta.env.VITE_API_BASE_URL}/file/upload`
-})
 
 // 角色标签类型
 const getRoleTagType = (roleCode?: string) => {
@@ -422,21 +371,6 @@ const loadUsers = async () => {
     ElMessage.error(error.message || '加载用户列表失败')
   } finally {
     loading.value = false
-  }
-}
-
-// 加载学校列表
-const loadSchools = async () => {
-  try {
-    const data = await getSchoolListApi()
-    // 转换学校数据格式以匹配前端School接口
-    schools.value = data.map((school: any) => ({
-      id: school.id,
-      name: school.schoolName || school.name,
-    }))
-  } catch (error: any) {
-    console.error('加载学校列表失败:', error)
-    ElMessage.error('加载学校列表失败')
   }
 }
 
@@ -528,14 +462,14 @@ const handleBatchDelete = async () => {
 // 导出用户
 const handleExport = async () => {
   try {
-    const blob = await exportUsersApi({
+    const response = await exportUsersApi({
       current: currentPage.value,
       size: pageSize.value,
       keyword: searchKeyword.value,
     })
 
     // 创建下载链接
-    const url = window.URL.createObjectURL(new Blob([blob]))
+    const url = window.URL.createObjectURL(response.data)
     const link = document.createElement('a')
     link.href = url
     link.download = `users_${Date.now()}.xlsx`
@@ -652,38 +586,13 @@ const resetForm = () => {
     phone: '',
     email: '',
     roleId: undefined,
-    schoolId: undefined,
-    avatar: '',
     status: 1,
   })
-}
-
-// 头像上传成功
-const handleAvatarSuccess = (response: any) => {
-  formData.avatar = response.url
-  ElMessage.success('头像上传成功')
-}
-
-// 头像上传前验证
-const beforeAvatarUpload = (file: File) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt2M = file.size / 1024 / 1024 < 2
-
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
-    return false
-  }
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过 2MB!')
-    return false
-  }
-  return true
 }
 
 // 组件挂载
 onMounted(() => {
   loadUsers()
-  loadSchools()
 })
 </script>
 
