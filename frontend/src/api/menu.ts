@@ -4,15 +4,17 @@ import type { Result } from './types'
 export interface Menu {
   id?: number
   parentId?: number
-  name?: string
+  menuName?: string
   path?: string
-  type?: string
+  menuType?: string
+  permission?: string
   icon?: string
   sortOrder?: number
   isVisible?: number
   status?: number
   createTime?: string
   updateTime?: string
+  children?: Menu[]
 }
 
 export interface AssignMenusData {

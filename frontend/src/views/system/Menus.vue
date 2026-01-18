@@ -61,13 +61,13 @@
         ref="menuTableRef"
       >
         <!-- 菜单名称列 -->
-        <el-table-column prop="name" label="菜单名称" min-width="200">
+        <el-table-column prop="menuName" label="菜单名称" min-width="200">
           <template #default="{ row }">
             <div class="menu-name">
               <el-icon v-if="row.icon" class="menu-icon">
                 <component :is="getIconComponent(row.icon)" />
               </el-icon>
-              <span>{{ row.name }}</span>
+              <span>{{ row.menuName }}</span>
             </div>
           </template>
         </el-table-column>
@@ -94,7 +94,7 @@
         </el-table-column>
 
         <!-- 排序列 -->
-        <el-table-column prop="sort" label="排序" width="100" align="center" />
+        <el-table-column prop="sortOrder" label="排序" width="100" align="center" />
 
         <!-- 状态列 -->
         <el-table-column prop="status" label="状态" width="100" align="center">
@@ -119,7 +119,7 @@
               link
               :icon="Plus"
               @click="handleAddChild(row)"
-              v-if="!row.component || row.type === '1'"
+              v-if="!row.component || row.menuType === 'menu'"
             >
               新增子菜单
             </el-button>
@@ -155,7 +155,7 @@
           <el-tree-select
             v-model="formData.parentId"
             :data="menuTreeOptions"
-            :props="{ label: 'name', value: 'id' }"
+            :props="{ label: 'menuName', value: 'id' }"
             placeholder="请选择上级菜单（不选则为顶级菜单）"
             clearable
             check-strictly
@@ -163,20 +163,20 @@
           />
         </el-form-item>
 
-        <el-form-item label="菜单类型" prop="type">
-          <el-radio-group v-model="formData.type">
-            <el-radio :value="1">目录</el-radio>
-            <el-radio :value="2">菜单</el-radio>
+        <el-form-item label="菜单类型" prop="menuType">
+          <el-radio-group v-model="formData.menuType">
+            <el-radio value="menu">菜单目录</el-radio>
+            <el-radio value="button">按钮权限</el-radio>
           </el-radio-group>
           <div class="form-tip">
-            目录：包含子菜单的分组，不可直接访问
-            菜单：具体的页面，可以直接访问
+            菜单目录：包含子菜单的分组，不可直接访问
+            按钮权限：页面内的操作按钮权限
           </div>
         </el-form-item>
 
-        <el-form-item label="菜单名称" prop="name">
+        <el-form-item label="菜单名称" prop="menuName">
           <el-input
-            v-model="formData.name"
+            v-model="formData.menuName"
             placeholder="请输入菜单名称"
           />
         </el-form-item>
@@ -208,7 +208,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="组件路径" prop="component" v-if="formData.type === '2'">
+        <el-form-item label="组件路径" prop="component" v-if="formData.menuType === 'menu'">
           <el-input
             v-model="formData.component"
             placeholder="请输入组件路径，如：@/views/system/Users.vue"
@@ -218,9 +218,9 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="排序" prop="sort">
+        <el-form-item label="排序" prop="sortOrder">
           <el-input-number
-            v-model="formData.sort"
+            v-model="formData.sortOrder"
             :min="0"
             :max="9999"
             controls-position="right"
@@ -307,14 +307,15 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 // 菜单接口定义
 interface MenuItem {
   id: number
-  name: string
+  menuName: string
   path: string
   component?: string
   icon?: string
   parentId: number
-  sort: number
-  type: number // 1: 目录, 2: 菜单
+  sortOrder: number
+  menuType: string // 'menu' 或 'button'
   status: number // 0: 隐藏, 1: 显示
+  permission?: string
   children?: MenuItem[]
 }
 
@@ -337,18 +338,18 @@ const submitting = ref(false)
 const formData = reactive<Partial<MenuItem>>({
   id: undefined,
   parentId: 0,
-  type: 2,
-  name: '',
+  menuType: 'menu',
+  menuName: '',
   path: '',
   component: '',
   icon: '',
-  sort: 0,
+  sortOrder: 0,
   status: 1,
 })
 
 // 表单验证规则
 const formRules: FormRules = {
-  name: [
+  menuName: [
     { required: true, message: '请输入菜单名称', trigger: 'blur' },
     { min: 2, max: 20, message: '菜单名称长度在 2 到 20 个字符', trigger: 'blur' },
   ],
@@ -359,7 +360,7 @@ const formRules: FormRules = {
   component: [
     { pattern: /^@\/views\/[a-zA-Z0-9/_\-/]+\.vue$/, message: '组件路径格式不正确', trigger: 'blur' },
   ],
-  sort: [
+  sortOrder: [
     { required: true, message: '请输入排序', trigger: 'blur' },
   ],
 }
@@ -380,7 +381,7 @@ const filteredIcons = computed(() => {
 // 菜单树选项（用于上级菜单选择）
 const menuTreeOptions = computed(() => {
   return [
-    { id: 0, name: '顶级菜单', children: menus.value }
+    { id: 0, menuName: '顶级菜单', children: menus.value }
   ]
 })
 
@@ -393,7 +394,7 @@ const filteredMenus = computed(() => {
   const keyword = searchKeyword.value.toLowerCase()
   const filterMenu = (menuList: MenuItem[]): MenuItem[] => {
     return menuList.reduce((acc: MenuItem[], menu) => {
-      const matchName = menu.name.toLowerCase().includes(keyword)
+      const matchName = menu.menuName.toLowerCase().includes(keyword)
       const matchPath = menu.path.toLowerCase().includes(keyword)
 
       if (matchName || matchPath) {
@@ -431,146 +432,146 @@ const loadMenus = async () => {
     menus.value = [
       {
         id: 1,
-        name: '首页',
+        menuName: '首页',
         path: '/dashboard',
         component: '@/views/dashboard/Dashboard.vue',
         icon: 'House',
         parentId: 0,
-        sort: 1,
-        type: 2,
+        sortOrder: 1,
+        menuType: 'menu',
         status: 1,
       },
       {
         id: 2,
-        name: '系统管理',
+        menuName: '系统管理',
         path: '/system',
         icon: 'Setting',
         parentId: 0,
-        sort: 2,
-        type: 1,
+        sortOrder: 2,
+        menuType: 'menu',
         status: 1,
         children: [
           {
             id: 3,
-            name: '用户管理',
+            menuName: '用户管理',
             path: '/system/users',
             component: '@/views/system/Users.vue',
             icon: 'User',
             parentId: 2,
-            sort: 1,
-            type: 2,
+            sortOrder: 1,
+            menuType: 'menu',
             status: 1,
           },
           {
             id: 4,
-            name: '角色管理',
+            menuName: '角色管理',
             path: '/system/roles',
             component: '@/views/system/Roles.vue',
             icon: 'Management',
             parentId: 2,
-            sort: 2,
-            type: 2,
+            sortOrder: 2,
+            menuType: 'menu',
             status: 1,
           },
           {
             id: 5,
-            name: '权限管理',
+            menuName: '权限管理',
             path: '/system/permissions',
             component: '@/views/system/Permissions.vue',
             icon: 'Lock',
             parentId: 2,
-            sort: 3,
-            type: 2,
+            sortOrder: 3,
+            menuType: 'menu',
             status: 1,
           },
           {
             id: 6,
-            name: '菜单管理',
+            menuName: '菜单管理',
             path: '/system/menus',
             component: '@/views/system/Menus.vue',
             icon: 'Menu',
             parentId: 2,
-            sort: 4,
-            type: 2,
+            sortOrder: 4,
+            menuType: 'menu',
             status: 1,
           },
         ],
       },
       {
         id: 7,
-        name: '教学管理',
+        menuName: '教学管理',
         path: '/teaching',
         icon: 'Edit',
         parentId: 0,
-        sort: 3,
-        type: 1,
+        sortOrder: 3,
+        menuType: 'menu',
         status: 1,
         children: [
           {
             id: 8,
-            name: '学校管理',
+            menuName: '学校管理',
             path: '/teaching/schools',
             component: '@/views/teaching/SchoolList.vue',
             icon: 'School',
             parentId: 7,
-            sort: 1,
-            type: 2,
+            sortOrder: 1,
+            menuType: 'menu',
             status: 1,
           },
           {
             id: 9,
-            name: '教室管理',
+            menuName: '教室管理',
             path: '/teaching/classrooms',
             component: '@/views/teaching/ClassroomList.vue',
             icon: 'House',
             parentId: 7,
-            sort: 2,
-            type: 2,
+            sortOrder: 2,
+            menuType: 'menu',
             status: 1,
           },
           {
             id: 10,
-            name: '课程管理',
+            menuName: '课程管理',
             path: '/teaching/courses',
             component: '@/views/teaching/CourseList.vue',
             icon: 'Collection',
             parentId: 7,
-            sort: 3,
-            type: 2,
+            sortOrder: 3,
+            menuType: 'menu',
             status: 1,
           },
         ],
       },
       {
         id: 11,
-        name: '就业管理',
+        menuName: '就业管理',
         path: '/employment',
         icon: 'OfficeBuilding',
         parentId: 0,
-        sort: 4,
-        type: 1,
+        sortOrder: 4,
+        menuType: 'menu',
         status: 1,
         children: [
           {
             id: 12,
-            name: '企业管理',
+            menuName: '企业管理',
             path: '/employment/companies',
             component: '@/views/employment/CompanyList.vue',
             icon: 'Management',
             parentId: 11,
-            sort: 1,
-            type: 2,
+            sortOrder: 1,
+            menuType: 'menu',
             status: 1,
           },
           {
             id: 13,
-            name: '岗位管理',
+            menuName: '岗位管理',
             path: '/employment/positions',
             component: '@/views/employment/PositionList.vue',
             icon: 'Briefcase',
             parentId: 11,
-            sort: 2,
-            type: 2,
+            sortOrder: 2,
+            menuType: 'menu',
             status: 1,
           },
         ],
@@ -619,7 +620,7 @@ const handleAdd = () => {
 const handleAddChild = (row: MenuItem) => {
   resetForm()
   formData.parentId = row.id
-  formData.type = 2 // 子菜单必须是菜单类型
+  formData.menuType = 'menu' // 子菜单必须是菜单类型
   dialogVisible.value = true
 }
 
@@ -682,12 +683,12 @@ const resetForm = () => {
   Object.assign(formData, {
     id: undefined,
     parentId: 0,
-    type: 2,
-    name: '',
+    menuType: 'menu',
+    menuName: '',
     path: '',
     component: '',
     icon: '',
-    sort: 0,
+    sortOrder: 0,
     status: 1,
   })
 }
