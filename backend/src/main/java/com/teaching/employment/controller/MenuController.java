@@ -1,5 +1,6 @@
 package com.teaching.employment.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.Menu;
 import com.teaching.employment.service.MenuService;
@@ -104,6 +105,20 @@ public class MenuController {
     @DeleteMapping("/batch")
     @ApiOperation("批量删除菜单")
     public Result<Void> batchDelete(@RequestBody List<Long> ids) {
+        // 输入验证
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+
+        // 业务逻辑验证：检查菜单是否存在子菜单
+        for (Long id : ids) {
+            long childCount = menuService.count(new LambdaQueryWrapper<Menu>()
+                .eq(Menu::getParentId, id));
+            if (childCount > 0) {
+                return Result.error("菜单ID[" + id + "]存在子菜单，请先删除子菜单");
+            }
+        }
+
         boolean success = menuService.removeByIds(ids);
         return success ? Result.ok("批量删除成功") : Result.error("批量删除失败");
     }

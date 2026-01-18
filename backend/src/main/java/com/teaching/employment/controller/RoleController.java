@@ -98,9 +98,26 @@ public class RoleController {
         return success ? Result.ok("删除成功") : Result.error("删除失败");
     }
 
+    /**
+     * 批量删除角色
+     */
     @ApiOperation("批量删除角色")
     @DeleteMapping("/batch")
     public Result<Void> batchDelete(@RequestBody List<Long> ids) {
+        // 输入验证
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+
+        // 业务逻辑验证：检查角色是否被用户使用
+        // TODO: 实现角色使用检查（需要注入 UserService 并添加 countByRoleId 方法）
+        // for (Long id : ids) {
+        //     long count = userService.countByRoleId(id);
+        //     if (count > 0) {
+        //         return Result.error("角色ID[" + id + "]正在使用中，无法删除");
+        //     }
+        // }
+
         boolean success = roleService.removeByIds(ids);
         return success ? Result.ok("批量删除成功") : Result.error("批量删除失败");
     }
