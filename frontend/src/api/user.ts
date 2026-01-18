@@ -101,3 +101,59 @@ export function deleteUserApi(id: number) {
     method: 'delete'
   })
 }
+
+/**
+ * 创建用户
+ */
+export function createUserApi(data: User) {
+  return request<Result<void>>({
+    url: '/user',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新用户
+ */
+export function updateUserApi(id: number, data: User) {
+  return request<Result<void>>({
+    url: `/user/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 批量删除用户
+ */
+export function batchDeleteUserApi(ids: number[]) {
+  return request<Result<void>>({
+    url: '/user/batch',
+    method: 'delete',
+    data: ids
+  })
+}
+
+/**
+ * 导出用户
+ */
+export function exportUsersApi(params?: any) {
+  return request<Blob>({
+    url: '/user/export',
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
+}
+
+/**
+ * 重置密码
+ */
+export function resetPasswordApi(id: number, newPassword: string) {
+  return request<Result<void>>({
+    url: `/user/${id}/password`,
+    method: 'put',
+    data: { newPassword }
+  })
+}
