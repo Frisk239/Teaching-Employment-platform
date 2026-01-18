@@ -23,6 +23,16 @@ public class PasswordUtil {
     }
 
     /**
+     * 加密密码（别名方法）
+     *
+     * @param password 明文密码
+     * @return 加密后的密码
+     */
+    public static String encrypt(String password) {
+        return encode(password);
+    }
+
+    /**
      * 验证密码
      *
      * @param password       明文密码
