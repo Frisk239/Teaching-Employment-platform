@@ -295,9 +295,11 @@ import {
   assignMenusApi,
   assignPermissionsApi,
   getRoleMenuIdsApi,
-  getRolePermissionIdsApi
+  getRolePermissionIdsApi,
+  getAllPermissionsApi
 } from '@/api/role'
 import type { Role } from '@/api/types'
+import type { Permission } from '@/api/permission'
 
 // 权限树节点接口
 interface PermissionTreeNode {
@@ -310,10 +312,20 @@ interface PermissionTreeNode {
 // 响应式数据
 const loading = ref(false)
 const roles = ref<Role[]>([])
+const permissions = ref<Permission[]>([])
 const searchKeyword = ref('')
 const selectedIds = ref<number[]>([])
 const currentPage = ref(1)
 const pageSize = ref(10)
+
+// 权限码到ID的映射
+const permissionCodeToIdMap = computed(() => {
+  const map = new Map<string, number>()
+  permissions.value.forEach(p => {
+    if (p.id && p.key) map.set(p.key, p.id)
+  })
+  return map
+})
 
 // 对话框相关
 const dialogVisible = ref(false)
@@ -620,6 +632,28 @@ const loadRoles = async () => {
   }
 }
 
+// 加载权限列表
+const loadPermissions = async () => {
+  try {
+    const { data } = await getAllPermissionsApi()
+    // 扁平化树形结构以便于查找
+    const flattenPermissions = (nodes: Permission[]): Permission[] => {
+      const result: Permission[] = []
+      nodes.forEach(node => {
+        result.push(node)
+        if (node.children && node.children.length > 0) {
+          result.push(...flattenPermissions(node.children))
+        }
+      })
+      return result
+    }
+    permissions.value = flattenPermissions(data)
+  } catch (error: any) {
+    console.error('加载权限列表失败:', error)
+    ElMessage.error(error.message || '加载权限列表失败')
+  }
+}
+
 // 搜索
 const handleSearch = () => {
   currentPage.value = 1
@@ -667,10 +701,25 @@ const handleStatusChange = async (row: Role) => {
 }
 
 // 分配权限
-const handleAssignPermissions = (row: Role) => {
+const handleAssignPermissions = async (row: Role) => {
   currentRole.value = row
-  checkedPermissions.value = row.permissions?.filter(p => p !== '*') || []
-  selectedPermissionCount.value = checkedPermissions.value.length
+  try {
+    // 从服务器获取角色当前的权限ID列表
+    const { data: permissionIds } = await getRolePermissionIdsApi(row.id)
+    // 将权限ID转换为权限码,用于在树中显示选中状态
+    checkedPermissions.value = permissionIds
+      .map(id => {
+        const entry = Array.from(permissionCodeToIdMap.value.entries()).find(([_, v]) => v === id)
+        return entry?.[0]
+      })
+      .filter(Boolean) as string[]
+    selectedPermissionCount.value = checkedPermissions.value.length
+  } catch (error: any) {
+    console.error('获取角色权限失败:', error)
+    // 如果获取失败,使用本地数据
+    checkedPermissions.value = (row.permissions as any)?.filter((p: any) => p !== '*') || []
+    selectedPermissionCount.value = checkedPermissions.value.length
+  }
   permissionDialogVisible.value = true
 }
 
@@ -690,25 +739,23 @@ const handleSavePermissions = async () => {
 
     const checkedKeys = permissionTreeRef.value?.getCheckedKeys() || []
     const halfCheckedKeys = permissionTreeRef.value?.getHalfCheckedKeys() || []
-    const allPermissions = [...checkedKeys, ...halfCheckedKeys]
+    const allPermissionCodes = [...checkedKeys, ...halfCheckedKeys]
 
-    // 注意: 当前权限树使用的是权限码字符串,但后端API需要权限ID数字
-    // 需要先实现一个API来查询权限码到ID的映射,或者修改权限树数据结构
-    // TODO: 实现权限码到ID的映射逻辑
-    // const permissionIds = await mapPermissionCodesToIds(allPermissions)
-    // await assignPermissionsApi({
-    //   roleId: currentRole.value.id,
-    //   permissionIds: permissionIds
-    // })
+    // 将权限码转换为权限ID
+    const permissionIds = allPermissionCodes
+      .map(code => permissionCodeToIdMap.value.get(code))
+      .filter(Boolean) as number[]
 
-    // 更新本地数据
-    const role = roles.value.find(r => r.id === currentRole.value!.id)
-    if (role) {
-      role.permissions = allPermissions as any
-    }
+    // 调用后端API分配权限
+    await assignPermissionsApi({
+      roleId: currentRole.value.id,
+      permissionIds
+    })
 
     ElMessage.success('权限分配成功')
     permissionDialogVisible.value = false
+    // 重新加载角色列表以更新权限数量显示
+    await loadRoles()
   } catch (error: any) {
     console.error('保存权限失败:', error)
     ElMessage.error(error.message || '保存权限失败')
@@ -777,6 +824,7 @@ const resetForm = () => {
 // 组件挂载
 onMounted(() => {
   loadRoles()
+  loadPermissions()
 })
 </script>
 

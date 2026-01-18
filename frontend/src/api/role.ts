@@ -1,5 +1,6 @@
 import { http } from '@/utils/request'
 import type { Result, IPage, Role } from './types'
+import type { Permission } from './permission'
 
 export interface RolePageParams {
   current: number
@@ -95,3 +96,11 @@ export function getRoleMenuIdsApi(roleId: number) {
 export function getRolePermissionIdsApi(roleId: number) {
   return http.get<number[]>(`/role/permissions/${roleId}`)
 }
+
+/**
+ * 获取所有权限列表(树形结构)
+ */
+export function getAllPermissionsApi() {
+  return http.get<Permission[]>('/permission/tree')
+}
+
