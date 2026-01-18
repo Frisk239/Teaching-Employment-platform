@@ -525,9 +525,8 @@ const handleDelete = async (row: MenuItem) => {
 // 状态变化
 const handleStatusChange = async (row: MenuItem) => {
   try {
-    // TODO: 调用实际的API
-    // await menuApi.updateStatus(row.id, row.status)
-
+    const previousStatus = row.status
+    await updateMenuApi({ id: row.id, status: row.status })
     ElMessage.success(row.status === 1 ? '已显示' : '已隐藏')
   } catch (error: any) {
     ElMessage.error(error.message || '状态更新失败')
