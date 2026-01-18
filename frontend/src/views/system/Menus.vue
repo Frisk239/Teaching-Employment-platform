@@ -58,6 +58,7 @@
         row-key="id"
         :tree-props="{ children: 'children' }"
         :default-expand-all="false"
+        :expand-row-keys="expandedKeys"
         ref="menuTableRef"
       >
         <!-- 菜单名称列 -->
@@ -111,7 +112,7 @@
         </el-table-column>
 
         <!-- 操作列 -->
-        <el-table-column label="操作" width="250" align="center" fixed="right">
+        <el-table-column label="操作" width="300" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
               type="primary"
@@ -131,6 +132,15 @@
               @click="handleEdit(row)"
             >
               编辑
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              link
+              :icon="Delete"
+              @click="handleDelete(row)"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -299,7 +309,12 @@ import {
   Fold,
   Picture,
 } from '@element-plus/icons-vue'
-import { deleteMenuApi } from '@/api/menu'
+import {
+  getMenuTreeApi,
+  createMenuApi,
+  updateMenuApi,
+  deleteMenuApi
+} from '@/api/menu'
 
 // 导入所有 Element Plus 图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
@@ -326,6 +341,7 @@ const searchKeyword = ref('')
 const menuTableRef = ref()
 const showIconPicker = ref(false)
 const iconSearchKeyword = ref('')
+const expandedKeys = ref<number[]>([])
 
 // 对话框相关
 const dialogVisible = ref(false)
@@ -424,159 +440,9 @@ const getIconComponent = (iconName?: string) => {
 const loadMenus = async () => {
   loading.value = true
   try {
-    // TODO: 调用实际的API
-    // const data = await menuApi.list()
-
-    // 模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    menus.value = [
-      {
-        id: 1,
-        menuName: '首页',
-        path: '/dashboard',
-        component: '@/views/dashboard/Dashboard.vue',
-        icon: 'House',
-        parentId: 0,
-        sortOrder: 1,
-        menuType: 'menu',
-        status: 1,
-      },
-      {
-        id: 2,
-        menuName: '系统管理',
-        path: '/system',
-        icon: 'Setting',
-        parentId: 0,
-        sortOrder: 2,
-        menuType: 'menu',
-        status: 1,
-        children: [
-          {
-            id: 3,
-            menuName: '用户管理',
-            path: '/system/users',
-            component: '@/views/system/Users.vue',
-            icon: 'User',
-            parentId: 2,
-            sortOrder: 1,
-            menuType: 'menu',
-            status: 1,
-          },
-          {
-            id: 4,
-            menuName: '角色管理',
-            path: '/system/roles',
-            component: '@/views/system/Roles.vue',
-            icon: 'Management',
-            parentId: 2,
-            sortOrder: 2,
-            menuType: 'menu',
-            status: 1,
-          },
-          {
-            id: 5,
-            menuName: '权限管理',
-            path: '/system/permissions',
-            component: '@/views/system/Permissions.vue',
-            icon: 'Lock',
-            parentId: 2,
-            sortOrder: 3,
-            menuType: 'menu',
-            status: 1,
-          },
-          {
-            id: 6,
-            menuName: '菜单管理',
-            path: '/system/menus',
-            component: '@/views/system/Menus.vue',
-            icon: 'Menu',
-            parentId: 2,
-            sortOrder: 4,
-            menuType: 'menu',
-            status: 1,
-          },
-        ],
-      },
-      {
-        id: 7,
-        menuName: '教学管理',
-        path: '/teaching',
-        icon: 'Edit',
-        parentId: 0,
-        sortOrder: 3,
-        menuType: 'menu',
-        status: 1,
-        children: [
-          {
-            id: 8,
-            menuName: '学校管理',
-            path: '/teaching/schools',
-            component: '@/views/teaching/SchoolList.vue',
-            icon: 'School',
-            parentId: 7,
-            sortOrder: 1,
-            menuType: 'menu',
-            status: 1,
-          },
-          {
-            id: 9,
-            menuName: '教室管理',
-            path: '/teaching/classrooms',
-            component: '@/views/teaching/ClassroomList.vue',
-            icon: 'House',
-            parentId: 7,
-            sortOrder: 2,
-            menuType: 'menu',
-            status: 1,
-          },
-          {
-            id: 10,
-            menuName: '课程管理',
-            path: '/teaching/courses',
-            component: '@/views/teaching/CourseList.vue',
-            icon: 'Collection',
-            parentId: 7,
-            sortOrder: 3,
-            menuType: 'menu',
-            status: 1,
-          },
-        ],
-      },
-      {
-        id: 11,
-        menuName: '就业管理',
-        path: '/employment',
-        icon: 'OfficeBuilding',
-        parentId: 0,
-        sortOrder: 4,
-        menuType: 'menu',
-        status: 1,
-        children: [
-          {
-            id: 12,
-            menuName: '企业管理',
-            path: '/employment/companies',
-            component: '@/views/employment/CompanyList.vue',
-            icon: 'Management',
-            parentId: 11,
-            sortOrder: 1,
-            menuType: 'menu',
-            status: 1,
-          },
-          {
-            id: 13,
-            menuName: '岗位管理',
-            path: '/employment/positions',
-            component: '@/views/employment/PositionList.vue',
-            icon: 'Briefcase',
-            parentId: 11,
-            sortOrder: 2,
-            menuType: 'menu',
-            status: 1,
-          },
-        ],
-      },
-    ]
+    const data = await getMenuTreeApi()
+    menus.value = data || []
+    ElMessage.success('加载菜单列表成功')
   } catch (error: any) {
     ElMessage.error(error.message || '加载菜单列表失败')
   } finally {
@@ -591,18 +457,21 @@ const handleSearch = () => {
 
 // 展开全部
 const expandAll = () => {
-  const rows = menuTableRef.value?.store.states.flattenTreeData || []
-  rows.forEach((row: any) => {
-    menuTableRef.value?.toggleRowExpansion(row, true)
-  })
+  const expandNode = (nodes: MenuItem[]) => {
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        expandedKeys.value.push(node.id)
+        expandNode(node.children)
+      }
+    })
+  }
+  expandedKeys.value = []
+  expandNode(menus.value)
 }
 
 // 折叠全部
 const collapseAll = () => {
-  const rows = menuTableRef.value?.store.states.flattenTreeData || []
-  rows.forEach((row: any) => {
-    menuTableRef.value?.toggleRowExpansion(row, false)
-  })
+  expandedKeys.value = []
 }
 
 // 选择图标
@@ -630,6 +499,29 @@ const handleEdit = (row: MenuItem) => {
   dialogVisible.value = true
 }
 
+// 删除菜单
+const handleDelete = async (row: MenuItem) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除菜单"${row.menuName}"吗？删除后将无法恢复。`,
+      '删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
+    await deleteMenuApi(row.id!)
+    ElMessage.success('删除成功')
+    await loadMenus()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败')
+    }
+  }
+}
+
 // 状态变化
 const handleStatusChange = async (row: MenuItem) => {
   try {
@@ -652,12 +544,11 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
-    // TODO: 调用实际的API
     if (isEdit.value) {
-      // await menuApi.update(formData.id, formData)
+      await updateMenuApi(formData)
       ElMessage.success('更新成功')
     } else {
-      // await menuApi.create(formData)
+      await createMenuApi(formData)
       ElMessage.success('创建成功')
     }
 
