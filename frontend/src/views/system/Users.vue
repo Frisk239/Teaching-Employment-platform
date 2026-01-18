@@ -226,8 +226,8 @@
             <el-option label="管理员" :value="1" />
             <el-option label="学院负责人" :value="2" />
             <el-option label="教师" :value="3" />
-            <el-option label="企业对接人" :value="4" />
-            <el-option label="学员" :value="5" />
+            <el-option label="学员" :value="4" />
+            <el-option label="企业对接人" :value="5" />
           </el-select>
         </el-form-item>
 
@@ -289,6 +289,7 @@ import {
   exportUsersApi,
   resetPasswordApi,
 } from '@/api/user'
+import { getSchoolListApi } from '@/api/school'
 
 // 用户接口定义
 interface User {
@@ -427,16 +428,15 @@ const loadUsers = async () => {
 // 加载学校列表
 const loadSchools = async () => {
   try {
-    // TODO: 调用实际的API
-    schools.value = [
-      { id: 1, name: '福建师范大学' },
-      { id: 2, name: '福建农林大学' },
-      { id: 3, name: '福建理工大学' },
-      { id: 4, name: '福州大学' },
-      { id: 5, name: '厦门大学' },
-    ]
+    const data = await getSchoolListApi()
+    // 转换学校数据格式以匹配前端School接口
+    schools.value = data.map((school: any) => ({
+      id: school.id,
+      name: school.schoolName || school.name,
+    }))
   } catch (error: any) {
     console.error('加载学校列表失败:', error)
+    ElMessage.error('加载学校列表失败')
   }
 }
 
@@ -552,11 +552,11 @@ const handleExport = async () => {
 // 状态变化
 const handleStatusChange = async (row: User) => {
   try {
-    // TODO: 调用实际的API
-    // await userApi.updateStatus(row.id, row.status)
-
+    // 使用updateUserApi更新用户状态
+    await updateUserApi({ id: row.id, status: row.status })
     ElMessage.success(row.status === 1 ? '已启用' : '已禁用')
   } catch (error: any) {
+    console.error('状态更新失败:', error)
     ElMessage.error(error.message || '状态更新失败')
     // 恢复原状态
     row.status = row.status === 1 ? 0 : 1
