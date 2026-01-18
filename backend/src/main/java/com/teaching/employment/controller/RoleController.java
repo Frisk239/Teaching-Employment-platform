@@ -163,4 +163,12 @@ public class RoleController {
         List<Long> permissionIds = roleService.getRolePermissionIds(roleId);
         return Result.ok(permissionIds);
     }
+
+    @ApiOperation("获取拥有指定角色的用户列表")
+    @GetMapping("/{roleId}/users")
+    public Result<List<com.teaching.employment.entity.User>> getUsersByRoleId(
+            @ApiParam("角色ID") @PathVariable Long roleId) {
+        List<com.teaching.employment.entity.User> users = roleService.getUsersByRoleId(roleId);
+        return Result.ok(users);
+    }
 }

@@ -3,6 +3,7 @@ package com.teaching.employment.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.teaching.employment.entity.Role;
+import com.teaching.employment.entity.User;
 
 import java.util.List;
 
@@ -76,4 +77,12 @@ public interface RoleService extends IService<Role> {
      * @return 权限ID列表
      */
     List<Long> getRolePermissionIds(Long roleId);
+
+    /**
+     * 获取拥有指定角色的用户列表
+     *
+     * @param roleId 角色ID
+     * @return 用户列表
+     */
+    List<User> getUsersByRoleId(Long roleId);
 }

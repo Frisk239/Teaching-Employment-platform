@@ -11,6 +11,9 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * 学校管理控制器
  *
@@ -33,10 +36,8 @@ public class SchoolController {
     public Result<IPage<School>> getSchoolPage(
             @ApiParam("当前页") @RequestParam(defaultValue = "1") Integer current,
             @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size,
-            @ApiParam("学校名称") @RequestParam(required = false) String schoolName,
-            @ApiParam("省份") @RequestParam(required = false) String province,
-            @ApiParam("城市") @RequestParam(required = false) String city) {
-        IPage<School> result = schoolService.getSchoolPage(current, size, schoolName, province, city);
+            @ApiParam("学校名称") @RequestParam(required = false) String schoolName) {
+        IPage<School> result = schoolService.getSchoolPage(current, size, schoolName);
         return Result.ok(result);
     }
 
@@ -88,5 +89,14 @@ public class SchoolController {
     public Result<Void> deleteSchool(@PathVariable Long id) {
         boolean success = schoolService.removeById(id);
         return success ? Result.ok("删除成功") : Result.error("删除失败");
+    }
+
+    /**
+     * Excel导出学校
+     */
+    @GetMapping("/export")
+    @ApiOperation("Excel导出学校")
+    public void exportSchools(HttpServletResponse response) throws IOException {
+        schoolService.exportSchools(response);
     }
 }

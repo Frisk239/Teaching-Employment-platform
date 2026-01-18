@@ -6,17 +6,9 @@ export interface School {
   id?: number
   schoolName?: string
   schoolCode?: string
-  licenseNumber?: string
-  licenseIssueDate?: string
-  licenseExpiryDate?: string
-  licenseImageUrl?: string
-  province?: string
-  city?: string
   address?: string
-  website?: string
   contactPerson?: string
   contactPhone?: string
-  email?: string
   description?: string
   status?: number
   createTime?: string
@@ -28,8 +20,6 @@ export interface SchoolPageParams {
   current: number
   size: number
   schoolName?: string
-  province?: string
-  city?: string
 }
 
 /**
@@ -72,4 +62,11 @@ export function updateSchoolApi(data: School) {
  */
 export function deleteSchoolApi(id: number) {
   return http.delete<void>(`/school/${id}`)
+}
+
+/**
+ * 导出学校Excel
+ */
+export function exportSchoolsApi() {
+  return http.get<Blob>('/school/export', { responseType: 'blob' })
 }

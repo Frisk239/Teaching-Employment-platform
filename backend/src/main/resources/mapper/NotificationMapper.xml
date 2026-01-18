@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teaching.employment.mapper.NotificationMapper">
+
+    <!-- 分页查询通知列表（关联用户表） -->
+    <select id="selectNotificationPageWithUser" resultType="com.teaching.employment.model.dto.NotificationDTO">
+        SELECT
+            n.id,
+            n.user_id,
+            u.username,
+            u.real_name,
+            n.type,
+            n.title,
+            n.content,
+            n.related_id,
+            n.is_read,
+            n.is_deleted,
+            n.create_time,
+            n.update_time
+        FROM t_notification n
+        LEFT JOIN t_user u ON n.user_id = u.id
+        <where>
+            <if test="userId != null">
+                AND n.user_id = #{userId}
+            </if>
+            <if test="type != null and type != ''">
+                AND n.type = #{type}
+            </if>
+            <if test="isRead != null">
+                AND n.is_read = #{isRead}
+            </if>
+            AND n.is_deleted = 0
+        </where>
+        ORDER BY n.create_time DESC
+    </select>
+
+</mapper>

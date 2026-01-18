@@ -3,6 +3,7 @@ package com.teaching.employment.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.teaching.employment.entity.Notification;
+import com.teaching.employment.model.dto.NotificationDTO;
 
 import java.util.List;
 
@@ -13,6 +14,18 @@ import java.util.List;
  * @since 2026-01-12
  */
 public interface NotificationService extends IService<Notification> {
+
+    /**
+     * 分页查询通知列表（包含用户信息）
+     *
+     * @param current  当前页
+     * @param size     每页大小
+     * @param userId   用户ID
+     * @param type     通知类型
+     * @param isRead   是否已读
+     * @return 通知分页数据（包含用户信息）
+     */
+    IPage<NotificationDTO> getNotificationPageWithUser(Integer current, Integer size, Long userId, String type, Integer isRead);
 
     /**
      * 分页查询通知列表

@@ -291,6 +291,7 @@ import {
 import { getSchoolListApi } from '@/api/school'
 import type { Classroom } from '@/api/classroom'
 import type { School } from '@/api/school'
+import { CLASSROOM_TYPES, CLASSROOM_STATUS } from '@/constants/classroom'
 
 // 搜索表单
 const searchForm = reactive({

@@ -54,8 +54,6 @@ import {
   House,
   Setting,
   User,
-  Lock,
-  Menu,
   School,
   House as HouseIcon,
   Collection,
@@ -111,6 +109,17 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
+  // 系统公告（一级菜单）
+  {
+    id: 27,
+    name: '系统公告',
+    path: '/notifications/system-notices',
+    icon: Bell,
+    parentId: 0,
+    sort: 3,
+    status: '1',
+    type: '2',
+  },
   // 系统管理目录
   {
     id: 2,
@@ -144,25 +153,14 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
-  // 权限管理
+  // 通知管理
   {
-    id: 5,
-    name: '权限管理',
-    path: '/system/permissions',
-    icon: Lock,
+    id: 28,
+    name: '通知管理',
+    path: '/system/notifications',
+    icon: Bell,
     parentId: 2,
     sort: 3,
-    status: '1',
-    type: '2',
-  },
-  // 菜单管理
-  {
-    id: 6,
-    name: '菜单管理',
-    path: '/system/menus',
-    icon: Menu,
-    parentId: 2,
-    sort: 4,
     status: '1',
     type: '2',
   },
@@ -492,11 +490,11 @@ const allMenus: MenuItem[] = [
 const roleMenuPermissions: Record<string, string[]> = {
   admin: [
     '/dashboard',
+    '/notifications/system-notices',
     '/system',
     '/system/users',
     '/system/roles',
-    '/system/permissions',
-    '/system/menus',
+    '/system/notifications',
     '/teaching',
     '/teaching/schools',
     '/teaching/classrooms',
@@ -512,6 +510,7 @@ const roleMenuPermissions: Record<string, string[]> = {
   ],
   college_head: [
     '/dashboard',
+    '/notifications/system-notices',
     '/teaching',
     '/teaching/classrooms',
     '/teaching/courses',
@@ -524,6 +523,7 @@ const roleMenuPermissions: Record<string, string[]> = {
   ],
   teacher: [
     '/dashboard',
+    '/notifications/system-notices',
     '/teaching',
     '/teaching/classrooms',
     '/teaching/courses',
@@ -535,6 +535,7 @@ const roleMenuPermissions: Record<string, string[]> = {
   ],
   user: [
     '/dashboard',
+    '/notifications/system-notices',
     '/teaching',
     '/teaching/my-courses',
     '/teaching/assignments',
@@ -548,6 +549,7 @@ const roleMenuPermissions: Record<string, string[]> = {
   ],
   enterprise_contact: [
     '/dashboard',
+    '/notifications/system-notices',
     '/employment',
     '/employment/enterprise-positions',
     '/employment/applications',

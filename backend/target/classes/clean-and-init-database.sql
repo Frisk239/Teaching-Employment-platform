@@ -232,15 +232,22 @@ CREATE TABLE t_teacher (
 CREATE TABLE t_classroom (
   id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '教室ID',
   school_id BIGINT COMMENT '所属学校ID',
-  building_name VARCHAR(50) COMMENT '楼栋名称',
-  room_number VARCHAR(50) COMMENT '教室号',
+  classroom_no VARCHAR(50) COMMENT '教室编号',
+  classroom_name VARCHAR(100) COMMENT '教室名称',
+  building VARCHAR(50) COMMENT '所在楼栋',
+  floor VARCHAR(20) COMMENT '楼层',
   capacity INT COMMENT '容纳人数',
-  room_type VARCHAR(50) COMMENT '教室类型',
-  equipment TEXT COMMENT '设备清单',
+  classroom_type VARCHAR(50) COMMENT '教室类型',
+  has_projector INT DEFAULT 0 COMMENT '是否有投影仪：1-是 0-否',
+  has_computer INT DEFAULT 0 COMMENT '是否有电脑：1-是 0-否',
+  has_multimedia INT DEFAULT 0 COMMENT '是否多媒体教室：1-是 0-否',
+  equipment TEXT COMMENT '设备描述',
   status INT DEFAULT 1 COMMENT '状态：1-可用 0-不可用',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  FOREIGN KEY (school_id) REFERENCES t_school(id)
+  FOREIGN KEY (school_id) REFERENCES t_school(id),
+  INDEX idx_school_id (school_id),
+  INDEX idx_classroom_no (classroom_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教室表';
 
 -- 13. 课程表

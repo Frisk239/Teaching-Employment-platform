@@ -323,4 +323,38 @@ public class ExcelUtil {
         @ExcelProperty(value = "个人简介", index = 14)
         private String description;
     }
+
+    /**
+     * 学校导出Excel模板类
+     */
+    @Data
+    @ContentRowHeight(20)
+    @HeadRowHeight(30)
+    @ColumnWidth(20)
+    public static class SchoolExportTemplate {
+
+        @ExcelProperty(value = "学校名称", index = 0)
+        private String schoolName;
+
+        @ExcelProperty(value = "学校代码", index = 1)
+        private String schoolCode;
+
+        @ExcelProperty(value = "详细地址", index = 2)
+        private String address;
+
+        @ExcelProperty(value = "联系人", index = 3)
+        private String contactPerson;
+
+        @ExcelProperty(value = "联系电话", index = 4)
+        private String contactPhone;
+
+        @ExcelProperty(value = "学校简介", index = 5)
+        private String description;
+
+        @ExcelProperty(value = "状态", index = 6)
+        private String status;
+
+        @ExcelProperty(value = "创建时间", index = 7)
+        private String createTime;
+    }
 }

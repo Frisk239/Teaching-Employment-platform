@@ -11,22 +11,6 @@
             style="width: 200px"
           />
         </el-form-item>
-        <el-form-item label="省份">
-          <el-input
-            v-model="searchForm.province"
-            placeholder="请输入省份"
-            clearable
-            style="width: 150px"
-          />
-        </el-form-item>
-        <el-form-item label="城市">
-          <el-input
-            v-model="searchForm.city"
-            placeholder="请输入城市"
-            clearable
-            style="width: 150px"
-          />
-        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
             <el-icon><Search /></el-icon>
@@ -71,20 +55,9 @@
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="schoolName" label="学校名称" min-width="180" show-overflow-tooltip />
         <el-table-column prop="schoolCode" label="学校代码" width="120" />
-        <el-table-column prop="province" label="省份" width="100" />
-        <el-table-column prop="city" label="城市" width="100" />
         <el-table-column prop="address" label="详细地址" min-width="200" show-overflow-tooltip />
         <el-table-column prop="contactPerson" label="联系人" width="120" />
         <el-table-column prop="contactPhone" label="联系电话" width="140" />
-        <el-table-column prop="email" label="邮箱" width="180" show-overflow-tooltip />
-        <el-table-column label="许可证状态" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag v-if="!row.licenseExpiryDate" type="info">未设置</el-tag>
-            <el-tag v-else-if="isLicenseExpiringSoon(row.licenseExpiryDate)" type="warning">即将过期</el-tag>
-            <el-tag v-else-if="isLicenseExpired(row.licenseExpiryDate)" type="danger">已过期</el-tag>
-            <el-tag v-else type="success">正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
@@ -128,7 +101,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="800px"
+      width="600px"
       :close-on-click-modal="false"
       @close="handleDialogClose"
     >
@@ -136,43 +109,16 @@
         ref="formRef"
         :model="formData"
         :rules="formRules"
-        label-width="140px"
+        label-width="100px"
         class="school-form"
       >
-        <el-divider content-position="left">基本信息</el-divider>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="学校名称" prop="schoolName">
-              <el-input v-model="formData.schoolName" placeholder="请输入学校名称" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="学校代码" prop="schoolCode">
-              <el-input v-model="formData.schoolCode" placeholder="请输入学校代码" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-form-item label="学校名称" prop="schoolName">
+          <el-input v-model="formData.schoolName" placeholder="请输入学校名称" />
+        </el-form-item>
 
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="省份" prop="province">
-              <el-input v-model="formData.province" placeholder="请输入省份" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="城市" prop="city">
-              <el-input v-model="formData.city" placeholder="请输入城市" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="状态" prop="status">
-              <el-radio-group v-model="formData.status">
-                <el-radio :label="1">正常</el-radio>
-                <el-radio :label="0">停用</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-form-item label="学校代码" prop="schoolCode">
+          <el-input v-model="formData.schoolCode" placeholder="请输入学校代码" />
+        </el-form-item>
 
         <el-form-item label="详细地址" prop="address">
           <el-input
@@ -183,91 +129,26 @@
           />
         </el-form-item>
 
-        <el-form-item label="学校官网" prop="website">
-          <el-input v-model="formData.website" placeholder="请输入学校官网网址">
-            <template #prepend>http://</template>
-          </el-input>
+        <el-form-item label="联系人" prop="contactPerson">
+          <el-input v-model="formData.contactPerson" placeholder="请输入联系人" />
         </el-form-item>
 
-        <el-divider content-position="left">联系信息</el-divider>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="联系人" prop="contactPerson">
-              <el-input v-model="formData.contactPerson" placeholder="请输入联系人" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="联系电话" prop="contactPhone">
-              <el-input
-                v-model="formData.contactPhone"
-                placeholder="请输入联系电话"
-                maxlength="11"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="formData.email" placeholder="请输入邮箱" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-form-item label="联系电话" prop="contactPhone">
+          <el-input
+            v-model="formData.contactPhone"
+            placeholder="请输入联系电话"
+            maxlength="11"
+          />
+        </el-form-item>
 
-        <el-divider content-position="left">办学许可证</el-divider>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="许可证号" prop="licenseNumber">
-              <el-input v-model="formData.licenseNumber" placeholder="请输入办学许可证号" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="颁发日期" prop="licenseIssueDate">
-              <el-date-picker
-                v-model="formData.licenseIssueDate"
-                type="date"
-                placeholder="选择颁发日期"
-                value-format="YYYY-MM-DD"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="formData.status">
+            <el-radio :label="1">正常</el-radio>
+            <el-radio :label="0">停用</el-radio>
+          </el-radio-group>
+        </el-form-item>
 
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="有效期至" prop="licenseExpiryDate">
-              <el-date-picker
-                v-model="formData.licenseExpiryDate"
-                type="date"
-                placeholder="选择有效期"
-                value-format="YYYY-MM-DD"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="许可证图片" prop="licenseImageUrl">
-              <el-upload
-                class="license-upload"
-                action="#"
-                :show-file-list="false"
-                :before-upload="handleLicenseUpload"
-              >
-                <el-button size="small">
-                  <el-icon><Upload /></el-icon>
-                  上传许可证
-                </el-button>
-              </el-upload>
-              <div v-if="formData.licenseImageUrl" class="license-preview">
-                <el-link :href="formData.licenseImageUrl" target="_blank" type="primary">
-                  查看许可证
-                </el-link>
-              </div>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-divider content-position="left">学校简介</el-divider>
-        <el-form-item label="简介" prop="description">
+        <el-form-item label="学校简介" prop="description">
           <el-input
             v-model="formData.description"
             type="textarea"
@@ -283,24 +164,13 @@
     </el-dialog>
 
     <!-- 查看详情对话框 -->
-    <el-dialog v-model="viewDialogVisible" title="学校详情" width="700px">
+    <el-dialog v-model="viewDialogVisible" title="学校详情" width="600px">
       <el-descriptions v-if="viewData" :column="2" border>
         <el-descriptions-item label="学校名称">{{ viewData.schoolName }}</el-descriptions-item>
         <el-descriptions-item label="学校代码">{{ viewData.schoolCode }}</el-descriptions-item>
-        <el-descriptions-item label="省份">{{ viewData.province }}</el-descriptions-item>
-        <el-descriptions-item label="城市">{{ viewData.city }}</el-descriptions-item>
         <el-descriptions-item label="详细地址" :span="2">{{ viewData.address }}</el-descriptions-item>
-        <el-descriptions-item label="学校官网" :span="2">
-          <el-link v-if="viewData.website" :href="viewData.website" target="_blank" type="primary">
-            {{ viewData.website }}
-          </el-link>
-          <span v-else>-</span>
-        </el-descriptions-item>
         <el-descriptions-item label="联系人">{{ viewData.contactPerson }}</el-descriptions-item>
         <el-descriptions-item label="联系电话">{{ viewData.contactPhone }}</el-descriptions-item>
-        <el-descriptions-item label="邮箱" :span="2">{{ viewData.email }}</el-descriptions-item>
-        <el-descriptions-item label="办学许可证号">{{ viewData.licenseNumber || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="许可证有效期">{{ viewData.licenseExpiryDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="状态">
           <el-tag :type="viewData.status === 1 ? 'success' : 'danger'">
             {{ viewData.status === 1 ? '正常' : '停用' }}
@@ -326,23 +196,21 @@ import {
   Download,
   View,
   Edit,
-  Delete,
-  Upload
+  Delete
 } from '@element-plus/icons-vue'
 import {
   getSchoolPageApi,
   getSchoolByIdApi,
   createSchoolApi,
   updateSchoolApi,
-  deleteSchoolApi
+  deleteSchoolApi,
+  exportSchoolsApi
 } from '@/api/school'
 import type { School } from '@/api/school'
 
 // 搜索表单
 const searchForm = reactive({
-  schoolName: '',
-  province: '',
-  city: ''
+  schoolName: ''
 })
 
 // 分页
@@ -364,17 +232,9 @@ const formData = reactive<Partial<School>>({
   id: undefined,
   schoolName: '',
   schoolCode: '',
-  licenseNumber: '',
-  licenseIssueDate: '',
-  licenseExpiryDate: '',
-  licenseImageUrl: '',
-  province: '',
-  city: '',
   address: '',
-  website: '',
   contactPerson: '',
   contactPhone: '',
-  email: '',
   description: '',
   status: 1
 })
@@ -393,33 +253,12 @@ const formRules: FormRules = {
     { required: true, message: '请输入学校代码', trigger: 'blur' },
     { pattern: /^[A-Z0-9]+$/, message: '学校代码只能包含大写字母和数字', trigger: 'blur' }
   ],
-  province: [{ required: true, message: '请输入省份', trigger: 'blur' }],
-  city: [{ required: true, message: '请输入城市', trigger: 'blur' }],
   address: [{ required: true, message: '请输入详细地址', trigger: 'blur' }],
   contactPerson: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
   contactPhone: [
     { required: true, message: '请输入联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
-  ],
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
   ]
-}
-
-// 判断许可证是否即将过期(30天内)
-const isLicenseExpiringSoon = (expiryDate: string) => {
-  if (!expiryDate) return false
-  const expiry = new Date(expiryDate)
-  const now = new Date()
-  const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  return daysUntilExpiry > 0 && daysUntilExpiry <= 30
-}
-
-// 判断许可证是否已过期
-const isLicenseExpired = (expiryDate: string) => {
-  if (!expiryDate) return false
-  return new Date(expiryDate) < new Date()
 }
 
 // 获取学校列表
@@ -429,9 +268,7 @@ const fetchData = async () => {
     const params = {
       current: pagination.current,
       size: pagination.size,
-      schoolName: searchForm.schoolName || undefined,
-      province: searchForm.province || undefined,
-      city: searchForm.city || undefined
+      schoolName: searchForm.schoolName || undefined
     }
     const data = await getSchoolPageApi(params)
     tableData.value = data.records
@@ -453,8 +290,6 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   searchForm.schoolName = ''
-  searchForm.province = ''
-  searchForm.city = ''
   pagination.current = 1
   fetchData()
 }
@@ -465,17 +300,9 @@ const handleAdd = () => {
     id: undefined,
     schoolName: '',
     schoolCode: '',
-    licenseNumber: '',
-    licenseIssueDate: '',
-    licenseExpiryDate: '',
-    licenseImageUrl: '',
-    province: '',
-    city: '',
     address: '',
-    website: '',
     contactPerson: '',
     contactPhone: '',
-    email: '',
     description: '',
     status: 1
   })
@@ -550,16 +377,30 @@ const handleDialogClose = () => {
   formRef.value?.resetFields()
 }
 
-// 许可证上传
-const handleLicenseUpload = () => {
-  // TODO: 实现文件上传逻辑
-  ElMessage.info('文件上传功能待实现')
-  return false
-}
-
 // 导出
-const handleExport = () => {
-  ElMessage.info('导出功能开发中...')
+const handleExport = async () => {
+  try {
+    const blob = await exportSchoolsApi()
+
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([blob]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `学校列表_${new Date().getTime()}.xlsx`)
+
+    // 触发下载
+    document.body.appendChild(link)
+    link.click()
+
+    // 清理
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败')
+  }
 }
 
 // 页面加载时获取数据
@@ -602,22 +443,6 @@ onMounted(() => {
       margin-top: 20px;
       display: flex;
       justify-content: flex-end;
-    }
-  }
-
-  .school-form {
-    :deep(.el-divider) {
-      margin: 20px 0;
-    }
-
-    .license-upload {
-      :deep(.el-upload) {
-        display: block;
-      }
-    }
-
-    .license-preview {
-      margin-top: 10px;
     }
   }
 }

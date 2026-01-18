@@ -53,6 +53,7 @@ com\teaching\employment\EmploymentPlatformApplication.class
 com\teaching\employment\utils\ExcelUtil$TeacherExportTemplate.class
 com\teaching\employment\service\impl\RoleServiceImpl.class
 com\teaching\employment\controller\FileUploadController.class
+com\teaching\employment\model\dto\NotificationDTO.class
 com\teaching\employment\mapper\JobApplicationMapper.class
 com\teaching\employment\mapper\RoleMenuRelationMapper.class
 com\teaching\employment\config\Knife4jConfig.class
@@ -204,3 +205,4 @@ com\teaching\employment\controller\InternshipController.class
 com\example\teaching\employment\platform\service\impl\DashboardServiceImpl.class
 com\teaching\employment\controller\TeacherController.class
 com\teaching\employment\service\CompanyService.class
+com\teaching\employment\utils\ExcelUtil$SchoolExportTemplate.class

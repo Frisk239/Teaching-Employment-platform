@@ -106,6 +106,7 @@ C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\
 C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\CourseService.java
 C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\exception\GlobalExceptionHandler.java
 C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\HomeworkSubmissionService.java
+C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\model\dto\NotificationDTO.java
 C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\service\impl\CourseServiceImpl.java
 C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\controller\SchoolController.java
 C:\Users\LeiYu\Desktop\code\front end code\Teaching-Employment-platform\backend\src\main\java\com\teaching\employment\entity\Resume.java

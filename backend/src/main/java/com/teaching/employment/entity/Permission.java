@@ -46,9 +46,6 @@ public class Permission implements Serializable {
     @ApiModelProperty(value = "状态：1-正常 0-停用")
     private Integer status;
 
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    private Integer isDeleted;
-
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private String createTime;

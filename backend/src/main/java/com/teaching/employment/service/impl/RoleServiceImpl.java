@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.Role;
 import com.teaching.employment.entity.RoleMenuRelation;
 import com.teaching.employment.entity.RolePermissionRelation;
+import com.teaching.employment.entity.User;
 import com.teaching.employment.mapper.RoleMapper;
+import com.teaching.employment.mapper.UserMapper;
 import com.teaching.employment.service.RoleMenuRelationService;
 import com.teaching.employment.service.RolePermissionRelationService;
 import com.teaching.employment.service.RoleService;
@@ -33,6 +35,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Autowired
     private RolePermissionRelationService rolePermissionRelationService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public IPage<Role> getRolePage(Integer current, Integer size, String roleCode, String roleName, Integer status) {
@@ -147,5 +152,13 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
                 .stream()
                 .map(RolePermissionRelation::getPermissionId)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getUsersByRoleId(Long roleId) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getRoleId, roleId);
+        wrapper.orderByDesc(User::getCreateTime);
+        return userMapper.selectList(wrapper);
     }
 }

@@ -9,6 +9,7 @@ import com.teaching.employment.entity.Notification;
 import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.NotificationMapper;
+import com.teaching.employment.model.dto.NotificationDTO;
 import com.teaching.employment.service.NotificationService;
 import com.teaching.employment.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,12 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
 
     private final NotificationMapper notificationMapper;
     private final UserService userService;
+
+    @Override
+    public IPage<NotificationDTO> getNotificationPageWithUser(Integer current, Integer size, Long userId, String type, Integer isRead) {
+        Page<NotificationDTO> page = new Page<>(current, size);
+        return notificationMapper.selectNotificationPageWithUser(page, userId, type, isRead);
+    }
 
     @Override
     public IPage<Notification> getNotificationPage(Integer current, Integer size, Long userId, String type, Integer isRead) {

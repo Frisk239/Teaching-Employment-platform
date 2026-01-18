@@ -3,6 +3,7 @@ package com.teaching.employment.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.Notification;
+import com.teaching.employment.model.dto.NotificationDTO;
 import com.teaching.employment.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,13 +32,13 @@ public class NotificationController {
      */
     @GetMapping("/page")
     @ApiOperation("分页查询通知列表")
-    public Result<IPage<Notification>> getNotificationPage(
+    public Result<IPage<NotificationDTO>> getNotificationPage(
             @ApiParam("当前页") @RequestParam(defaultValue = "1") Integer current,
             @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size,
             @ApiParam("用户ID") @RequestParam(required = false) Long userId,
             @ApiParam("通知类型") @RequestParam(required = false) String type,
             @ApiParam("是否已读") @RequestParam(required = false) Integer isRead) {
-        IPage<Notification> page = notificationService.getNotificationPage(current, size, userId, type, isRead);
+        IPage<NotificationDTO> page = notificationService.getNotificationPageWithUser(current, size, userId, type, isRead);
         return Result.ok(page);
     }
 

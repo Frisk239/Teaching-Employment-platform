@@ -56,6 +56,18 @@ export const routes: RouteRecordRaw[] = [
         },
       },
 
+      // ==================== 系统公告（所有角色） ====================
+      {
+        path: '/notifications/system-notices',
+        name: 'SystemNotices',
+        component: () => import('@/views/notifications/SystemNotices.vue'),
+        meta: {
+          title: '系统公告',
+          icon: 'Bell',
+          roles: ['admin', 'college_head', 'teacher', 'user', 'enterprise_contact'],
+        },
+      },
+
       // ==================== 系统管理（仅管理员） ====================
       {
         path: '/system',
@@ -88,22 +100,12 @@ export const routes: RouteRecordRaw[] = [
             },
           },
           {
-            path: '/system/permissions',
-            name: 'SystemPermissions',
-            component: () => import('@/views/system/Permissions.vue'),
+            path: '/system/notifications',
+            name: 'SystemNotifications',
+            component: () => import('@/views/system/Notifications.vue'),
             meta: {
-              title: '权限管理',
-              icon: 'Lock',
-              roles: ['admin'],
-            },
-          },
-          {
-            path: '/system/menus',
-            name: 'SystemMenus',
-            component: () => import('@/views/system/Menus.vue'),
-            meta: {
-              title: '菜单管理',
-              icon: 'Menu',
+              title: '通知管理',
+              icon: 'Bell',
               roles: ['admin'],
             },
           },
@@ -121,7 +123,7 @@ export const routes: RouteRecordRaw[] = [
           roles: ['admin', 'college_head', 'teacher', 'user'],
         },
         children: [
-          // 学校管理（管理员、学院负责人）
+          // 学校管理（仅管理员）
           {
             path: '/teaching/schools',
             name: 'TeachingSchools',
@@ -129,7 +131,7 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '学校管理',
               icon: 'School',
-              roles: ['admin', 'college_head'],
+              roles: ['admin'],
             },
           },
           // 教室管理（管理员、学院负责人、教师）
