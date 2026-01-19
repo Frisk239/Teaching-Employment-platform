@@ -285,6 +285,17 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
+  // 教学计划管理（教师、学院负责人、管理员）
+  {
+    id: 42,
+    name: '教学计划',
+    path: '/teaching/teaching-plan',
+    icon: Document,
+    parentId: 7,
+    sort: 13,
+    status: '1',
+    type: '2',
+  },
   // 学员档案（学院负责人专用）
   {
     id: 38,
@@ -529,6 +540,7 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/teachers',
     '/teaching/daily-reports',
     '/teaching/student-profile',
+    '/teaching/teaching-plan',
     '/employment',
     '/employment/statistics',
   ],
@@ -543,6 +555,7 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/daily-reports',
     '/teaching/teaching-materials',
     '/teaching/student-employment',
+    '/teaching/teaching-plan',
   ],
   user: [
     '/dashboard',
