@@ -277,6 +277,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
+          // 教学计划查看（学员专用）
+          {
+            path: '/teaching/teaching-plan/:courseId',
+            name: 'StudentTeachingPlanView',
+            component: () => import('@/views/student/TeachingPlanView.vue'),
+            meta: {
+              title: '教学计划',
+              icon: 'Document',
+              roles: ['user'],
+            },
+          },
           // 教学资料管理（教师专用）
           {
             path: '/teaching/teaching-materials',
