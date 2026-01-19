@@ -141,6 +141,9 @@
               <el-button size="small" @click="viewCourseHomework(course)">
                 查看作业
               </el-button>
+              <el-button type="info" size="small" @click="handleViewTeachingPlan(course)">
+                教学计划
+              </el-button>
             </div>
           </div>
         </div>
@@ -325,6 +328,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Reading,
@@ -342,6 +346,7 @@ import axios from '@/utils/request'
 import { useAuthStore } from '@/stores'
 import dayjs from 'dayjs'
 
+const router = useRouter()
 const authStore = useAuthStore()
 
 // 状态
@@ -511,6 +516,14 @@ const viewCourseHomeworkFromDetail = () => {
   detailDialogVisible.value = false
   homeworkDialogVisible.value = true
   loadCourseHomework(selectedCourse.value.id)
+}
+
+// 查看教学计划
+const handleViewTeachingPlan = (course: any) => {
+  router.push({
+    name: 'StudentTeachingPlanView',
+    params: { courseId: course.id }
+  })
 }
 
 // 加载课程作业列表
