@@ -268,15 +268,6 @@ const loadStats = async () => {
     }
   } catch (error: any) {
     console.error('加载统计数据失败:', error)
-    // 如果API不存在,使用模拟数据
-    stats.value = {
-      totalUsers: 47,
-      totalStudents: 21,
-      totalCompanies: 9,
-      totalPositions: 10,
-      totalApplications: 15,
-      employmentRate: 15.2
-    }
   }
 }
 
@@ -286,14 +277,7 @@ const loadFunnelData = async () => {
     const response = await statisticsApi.getFunnelData()
     initFunnelChart(response)
   } catch (error) {
-    // 使用模拟数据
-    initFunnelChart([
-      { name: '简历投递', value: 15 },
-      { name: '筛选通过', value: 8 },
-      { name: '参加笔试', value: 5 },
-      { name: '进入面试', value: 2 },
-      { name: '收到Offer', value: 0 }
-    ])
+    console.error('加载招聘漏斗数据失败:', error)
   }
 }
 
@@ -303,14 +287,7 @@ const loadPositionData = async () => {
     const response = await statisticsApi.getTopPositions()
     initPositionChart(response)
   } catch (error) {
-    // 使用模拟数据
-    initPositionChart([
-      { name: 'Java后端工程师', value: 5 },
-      { name: '前端开发工程师', value: 4 },
-      { name: 'Python实习生', value: 3 },
-      { name: '算法工程师', value: 2 },
-      { name: '测试工程师', value: 1 }
-    ])
+    console.error('加载热门职位数据失败:', error)
   }
 }
 
@@ -320,15 +297,7 @@ const loadStatusData = async () => {
     const response = await statisticsApi.getStatusDistribution()
     initStatusChart(response)
   } catch (error) {
-    // 使用模拟数据
-    initStatusChart([
-      { name: '待处理', value: 5 },
-      { name: '已筛选', value: 3 },
-      { name: '笔试中', value: 2 },
-      { name: '面试中', value: 2 },
-      { name: '已录用', value: 0 },
-      { name: '已拒绝', value: 3 }
-    ])
+    console.error('加载状态分布数据失败:', error)
   }
 }
 

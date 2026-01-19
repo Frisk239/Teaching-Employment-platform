@@ -121,6 +121,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { UserFilled, Edit, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { getUserByIdApi, updatePasswordApi } from '@/api/user'
+import axios from '@/utils/request'
 
 const authStore = useAuthStore()
 const userInfo = ref(authStore.user || {})
@@ -131,15 +132,9 @@ const userStats = ref({
   courseCount: 0
 })
 
-// 最近活动
-const recentActivities = ref([
-  {
-    id: 1,
-    title: '登录系统',
-    description: '您刚刚登录了系统',
-    time: new Date().toLocaleString()
-  }
-])
+// 最近活动 - 从API获取
+const recentActivities = ref<any[]>([])
+const loadingActivities = ref(false)
 
 // 修改密码
 const changePasswordVisible = ref(false)
@@ -229,8 +224,35 @@ const handleChangePassword = async () => {
   })
 }
 
+// 获取用户活动记录
+const fetchUserActivities = async () => {
+  if (!userInfo.value.id) return
+  try {
+    loadingActivities.value = true
+    const response = await axios.get(`/user/${userInfo.value.id}/activities`, {
+      params: { limit: 10 }
+    })
+    if (response && Array.isArray(response)) {
+      // 转换数据格式以匹配前端期望的结构
+      recentActivities.value = response.map((activity: any) => ({
+        id: activity.id,
+        title: activity.title,
+        description: activity.description,
+        time: activity.createTime ? new Date(activity.createTime).toLocaleString('zh-CN') : '-'
+      }))
+    }
+  } catch (error) {
+    console.error('获取用户活动记录失败:', error)
+    // 如果获取失败，显示空列表而不是硬编码数据
+    recentActivities.value = []
+  } finally {
+    loadingActivities.value = false
+  }
+}
+
 onMounted(() => {
   fetchUserInfo()
+  fetchUserActivities()
 })
 </script>
 

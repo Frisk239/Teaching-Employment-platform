@@ -521,15 +521,16 @@ const getStatusType = (homework: any) => {
 
 // 获取状态文本
 const getStatusText = (homework: any) => {
-  if (!homework.meta?.submitted) {
+  // 检查是否有提交记录
+  const submission = homework.submission
+  if (!submission) {
     if (homework.status === 'closed') return '已截止'
     if (isOverdue(homework)) return '已逾期'
     return '待提交'
   }
 
   // 已提交，检查是否已批改
-  const submission = homework.submission
-  if (submission && submission.status === 'graded') {
+  if (submission.status === 'graded') {
     return `已批改 (${submission.score}分)`
   }
   return '已提交'
@@ -555,7 +556,7 @@ const getScoreClass = (score: number) => {
 
 // 是否已提交
 const hasSubmitted = (homework: any) => {
-  return homework.meta?.submitted === true
+  return !!homework.submission
 }
 
 // 是否逾期

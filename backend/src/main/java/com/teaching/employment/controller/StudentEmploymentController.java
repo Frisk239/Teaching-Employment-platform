@@ -47,7 +47,6 @@ public class StudentEmploymentController {
 
         // 获取所有学生
         List<Student> allStudents = studentService.lambdaQuery()
-                .eq(Student::getIsDeleted, 0) // 只统计未删除的学生
                 .list();
 
         int totalStudents = allStudents.size();
@@ -133,7 +132,6 @@ public class StudentEmploymentController {
                 .like(keyword != null, Student::getRealName, keyword)
                 .like(className != null, Student::getClassName, className)
                 .like(major != null, Student::getMajor, major)
-                .eq(Student::getIsDeleted, 0)
                 .orderByDesc(Student::getCreateTime)
                 .page(page);
 

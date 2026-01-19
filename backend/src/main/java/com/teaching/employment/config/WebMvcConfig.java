@@ -2,6 +2,7 @@ package com.teaching.employment.config;
 
 import com.teaching.employment.interceptor.JwtInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -19,6 +20,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final JwtInterceptor jwtInterceptor;
+
+    @Value("${file.upload.path:uploads}")
+    private String uploadPath;
 
     /**
      * 配置跨域
@@ -49,7 +53,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/doc.html",             // Knife4j文档
                         "/webjars/**",           // WebJars资源
                         "/favicon.ico",          // 网站图标
-                        "/error"                 // 错误页面
+                        "/error",                // 错误页面
+                        "/uploads/**",           // 上传文件资源（允许匿名访问）
+                        "/file/**"               // 文件上传接口
                 );
     }
 
@@ -68,6 +74,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         // 文件上传资源
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+                .addResourceLocations("file:" + uploadPath + "/");
     }
 }

@@ -56,10 +56,6 @@ public class Homework implements Serializable {
     @ApiModelProperty(value = "状态：draft-草稿 published-已发布 closed-已截止")
     private String status;
 
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
-
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

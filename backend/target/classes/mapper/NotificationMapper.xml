@@ -14,7 +14,6 @@
             n.content,
             n.related_id,
             n.is_read,
-            n.is_deleted,
             n.create_time,
             n.update_time
         FROM t_notification n
@@ -29,7 +28,6 @@
             <if test="isRead != null">
                 AND n.is_read = #{isRead}
             </if>
-            AND n.is_deleted = 0
         </where>
         ORDER BY n.create_time DESC
     </select>

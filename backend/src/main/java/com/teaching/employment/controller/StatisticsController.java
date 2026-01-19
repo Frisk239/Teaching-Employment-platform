@@ -1,10 +1,13 @@
 package com.teaching.employment.controller;
 
 import com.teaching.employment.common.Result;
+import com.teaching.employment.service.CompanyService;
 import com.teaching.employment.service.JobApplicationService;
 import com.teaching.employment.service.OfferService;
+import com.teaching.employment.service.PositionService;
 import com.teaching.employment.service.StatisticsService;
 import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -32,17 +35,32 @@ public class StatisticsController {
     private final JobApplicationService jobApplicationService;
     private final OfferService offerService;
     private final StatisticsService statisticsService;
+    private final UserService userService;
+    private final CompanyService companyService;
+    private final PositionService positionService;
 
     /**
-     * 获取就业概况统计数据
+     * 获取就业概况统计数据（管理员 Dashboard 使用）
      */
     @GetMapping("/overview")
     @ApiOperation("获取就业概况统计数据")
     public Result<Map<String, Object>> getEmploymentOverview() {
         Map<String, Object> data = new HashMap<>();
 
+        // 总用户数
+        long totalUsers = userService.count();
+
         // 总学员数
         long totalStudents = studentService.count();
+
+        // 总企业数
+        long totalCompanies = companyService.count();
+
+        // 总职位数
+        long totalPositions = positionService.count();
+
+        // 总申请数
+        long totalApplications = jobApplicationService.count();
 
         // 已就业学员数(收到Offer)
         long employedStudents = offerService.lambdaQuery()
@@ -55,27 +73,12 @@ public class StatisticsController {
                         .multiply(new BigDecimal(100))
                 : BigDecimal.ZERO;
 
-        // 平均起薪
-        double avgSalary = offerService.lambdaQuery()
-                .eq(com.teaching.employment.entity.Offer::getStatus, "accepted")
-                .list()
-                .stream()
-                .filter(offer -> offer.getSalary() != null)
-                .mapToDouble(offer -> offer.getSalary().doubleValue())
-                .average()
-                .orElse(0.0);
-
-        // 本月新增就业
-        long monthlyEmployment = offerService.lambdaQuery()
-                .eq(com.teaching.employment.entity.Offer::getStatus, "accepted")
-                .apply("DATE_FORMAT(create_time, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')")
-                .count();
-
+        data.put("totalUsers", totalUsers);
         data.put("totalStudents", totalStudents);
-        data.put("employedStudents", employedStudents);
+        data.put("totalCompanies", totalCompanies);
+        data.put("totalPositions", totalPositions);
+        data.put("totalApplications", totalApplications);
         data.put("employmentRate", employmentRate);
-        data.put("avgSalary", avgSalary);
-        data.put("monthlyEmployment", monthlyEmployment);
 
         return Result.ok(data);
     }

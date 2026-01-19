@@ -100,3 +100,54 @@ export function exportStudentsApi(params: StudentPageParams) {
     responseType: 'blob'
   })
 }
+
+// ==================== 学员档案相关API ====================
+
+/**
+ * 获取学员技能标签列表
+ */
+export function getStudentSkillsApi(studentId: number) {
+  return http.get(`/student/${studentId}/skills`)
+}
+
+/**
+ * 获取学员项目经验列表
+ */
+export function getStudentProjectsApi(studentId: number) {
+  return http.get(`/student/${studentId}/projects`)
+}
+
+/**
+ * 获取学员求职偏好
+ */
+export function getStudentPreferenceApi(studentId: number) {
+  return http.get(`/student/${studentId}/preference`)
+}
+
+/**
+ * 更新学员求职偏好
+ */
+export function updateStudentPreferenceApi(studentId: number, data: any) {
+  return http.put(`/student/${studentId}/preference`, data)
+}
+
+/**
+ * 获取学员简历列表
+ */
+export function getStudentResumesApi(studentId: number) {
+  return http.get(`/student/${studentId}/resumes`)
+}
+
+/**
+ * 获取学员课程成绩列表
+ */
+export function getStudentCoursesApi(studentId: number) {
+  return http.get(`/student/${studentId}/courses`)
+}
+
+/**
+ * 获取学员教育经历
+ */
+export function getStudentEducationApi(studentId: number) {
+  return http.get(`/student/${studentId}/education`)
+}

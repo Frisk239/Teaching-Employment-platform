@@ -87,9 +87,17 @@ public class Student implements Serializable {
     @ApiModelProperty(value = "备注信息")
     private String description;
 
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
+    @ApiModelProperty(value = "QQ号码")
+    private String qq;
+
+    @ApiModelProperty(value = "微信号")
+    private String wechat;
+
+    @ApiModelProperty(value = "健康状况")
+    private String healthStatus;
+
+    @ApiModelProperty(value = "个人简介")
+    private String bio;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

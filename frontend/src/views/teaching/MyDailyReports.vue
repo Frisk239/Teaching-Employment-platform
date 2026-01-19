@@ -277,28 +277,6 @@
           <span style="margin-left: 10px">小时</span>
         </el-form-item>
 
-        <el-form-item label="附件上传">
-          <el-upload
-            class="upload-demo"
-            :action="uploadAction"
-            :headers="uploadHeaders"
-            :on-success="handleUploadSuccess"
-            :on-remove="handleUploadRemove"
-            :file-list="fileList"
-            :limit="1"
-            drag
-          >
-            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-            <div class="el-upload__text">
-              将文件拖到此处，或<em>点击上传</em>
-            </div>
-            <template #tip>
-              <div class="el-upload__tip">
-                支持常见文档格式，单个文件不超过10MB
-              </div>
-            </template>
-          </el-upload>
-        </el-form-item>
       </el-form>
 
       <template #footer>
@@ -345,11 +323,6 @@
           </el-descriptions-item>
           <el-descriptions-item label="明日计划">
             {{ currentReport.tomorrowPlan || '-' }}
-          </el-descriptions-item>
-          <el-descriptions-item v-if="currentReport.attachmentUrl" label="附件">
-            <el-link :href="currentReport.attachmentUrl" target="_blank" type="primary">
-              查看附件
-            </el-link>
           </el-descriptions-item>
         </el-descriptions>
 
@@ -457,15 +430,7 @@ const writeForm = reactive({
   problems: '',
   tomorrowPlan: '',
   studyHours: undefined as number | undefined,
-  attachmentUrl: '',
 })
-
-// 文件上传相关
-const fileList = ref<any[]>([])
-const uploadAction = import.meta.env.VITE_API_BASE_URL + '/api/file/upload'
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${authStore.token}`,
-}))
 
 const writeRules: FormRules = {
   reportDate: [{ required: true, message: '请选择日报日期', trigger: 'change' }],
@@ -561,19 +526,8 @@ const handleEdit = (row: DailyReport) => {
     problems: row.problems,
     tomorrowPlan: row.tomorrowPlan,
     studyHours: row.studyHours,
-    attachmentUrl: row.attachmentUrl,
   })
   writeDialogVisible.value = true
-
-  // 如果有附件URL，设置文件列表
-  if (row.attachmentUrl) {
-    fileList.value = [{
-      name: '已上传文件',
-      url: row.attachmentUrl,
-    }]
-  } else {
-    fileList.value = []
-  }
 }
 
 // 关闭写日报对话框
@@ -587,24 +541,7 @@ const handleWriteDialogClose = () => {
     problems: '',
     tomorrowPlan: '',
     studyHours: undefined,
-    attachmentUrl: '',
   })
-  fileList.value = []
-}
-
-// 文件上传成功回调
-const handleUploadSuccess = (response: any) => {
-  if (response.code === 200) {
-    writeForm.attachmentUrl = response.data
-    ElMessage.success('文件上传成功')
-  } else {
-    ElMessage.error(response.message || '文件上传失败')
-  }
-}
-
-// 文件删除回调
-const handleUploadRemove = () => {
-  writeForm.attachmentUrl = ''
 }
 
 // 保存草稿

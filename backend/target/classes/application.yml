@@ -127,6 +127,12 @@ jwt:
   header: Authorization
   prefix: Bearer
 
+# 文件上传配置
+file:
+  upload:
+    path: ${user.dir}/uploads  # 使用项目根目录下的uploads文件夹
+    domain: http://localhost:8080
+
 # 日志配置
 logging:
   level:

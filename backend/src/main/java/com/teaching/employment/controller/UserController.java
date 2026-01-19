@@ -34,6 +34,7 @@ public class UserController {
 
     private final UserService userService;
     private final RoleService roleService;
+    private final com.teaching.employment.service.UserActivityService userActivityService;
 
     /**
      * 分页查询用户列表
@@ -236,5 +237,28 @@ public class UserController {
         user.setPassword(PasswordUtil.encrypt(newPassword));
         boolean success = userService.updateById(user);
         return success ? Result.ok("密码重置成功") : Result.error("密码重置失败");
+    }
+
+    /**
+     * 获取用户活动记录
+     */
+    @GetMapping("/{userId}/activities")
+    @ApiOperation("获取用户活动记录")
+    public Result<java.util.List<com.teaching.employment.entity.UserActivity>> getUserActivities(
+            @PathVariable Long userId,
+            @ApiParam("限制数量") @RequestParam(defaultValue = "10") Integer limit) {
+
+        // 查询用户最近的活动记录
+        com.baomidou.mybatisplus.core.metadata.IPage<com.teaching.employment.entity.UserActivity> page =
+            new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, limit);
+
+        com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.teaching.employment.entity.UserActivity> wrapper =
+            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.teaching.employment.entity.UserActivity>()
+                .eq(com.teaching.employment.entity.UserActivity::getUserId, userId)
+                .orderByDesc(com.teaching.employment.entity.UserActivity::getCreateTime);
+
+        page = userActivityService.page(page, wrapper);
+
+        return Result.ok(page.getRecords());
     }
 }

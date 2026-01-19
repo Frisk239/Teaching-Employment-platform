@@ -315,6 +315,8 @@ public class FileUploadController {
     private String buildFileUrl(String relativePath) {
         // 替换路径分隔符为URL路径
         String urlPath = relativePath.replace("\\", "/");
-        return domain + contextPath + "/uploads/" + urlPath;
+        String fileUrl = domain + contextPath + "/uploads/" + urlPath;
+        log.info("构建文件URL - 相对路径: {}, 完整URL: {}", relativePath, fileUrl);
+        return fileUrl;
     }
 }

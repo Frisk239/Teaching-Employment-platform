@@ -464,16 +464,18 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<Position> positions = positionService.list();
 
         for (Position position : positions) {
-            Map<String, Object> positionData = new HashMap<>();
-            positionData.put("name", position.getPositionName());
-
             // 统计该职位的申请数
             LambdaQueryWrapper<JobApplication> applicationWrapper = new LambdaQueryWrapper<>();
             applicationWrapper.eq(JobApplication::getPositionId, position.getId());
             long applicationCount = jobApplicationService.count(applicationWrapper);
-            positionData.put("value", applicationCount);
 
-            result.add(positionData);
+            // 只添加有申请的职位（申请数 > 0）
+            if (applicationCount > 0) {
+                Map<String, Object> positionData = new HashMap<>();
+                positionData.put("name", position.getPositionName());
+                positionData.put("value", applicationCount);
+                result.add(positionData);
+            }
         }
 
         // 按申请数降序排序并取前N名

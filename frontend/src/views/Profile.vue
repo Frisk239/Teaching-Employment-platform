@@ -21,27 +21,9 @@
             :disabled="!editMode"
           >
             <el-row :gutter="20">
-              <el-col :span="8">
-                <div class="avatar-section">
-                  <el-avatar :size="120" :src="basicForm.avatar">
-                    {{ basicForm.realName?.charAt(0) }}
-                  </el-avatar>
-                  <el-upload
-                    v-if="editMode"
-                    :show-file-list="false"
-                    :before-upload="beforeAvatarUpload"
-                    :http-request="uploadAvatar"
-                    class="avatar-upload"
-                  >
-                    <el-button size="small" type="primary" link>更换头像</el-button>
-                  </el-upload>
-                </div>
-              </el-col>
-              <el-col :span="16">
-                <el-row :gutter="20">
-                  <el-col :span="12">
-                    <el-form-item label="姓名" prop="realName">
-                      <el-input v-model="basicForm.realName" placeholder="请输入姓名" />
+              <el-col :span="12">
+                <el-form-item label="姓名" prop="realName">
+                  <el-input v-model="basicForm.realName" placeholder="请输入姓名" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
@@ -60,9 +42,9 @@
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="出生日期" prop="birthday">
+                    <el-form-item label="出生日期" prop="birthDate">
                       <el-date-picker
-                        v-model="basicForm.birthday"
+                        v-model="basicForm.birthDate"
                         type="date"
                         placeholder="选择日期"
                         format="YYYY-MM-DD"
@@ -105,8 +87,6 @@
                     </el-form-item>
                   </el-col>
                 </el-row>
-              </el-col>
-            </el-row>
 
             <el-divider />
 
@@ -463,10 +443,11 @@
             <el-upload
               class="resume-upload"
               drag
-              action="/api/upload/resume"
+              action="/api/file/upload?type=resume"
               :on-success="handleResumeSuccess"
               :before-upload="beforeResumeUpload"
               :file-list="resumeList"
+              :headers="uploadHeaders"
               accept=".pdf,.doc,.docx"
             >
               <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
@@ -613,17 +594,64 @@
         <el-button type="primary" @click="addInternship">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- PDF预览对话框 -->
+    <el-dialog
+      v-model="showPdfDialog"
+      title="简历预览"
+      width="80%"
+      :close-on-click-modal="false"
+      @close="closePdfDialog"
+    >
+      <div v-loading="pdfLoading" element-loading-text="加载中..." style="min-height: 600px">
+        <div v-if="pdfError" style="text-align: center; padding: 50px">
+          <el-empty description="PDF加载失败"></el-empty>
+          <el-button type="primary" @click="closePdfDialog">关闭</el-button>
+        </div>
+        <VuePdfEmbed
+          v-if="currentPdfUrl && !pdfError"
+          :source="currentPdfUrl"
+          @loaded="handlePdfLoaded"
+          @error="handlePdfError"
+          style="width: 100%; height: 700px"
+        />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores'
 import request from '@/utils/request'
+import {
+  getStudentSkillsApi,
+  getStudentProjectsApi,
+  getStudentPreferenceApi,
+  updateStudentPreferenceApi,
+  getStudentResumesApi,
+  getStudentCoursesApi,
+  getStudentEducationApi
+} from '@/api/student'
+import VuePdfEmbed from 'vue-pdf-embed'
 
 const authStore = useAuthStore()
+
+// PDF预览相关
+const showPdfDialog = ref(false)
+const currentPdfUrl = ref('')
+const pdfLoading = ref(true)
+const pdfError = ref(false)
+
+// 上传请求头（包含认证token）
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+  return {
+    Authorization: token ? `Bearer ${token}` : ''
+  }
+})
 
 // 当前激活的标签页
 const activeTab = ref('basic')
@@ -636,7 +664,7 @@ const basicForm = ref({
   realName: '',
   studentNo: '',
   gender: '男',
-  birthday: '',
+  birthDate: '',
   idCard: '',
   nation: '汉族',
   politicalStatus: '群众',
@@ -646,8 +674,7 @@ const basicForm = ref({
   qq: '',
   wechat: '',
   address: '',
-  bio: '',
-  avatar: ''
+  bio: ''
 })
 
 const basicRules = {
@@ -732,10 +759,16 @@ const loadBasicInfo = async () => {
     }
 
     const response: any = await request.get(`/student/${studentId}`)
+
+    // 将gender从数字转换为字符串
+    const genderMap: Record<number, string> = { 1: '男', 2: '女' }
+    const genderStr = response.gender ? genderMap[response.gender] || '男' : '男'
+
     basicForm.value = {
       ...basicForm.value,
       ...response,
-      avatar: response.avatar || ''
+      gender: genderStr,
+      birthDate: response.birthDate || ''
     }
   } catch (error) {
     console.error('加载基本信息失败', error)
@@ -748,29 +781,49 @@ const loadEducation = async () => {
     const studentId = authStore.user?.studentId
     if (!studentId) return
 
-    // 这里应该调用实际的教育经历API
-    // 暂时使用模拟数据
-    educationInfo.value = {
-      schoolName: '某某大学',
-      college: '计算机科学与技术学院',
-      major: '计算机科学与技术',
-      grade: '2021级',
-      className: '计科2101班',
-      education: '本科',
-      enrollmentDate: '2021-09-01',
-      graduationDate: '2025-06-30',
-      duration: '4年',
-      status: '在校'
+    // 从API获取教育经历数据
+    const eduResponse: any = await getStudentEducationApi(studentId)
+    if (eduResponse) {
+      educationInfo.value = {
+        schoolName: eduResponse.schoolName || '',
+        college: eduResponse.college || '',
+        major: eduResponse.major || '',
+        grade: eduResponse.grade || '',
+        className: eduResponse.className || '',
+        education: eduResponse.education || '',
+        enrollmentDate: eduResponse.enrollmentDate || '',
+        graduationDate: eduResponse.graduationDate || '',
+        duration: eduResponse.duration || '',
+        status: eduResponse.status || '在校'
+      }
     }
 
-    courses.value = [
-      { name: '数据结构与算法', score: 90, semester: '2021秋季' },
-      { name: '计算机网络', score: 85, semester: '2022春季' },
-      { name: '操作系统', score: 88, semester: '2022秋季' },
-      { name: '数据库系统', score: 92, semester: '2023春季' }
-    ]
+    // 从API获取课程成绩数据
+    const courseResponse: any = await getStudentCoursesApi(studentId)
+    if (courseResponse && Array.isArray(courseResponse)) {
+      courses.value = courseResponse.map((course: any) => ({
+        name: course.courseName,
+        score: course.score,
+        semester: course.semester
+      }))
+    } else {
+      courses.value = []
+    }
   } catch (error) {
     console.error('加载教育经历失败', error)
+    educationInfo.value = {
+      schoolName: '',
+      college: '',
+      major: '',
+      grade: '',
+      className: '',
+      education: '',
+      enrollmentDate: '',
+      graduationDate: '',
+      duration: '',
+      status: '在校'
+    }
+    courses.value = []
   }
 }
 
@@ -780,34 +833,49 @@ const loadSkillsAndProjects = async () => {
     const studentId = authStore.user?.studentId
     if (!studentId) return
 
-    // 模拟数据
-    skills.value = [
-      { id: 1, name: 'Java', level: '掌握' },
-      { id: 2, name: 'Vue.js', level: '熟悉' },
-      { id: 3, name: 'MySQL', level: '掌握' },
-      { id: 4, name: 'Python', level: '入门' }
-    ]
+    // 从API获取技能数据
+    const skillsResponse: any = await getStudentSkillsApi(studentId)
+    if (skillsResponse && Array.isArray(skillsResponse)) {
+      skills.value = skillsResponse.map((skill: any) => ({
+        id: skill.id,
+        name: skill.skillName,
+        level: skill.skillLevel
+      }))
+    } else {
+      skills.value = []
+    }
 
-    projects.value = [
-      {
-        id: 1,
-        name: '在线图书商城系统',
-        role: '后端开发',
-        period: '2023.03 - 2023.06',
-        description: '基于Spring Boot + Vue的在线图书商城，实现了用户管理、商品管理、购物车、订单等功能',
-        technologies: ['Java', 'Spring Boot', 'Vue', 'MySQL']
-      },
-      {
-        id: 2,
-        name: '学生信息管理系统',
-        role: '全栈开发',
-        period: '2023.09 - 2023.12',
-        description: '为学校开发的学生信息管理系统，支持学生信息的增删改查、成绩管理、课程管理等功能',
-        technologies: ['Vue', 'Element Plus', 'Java', 'MyBatis-Plus']
-      }
-    ]
+    // 从API获取项目数据
+    const projectsResponse: any = await getStudentProjectsApi(studentId)
+    if (projectsResponse && Array.isArray(projectsResponse)) {
+      projects.value = projectsResponse.map((project: any) => {
+        // 格式化时间范围
+        let period = ''
+        if (project.startDate && project.endDate) {
+          const start = new Date(project.startDate).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit' }).replace(/\//g, '.')
+          const end = new Date(project.endDate).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit' }).replace(/\//g, '.')
+          period = `${start} - ${end}`
+        }
+
+        // 解析技术标签
+        const technologies = project.technologies ? project.technologies.split(',') : []
+
+        return {
+          id: project.id,
+          name: project.projectName,
+          role: project.role,
+          period,
+          description: project.description,
+          technologies
+        }
+      })
+    } else {
+      projects.value = []
+    }
   } catch (error) {
     console.error('加载技能和项目失败', error)
+    skills.value = []
+    projects.value = []
   }
 }
 
@@ -840,17 +908,33 @@ const loadPreferences = async () => {
     const studentId = authStore.user?.studentId
     if (!studentId) return
 
-    // 模拟数据
-    preferencesForm.value = {
-      expectedCities: ['北京', '上海', '深圳'],
-      expectedPositions: ['Java开发工程师', '后端开发工程师'],
-      salaryMin: 8000,
-      salaryMax: 15000,
-      salaryUnit: 'month',
-      jobTypes: ['全职', '实习'],
-      companySizes: ['中型企业', '大型企业'],
-      seekingStatus: 'actively',
-      selfEvaluation: '本人热爱编程，具有良好的学习能力和团队协作精神，希望能在一个有挑战性的环境中不断提升自己'
+    // 从API获取求职偏好数据
+    const response: any = await getStudentPreferenceApi(studentId)
+    if (response) {
+      preferencesForm.value = {
+        expectedCities: response.expectedCities ? JSON.parse(response.expectedCities) : [],
+        expectedPositions: response.expectedPositions ? JSON.parse(response.expectedPositions) : [],
+        salaryMin: response.salaryMin,
+        salaryMax: response.salaryMax,
+        salaryUnit: response.salaryUnit || 'month',
+        jobTypes: response.jobTypes ? response.jobTypes.split(',') : [],
+        companySizes: response.companySizes ? response.companySizes.split(',') : [],
+        seekingStatus: response.seekingStatus || 'actively',
+        selfEvaluation: response.selfEvaluation || ''
+      }
+    } else {
+      // 如果没有数据，设置默认值
+      preferencesForm.value = {
+        expectedCities: [],
+        expectedPositions: [],
+        salaryMin: undefined,
+        salaryMax: undefined,
+        salaryUnit: 'month',
+        jobTypes: [],
+        companySizes: [],
+        seekingStatus: 'actively',
+        selfEvaluation: ''
+      }
     }
   } catch (error) {
     console.error('加载求职偏好失败', error)
@@ -863,18 +947,22 @@ const loadResumes = async () => {
     const studentId = authStore.user?.studentId
     if (!studentId) return
 
-    // 模拟数据
-    resumes.value = [
-      {
-        id: 1,
-        name: '个人简历_2024.pdf',
-        uploadTime: '2024-01-15 10:30:00',
-        size: '1.2MB',
-        url: '/files/resume/sample.pdf'
-      }
-    ]
+    // 从API获取简历数据
+    const response: any = await getStudentResumesApi(studentId)
+    if (response && Array.isArray(response)) {
+      resumes.value = response.map((resume: any) => ({
+        id: resume.id,
+        name: resume.resumeName,
+        uploadTime: resume.uploadTime,
+        size: resume.fileSize,
+        url: resume.fileUrl
+      }))
+    } else {
+      resumes.value = []
+    }
   } catch (error) {
     console.error('加载简历列表失败', error)
+    resumes.value = []
   }
 }
 
@@ -884,52 +972,29 @@ const saveBasicInfo = async () => {
     await basicFormRef.value.validate()
 
     const studentId = authStore.user?.studentId
-    await request.put(`/student/${studentId}`, basicForm.value)
+
+    // 将gender从字符串转换为数字
+    const genderMap: Record<string, number> = { '男': 1, '女': 2 }
+    const genderNum = basicForm.value.gender ? genderMap[basicForm.value.gender] || 1 : 1
+
+    await request.put('/student', {
+      ...basicForm.value,
+      id: studentId,
+      gender: genderNum
+    })
 
     ElMessage.success('保存成功')
     editMode.value = false
     loadBasicInfo()
   } catch (error) {
     console.error('保存失败', error)
+    ElMessage.error('保存失败，请重试')
   }
 }
 
 // 重置基本信息表单
 const resetBasicForm = () => {
   loadBasicInfo()
-}
-
-// 头像上传前校验
-const beforeAvatarUpload = (file: File) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt2M = file.size / 1024 / 1024 < 2
-
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件')
-    return false
-  }
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过 2MB')
-    return false
-  }
-  return true
-}
-
-// 上传头像
-const uploadAvatar = async (options: any) => {
-  try {
-    const formData = new FormData()
-    formData.append('file', options.file)
-
-    const response: any = await request.post('/upload/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-
-    basicForm.value.avatar = response.url
-    ElMessage.success('头像上传成功')
-  } catch (error) {
-    console.error('头像上传失败', error)
-  }
 }
 
 // 添加课程
@@ -1117,14 +1182,75 @@ const beforeResumeUpload = (file: File) => {
 }
 
 // 简历上传成功
-const handleResumeSuccess = (response: any, file: any) => {
-  ElMessage.success('简历上传成功')
-  loadResumes()
+const handleResumeSuccess = async (response: any, file: any) => {
+  try {
+    // 检查响应是否成功
+    if (response.code !== 200) {
+      ElMessage.error(response.message || '上传失败')
+      return
+    }
+
+    const studentId = authStore.user?.studentId
+    if (!studentId) {
+      ElMessage.error('未找到学员信息')
+      return
+    }
+
+    // 保存简历记录到数据库
+    await request.post(`/student/${studentId}/resume`, {
+      resumeName: file.name,
+      fileUrl: response.data.url,
+      fileSize: response.data.fileSize
+    })
+
+    ElMessage.success('简历上传成功')
+    loadResumes()
+  } catch (error) {
+    console.error('保存简历记录失败', error)
+    ElMessage.error('保存简历记录失败')
+  }
 }
 
 // 预览简历
 const previewResume = (resume: any) => {
-  window.open(resume.url, '_blank')
+  // 检查文件类型
+  const fileName = resume.name || resume.resumeName || ''
+  const isPdf = fileName.toLowerCase().endsWith('.pdf')
+
+  if (isPdf) {
+    // PDF文件使用对话框预览
+    currentPdfUrl.value = resume.url
+    showPdfDialog.value = true
+    pdfLoading.value = true
+    pdfError.value = false
+  } else {
+    // Word文档直接下载
+    const link = document.createElement('a')
+    link.href = resume.url
+    link.download = resume.name
+    link.click()
+    ElMessage.info('Word文档暂不支持在线预览，已开始下载')
+  }
+}
+
+// PDF加载完成
+const handlePdfLoaded = () => {
+  pdfLoading.value = false
+}
+
+// PDF加载失败
+const handlePdfError = () => {
+  pdfLoading.value = false
+  pdfError.value = true
+  ElMessage.error('PDF加载失败')
+}
+
+// 关闭PDF对话框
+const closePdfDialog = () => {
+  showPdfDialog.value = false
+  currentPdfUrl.value = ''
+  pdfLoading.value = true
+  pdfError.value = false
 }
 
 // 下载简历
@@ -1138,11 +1264,13 @@ const downloadResume = (resume: any) => {
 // 删除简历
 const deleteResume = async (id: number) => {
   try {
-    await request.delete(`/resume/${id}`)
+    const studentId = authStore.user?.studentId
+    await request.delete(`/student/${studentId}/resume/${id}`)
     ElMessage.success('删除成功')
     loadResumes()
   } catch (error) {
     console.error('删除失败', error)
+    ElMessage.error('删除失败')
   }
 }
 
