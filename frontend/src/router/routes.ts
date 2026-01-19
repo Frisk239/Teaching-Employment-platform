@@ -299,6 +299,17 @@ export const routes: RouteRecordRaw[] = [
               roles: ['teacher'],
             },
           },
+          // 教学计划管理（教师、学院负责人、管理员）
+          {
+            path: '/teaching/teaching-plan',
+            name: 'TeachingPlan',
+            component: () => import('@/views/teaching/TeachingPlanManagement.vue'),
+            meta: {
+              title: '教学计划',
+              icon: 'Document',
+              roles: ['teacher', 'college_head', 'admin'],
+            },
+          },
         ],
       },
 
