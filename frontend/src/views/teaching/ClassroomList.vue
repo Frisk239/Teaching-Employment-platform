@@ -166,11 +166,12 @@
           <el-col :span="12">
             <el-form-item label="教室类型" prop="classroomType">
               <el-select v-model="formData.classroomType" placeholder="请选择类型" style="width: 100%">
-                <el-option label="普通教室" value="普通教室" />
-                <el-option label="多媒体教室" value="多媒体教室" />
-                <el-option label="实验室" value="实验室" />
-                <el-option label="计算机教室" value="计算机教室" />
-                <el-option label="语音教室" value="语音教室" />
+                <el-option
+                  v-for="type in CLASSROOM_TYPES"
+                  :key="type.value"
+                  :label="type.label"
+                  :value="type.value"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -226,8 +227,13 @@
         <el-divider content-position="left">状态</el-divider>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio :label="1">可用</el-radio>
-            <el-radio :label="0">不可用</el-radio>
+            <el-radio
+              v-for="status in CLASSROOM_STATUS"
+              :key="status.value"
+              :label="status.value"
+            >
+              {{ status.label }}
+            </el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>

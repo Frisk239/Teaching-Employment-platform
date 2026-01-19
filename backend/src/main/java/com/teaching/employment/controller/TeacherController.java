@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.teaching.employment.common.Result;
 import com.teaching.employment.entity.Course;
 import com.teaching.employment.entity.Teacher;
+import com.teaching.employment.entity.User;
+import com.teaching.employment.mapper.TeacherMapper;
+import com.teaching.employment.mapper.UserMapper;
 import com.teaching.employment.service.TeacherService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,6 +34,8 @@ import java.util.Map;
 public class TeacherController {
 
     private final TeacherService teacherService;
+    private final UserMapper userMapper;
+    private final TeacherMapper teacherMapper;
 
     /**
      * 分页查询教师列表
@@ -90,6 +95,26 @@ public class TeacherController {
     @PostMapping
     @ApiOperation("新增教师")
     public Result<Void> createTeacher(@RequestBody Teacher teacher) {
+        // 先创建用户账号
+        User user = new User();
+        user.setUsername(teacher.getTeacherNo()); // 使用工号作为用户名
+        user.setPassword("123456"); // 默认密码
+        user.setRealName(teacher.getName());
+        user.setPhone(teacher.getPhone());
+        user.setEmail(teacher.getEmail());
+        user.setSchoolId(teacher.getSchoolId());
+        user.setRoleId(3L); // 3-教师角色
+        user.setStatus(1);
+
+        int userResult = userMapper.insert(user);
+        if (userResult <= 0) {
+            return Result.error("创建用户账号失败");
+        }
+
+        // 设置用户ID到教师记录
+        teacher.setUserId(user.getId());
+
+        // 保存教师记录
         boolean success = teacherService.save(teacher);
         return success ? Result.ok("新增成功") : Result.error("新增失败");
     }

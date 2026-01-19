@@ -161,6 +161,7 @@ public class InterviewServiceImpl extends ServiceImpl<InterviewMapper, Interview
         interview.setApplicationId(applicationId);
         interview.setPositionId(application.getPositionId());
         interview.setStudentId(application.getStudentId());
+        interview.setCompanyId(application.getCompanyId());
         interview.setRound(round);
         interview.setInterviewType(interviewType);
         interview.setInterviewTime(interviewTime);

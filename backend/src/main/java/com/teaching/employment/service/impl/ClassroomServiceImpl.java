@@ -15,6 +15,7 @@ import com.teaching.employment.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,37 @@ public class ClassroomServiceImpl extends ServiceImpl<ClassroomMapper, Classroom
             wrapper.eq(Classroom::getSchoolId, schoolId);
         }
         wrapper.orderByAsc(Classroom::getClassroomNo);
-        return classroomMapper.selectList(wrapper);
+        List<Classroom> list = classroomMapper.selectList(wrapper);
+
+        // 填充学校名称
+        if (!list.isEmpty()) {
+            List<Long> schoolIds = list.stream()
+                    .map(Classroom::getSchoolId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            List<School> schools = schoolService.listByIds(schoolIds);
+            Map<Long, String> schoolMap = schools.stream()
+                    .collect(Collectors.toMap(School::getId, School::getSchoolName));
+
+            list.forEach(classroom ->
+                classroom.setSchoolName(schoolMap.get(classroom.getSchoolId()))
+            );
+        }
+
+        return list;
+    }
+
+    @Override
+    public Classroom getById(Serializable id) {
+        Classroom classroom = classroomMapper.selectById(id);
+        if (classroom != null && classroom.getSchoolId() != null) {
+            School school = schoolService.getById(classroom.getSchoolId());
+            if (school != null) {
+                classroom.setSchoolName(school.getSchoolName());
+            }
+        }
+        return classroom;
     }
 
     @Override

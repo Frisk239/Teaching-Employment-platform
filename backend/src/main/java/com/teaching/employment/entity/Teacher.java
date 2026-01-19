@@ -36,6 +36,16 @@ public class Teacher implements Serializable {
     @ApiModelProperty(value = "所属学校ID")
     private Long schoolId;
 
+    @ApiModelProperty(value = "姓名")
+    @TableField("name")
+    private String name;
+
+    @ApiModelProperty(value = "手机号")
+    private String phone;
+
+    @ApiModelProperty(value = "邮箱")
+    private String email;
+
     @ApiModelProperty(value = "所属院系")
     private String department;
 
@@ -45,18 +55,22 @@ public class Teacher implements Serializable {
     @ApiModelProperty(value = "学历")
     private String education;
 
-    @ApiModelProperty(value = "专业领域")
-    private String specialty;
+    @ApiModelProperty(value = "专业方向")
+    @TableField("specialization")
+    private String specialization;
 
     @ApiModelProperty(value = "入职日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate entryDate;
 
-    @ApiModelProperty(value = "身份证号")
-    private String idCard;
+    @ApiModelProperty(value = "个人简介")
+    private String description;
 
     @ApiModelProperty(value = "性别：1-男 2-女")
     private Integer gender;
+
+    @ApiModelProperty(value = "身份证号")
+    private String idCard;
 
     @ApiModelProperty(value = "出生日期")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -64,13 +78,6 @@ public class Teacher implements Serializable {
 
     @ApiModelProperty(value = "家庭地址")
     private String address;
-
-    @ApiModelProperty(value = "个人简介")
-    private String description;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -99,20 +106,20 @@ public class Teacher implements Serializable {
     private String schoolName;
 
     /**
-     * 真实姓名（来自用户表）
+     * 真实姓名（来自用户表，优先显示）
      */
     @TableField(exist = false)
     private String realName;
 
     /**
-     * 手机号（来自用户表，用于显示和导出）
+     * 用户手机号（来自用户表，用于显示和导出）
      */
     @TableField(exist = false)
-    private String phone;
+    private String userPhone;
 
     /**
-     * 邮箱（来自用户表，用于显示和导出）
+     * 用户邮箱（来自用户表，用于显示和导出）
      */
     @TableField(exist = false)
-    private String email;
+    private String userEmail;
 }

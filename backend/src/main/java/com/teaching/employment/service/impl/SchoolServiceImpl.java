@@ -62,6 +62,9 @@ public class SchoolServiceImpl extends ServiceImpl<SchoolMapper, School> impleme
         wrapper.orderByDesc(School::getCreateTime);
         List<School> schools = this.list(wrapper);
 
+        System.out.println("========================================");
+        System.out.println("导出学校数据，共 " + schools.size() + " 条记录");
+
         // 转换为导出模板格式
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         List<ExcelUtil.SchoolExportTemplate> exportData = new ArrayList<>();
@@ -79,9 +82,15 @@ public class SchoolServiceImpl extends ServiceImpl<SchoolMapper, School> impleme
                 ? school.getCreateTime().format(dateFormatter)
                 : "");
             exportData.add(template);
+
+            System.out.println("学校: " + school.getSchoolName() + ", 代码: " + school.getSchoolCode());
         }
+
+        System.out.println("准备导出 " + exportData.size() + " 条数据到Excel");
+        System.out.println("========================================");
 
         // 导出Excel
         ExcelUtil.export(response, "学校列表", exportData, ExcelUtil.SchoolExportTemplate.class);
+        System.out.println("Excel导出完成");
     }
 }

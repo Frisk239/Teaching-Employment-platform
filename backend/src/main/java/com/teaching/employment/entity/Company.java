@@ -27,12 +27,19 @@ public class Company implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "企业名称")
+    @TableField("company_name")
     private String companyName;
 
+    @ApiModelProperty(value = "企业代码")
+    @TableField("company_code")
+    private String companyCode;
+
     @ApiModelProperty(value = "企业统一社会信用代码")
+    @TableField("credit_code")
     private String creditCode;
 
     @ApiModelProperty(value = "企业简称")
+    @TableField("short_name")
     private String shortName;
 
     @ApiModelProperty(value = "企业logo")
@@ -46,6 +53,10 @@ public class Company implements Serializable {
 
     @ApiModelProperty(value = "发展阶段：startup-初创期 growth-成长期 maturity-成熟期 listing-上市")
     private String stage;
+
+    @ApiModelProperty(value = "详细地址")
+    @TableField("location")
+    private String location;
 
     @ApiModelProperty(value = "所在城市")
     private String city;
@@ -63,22 +74,28 @@ public class Company implements Serializable {
     private String website;
 
     @ApiModelProperty(value = "联系人姓名")
-    private String contactName;
+    @TableField("contact_person")
+    private String contactPerson;
 
     @ApiModelProperty(value = "联系人职位")
+    @TableField("contact_position")
     private String contactPosition;
 
     @ApiModelProperty(value = "联系人电话")
+    @TableField("contact_phone")
     private String contactPhone;
 
     @ApiModelProperty(value = "联系人邮箱")
+    @TableField("contact_email")
     private String contactEmail;
 
     @ApiModelProperty(value = "企业认证状态：pending-待认证 approved-已认证 rejected-已拒绝")
+    @TableField("verify_status")
     private String verifyStatus;
 
     @ApiModelProperty(value = "认证时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @TableField("verify_time")
     private LocalDateTime verifyTime;
 
     @ApiModelProperty(value = "拒绝原因")
@@ -86,9 +103,6 @@ public class Company implements Serializable {
 
     @ApiModelProperty(value = "状态：1-正常 0-禁用")
     private Integer status;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

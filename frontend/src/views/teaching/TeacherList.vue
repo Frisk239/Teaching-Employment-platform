@@ -80,62 +80,6 @@
       </el-row>
     </el-card>
 
-    <!-- 统计卡片 -->
-    <el-row :gutter="16" class="stats-row">
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: #ecf5ff">
-              <el-icon :size="24" color="#409eff"><User /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.total }}</div>
-              <div class="stat-label">教师总数</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: #f0f9ff">
-              <el-icon :size="24" color="#67c23a"><School /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.schools }}</div>
-              <div class="stat-label">覆盖学校</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: #fef0f0">
-              <el-icon :size="24" color="#f56c6c"><OfficeBuilding /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.departments }}</div>
-              <div class="stat-label">涉及部门</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: #fdf6ec">
-              <el-icon :size="24" color="#e6a23c"><Reading /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.courses }}</div>
-              <div class="stat-label">开设课程</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
     <!-- 数据展示区域 -->
     <el-card class="data-card" shadow="never" v-loading="loading">
       <!-- 表格视图 -->
@@ -431,7 +375,7 @@
         <el-descriptions-item label="部门">{{ currentTeacher.department }}</el-descriptions-item>
         <el-descriptions-item label="职称">{{ currentTeacher.title || '-' }}</el-descriptions-item>
         <el-descriptions-item label="学历">{{ currentTeacher.education || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="专业领域">{{ currentTeacher.specialty || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="专业领域">{{ currentTeacher.specialization || '-' }}</el-descriptions-item>
         <el-descriptions-item label="入职日期">{{ currentTeacher.entryDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="手机号">{{ currentTeacher.phone }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ currentTeacher.email || '-' }}</el-descriptions-item>
@@ -514,7 +458,6 @@ import {
   createTeacherApi,
   updateTeacherApi,
   deleteTeacherApi,
-  getTeacherStatsApi,
   exportTeachersApi,
   importTeachersApi,
   downloadTeacherTemplateApi
@@ -529,14 +472,6 @@ const searchForm = reactive({
   keyword: '',
   schoolId: undefined as number | undefined,
   department: ''
-})
-
-// 统计数据
-const stats = reactive({
-  total: 0,
-  schools: 0,
-  departments: 0,
-  courses: 0
 })
 
 // 表格数据
@@ -631,27 +566,11 @@ const fetchData = async () => {
     const response = await getTeacherPageApi(params)
     tableData.value = response.records || []
     pagination.total = response.total || 0
-
-    // 获取统计数据
-    await fetchStats()
   } catch (error) {
     console.error('获取教师列表失败:', error)
     ElMessage.error('获取教师列表失败')
   } finally {
     loading.value = false
-  }
-}
-
-// 获取统计数据
-const fetchStats = async () => {
-  try {
-    const response = await getTeacherStatsApi()
-    stats.total = response.total
-    stats.schools = response.schools
-    stats.departments = response.departments
-    stats.courses = response.courses
-  } catch (error) {
-    console.error('获取统计数据失败:', error)
   }
 }
 
@@ -743,11 +662,30 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        const submitData = {
+          id: formData.id,
+          teacherNo: formData.teacherNo,
+          name: formData.realName, // realName 映射到 name
+          schoolId: formData.schoolId,
+          department: formData.department,
+          title: formData.title,
+          education: formData.education,
+          specialization: formData.specialty, // specialty 映射到 specialization
+          entryDate: formData.entryDate,
+          phone: formData.phone,
+          email: formData.email,
+          gender: formData.gender,
+          idCard: formData.idCard,
+          birthDate: formData.birthDate,
+          address: formData.address,
+          description: formData.description
+        }
+
         if (formData.id) {
-          await updateTeacherApi(formData)
+          await updateTeacherApi(submitData)
           ElMessage.success('更新成功')
         } else {
-          await createTeacherApi(formData)
+          await createTeacherApi(submitData)
           ElMessage.success('新增成功')
         }
         dialogVisible.value = false
@@ -972,44 +910,6 @@ onMounted(() => {
 
   .search-card {
     margin-bottom: 20px;
-  }
-
-  .stats-row {
-    margin-bottom: 20px;
-
-    .stat-card {
-      .stat-content {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-
-        .stat-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .stat-info {
-          flex: 1;
-
-          .stat-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: #303133;
-            line-height: 1;
-            margin-bottom: 4px;
-          }
-
-          .stat-label {
-            font-size: 14px;
-            color: #909399;
-          }
-        }
-      }
-    }
   }
 
   .data-card {

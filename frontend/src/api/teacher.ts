@@ -7,10 +7,13 @@ export interface Teacher {
   userId?: number
   teacherNo?: string
   schoolId?: number
+  name?: string
+  phone?: string
+  email?: string
   department?: string
   title?: string
   education?: string
-  specialty?: string
+  specialization?: string
   entryDate?: string
   idCard?: string
   gender?: number
@@ -29,10 +32,14 @@ export interface Teacher {
     id: number
     schoolName: string
   }
-  // 兼容字段
+  // 兼容字段（用于显示，优先使用关联查询的数据）
   realName?: string
+  userPhone?: string
+  userEmail?: string
   teacherName?: string
   schoolName?: string
+  // 向后兼容的旧字段
+  specialty?: string
 }
 
 // 分页查询参数

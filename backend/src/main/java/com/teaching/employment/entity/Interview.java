@@ -35,6 +35,9 @@ public class Interview implements Serializable {
     @ApiModelProperty(value = "学生ID")
     private Long studentId;
 
+    @ApiModelProperty(value = "企业ID")
+    private Long companyId;
+
     @ApiModelProperty(value = "面试轮次：1-初试 2-复试 3-终试")
     private Integer round;
 
@@ -45,16 +48,18 @@ public class Interview implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime interviewTime;
 
+    @ApiModelProperty(value = "会议链接（线上面试）")
+    @TableField("meeting_link")
+    private String meetingLink;
+
     @ApiModelProperty(value = "面试地点（线下面试）")
     private String location;
-
-    @ApiModelProperty(value = "会议链接（线上面试）")
-    private String meetingLink;
 
     @ApiModelProperty(value = "面试官")
     private String interviewer;
 
     @ApiModelProperty(value = "面试官联系方式")
+    @TableField("interviewer_contact")
     private String interviewerContact;
 
     @ApiModelProperty(value = "面试结果：pending-待面试 passed-通过 failed-未通过 cancelled-已取消")
@@ -68,9 +73,6 @@ public class Interview implements Serializable {
 
     @ApiModelProperty(value = "面试状态：scheduled-已安排 completed-已完成 cancelled-已取消")
     private String status;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

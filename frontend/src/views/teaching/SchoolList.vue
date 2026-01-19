@@ -380,13 +380,15 @@ const handleDialogClose = () => {
 // 导出
 const handleExport = async () => {
   try {
-    const blob = await exportSchoolsApi()
-
-    // 创建下载链接
-    const url = window.URL.createObjectURL(new Blob([blob]))
+    const response = await exportSchoolsApi() as any
+    // response.data 才是实际的 Blob 数据
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `学校列表_${new Date().getTime()}.xlsx`)
+    link.download = `学校列表_${new Date().getTime()}.xlsx`
 
     // 触发下载
     document.body.appendChild(link)

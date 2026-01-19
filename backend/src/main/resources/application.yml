@@ -105,6 +105,8 @@ mybatis-plus:
       insert-strategy: not_null
       # 更新时自动填充
       update-strategy: not_null
+      # 字段命名策略（驼峰转下划线）
+      column-underline: true
 
 # Knife4j API文档配置
 knife4j:

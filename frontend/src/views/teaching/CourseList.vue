@@ -375,7 +375,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Search, Refresh, Plus, View, Edit, Delete } from '@element-plus/icons-vue'
 import {
@@ -510,9 +510,9 @@ const fetchSchoolList = async () => {
 }
 
 // 获取教师列表
-const fetchTeacherList = async () => {
+const fetchTeacherList = async (schoolId?: number) => {
   try {
-    const data = await getTeacherListApi()
+    const data = await getTeacherListApi(schoolId)
     teacherList.value = data
   } catch (error) {
     console.error('获取教师列表失败:', error)
@@ -521,9 +521,9 @@ const fetchTeacherList = async () => {
 }
 
 // 获取教室列表
-const fetchClassroomList = async () => {
+const fetchClassroomList = async (schoolId?: number) => {
   try {
-    const data = await getClassroomListApi()
+    const data = await getClassroomListApi(schoolId)
     classroomList.value = data
   } catch (error) {
     console.error('获取教室列表失败:', error)
@@ -664,6 +664,18 @@ const handleSubmit = async () => {
 const handleDialogClose = () => {
   formRef.value?.resetFields()
 }
+
+// 监听学校变化，动态加载教师和教室
+watch(() => formData.schoolId, (newSchoolId, oldSchoolId) => {
+  // 学校改变时，清空已选择的教师和教室
+  if (oldSchoolId !== undefined && newSchoolId !== oldSchoolId) {
+    formData.teacherId = undefined
+    formData.classroomId = undefined
+  }
+  // 根据选择的学校加载教师和教室
+  fetchTeacherList(newSchoolId)
+  fetchClassroomList(newSchoolId)
+})
 
 // 页面加载时获取数据
 onMounted(() => {

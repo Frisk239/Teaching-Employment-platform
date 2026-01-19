@@ -240,7 +240,7 @@
           <el-input v-model="selectedPositionName" disabled />
         </el-form-item>
 
-        <el-form-item label="考试链接" prop="testUrl">
+        <el-form-item label="考试链接" prop="testUrl" v-if="dialogMode === 'add' || dialogMode === 'edit' || dialogMode === 'view'">
           <el-input
             v-model="formData.testUrl"
             placeholder="请输入考试链接"
@@ -248,7 +248,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="考试时长(分钟)" prop="duration">
+        <el-form-item label="考试时长(分钟)" prop="duration" v-if="dialogMode === 'add' || dialogMode === 'edit' || dialogMode === 'view'">
           <el-input-number
             v-model="formData.duration"
             :min="15"
@@ -258,25 +258,25 @@
           />
         </el-form-item>
 
-        <el-form-item label="开始时间" prop="startTime">
+        <el-form-item label="开始时间" prop="startTime" v-if="dialogMode === 'add' || dialogMode === 'edit' || dialogMode === 'view'">
           <el-date-picker
             v-model="formData.startTime"
             type="datetime"
             placeholder="选择开始时间"
             format="YYYY-MM-DD HH:mm"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm"
             :disabled="dialogMode === 'view'"
             style="width: 100%"
           />
         </el-form-item>
 
-        <el-form-item label="结束时间" prop="endTime">
+        <el-form-item label="结束时间" prop="endTime" v-if="dialogMode === 'add' || dialogMode === 'edit' || dialogMode === 'view'">
           <el-date-picker
             v-model="formData.endTime"
             type="datetime"
             placeholder="选择结束时间"
             format="YYYY-MM-DD HH:mm"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm"
             :disabled="dialogMode === 'view'"
             style="width: 100%"
           />
@@ -380,14 +380,25 @@ const formData = ref<WrittenTest>({
 const screenedApplications = ref<any[]>([])
 const selectedPositionName = ref('')
 
-// 表单验证规则
-const formRules = {
-  studentId: [{ required: true, message: '请选择学生', trigger: 'change' }],
-  testUrl: [{ required: true, message: '请输入考试链接', trigger: 'blur' }],
-  duration: [{ required: true, message: '请输入考试时长', trigger: 'blur' }],
-  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }]
-}
+// 表单验证规则（动态生成，根据当前对话框模式）
+const formRules = computed(() => {
+  const rules: any = {}
+
+  if (dialogMode.value === 'add') {
+    rules.studentId = [{ required: true, message: '请选择学生', trigger: 'change' }]
+    rules.testUrl = [{ required: true, message: '请输入考试链接', trigger: 'blur' }]
+    rules.duration = [{ required: true, message: '请输入考试时长', trigger: 'blur' }]
+    rules.startTime = [{ required: true, message: '请选择开始时间', trigger: 'change' }]
+    rules.endTime = [{ required: true, message: '请选择结束时间', trigger: 'change' }]
+  }
+
+  if (dialogMode.value === 'submitScore') {
+    rules.score = [{ required: true, message: '请输入得分', trigger: 'blur' }]
+    rules.totalScore = [{ required: true, message: '请输入总分', trigger: 'blur' }]
+  }
+
+  return rules
+})
 
 // 计算属性
 const dialogTitle = computed(() => {

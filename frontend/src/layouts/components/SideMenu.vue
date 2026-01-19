@@ -254,7 +254,7 @@ const allMenus: MenuItem[] = [
   },
   // 我的日报（学员专用）
   {
-    id: 28,
+    id: 29,
     name: '我的日报',
     path: '/teaching/my-daily-reports',
     icon: DocumentCopy,
@@ -320,7 +320,7 @@ const allMenus: MenuItem[] = [
   },
   // 企业职位管理(企业对接人专用)
   {
-    id: 29,
+    id: 39,
     name: '职位管理',
     path: '/employment/enterprise-positions',
     icon: Briefcase,
@@ -419,7 +419,7 @@ const allMenus: MenuItem[] = [
   },
   // 我的课程（学员专用）
   {
-    id: 27,
+    id: 40,
     name: '我的课程',
     path: '/teaching/my-courses',
     icon: Collection,

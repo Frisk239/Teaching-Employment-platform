@@ -183,8 +183,8 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
                 User user = userMap.get(teacher.getUserId());
                 if (user != null) {
                     teacher.setRealName(user.getRealName());
-                    teacher.setPhone(user.getPhone());
-                    teacher.setEmail(user.getEmail());
+                    teacher.setUserPhone(user.getPhone());
+                    teacher.setUserEmail(user.getEmail());
                 }
             }
         });
@@ -283,18 +283,17 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
         for (Teacher teacher : teachers) {
             ExcelUtil.TeacherExportTemplate template = new ExcelUtil.TeacherExportTemplate();
             template.setTeacherNo(teacher.getTeacherNo());
-            template.setRealName(teacher.getRealName());
+            template.setRealName(teacher.getRealName() != null ? teacher.getRealName() : teacher.getName());
             template.setGender(teacher.getGender() == 1 ? "男" : teacher.getGender() == 2 ? "女" : "");
             template.setBirthDate(teacher.getBirthDate() != null ? teacher.getBirthDate().format(dateFormatter) : "");
             template.setIdCard(teacher.getIdCard());
-            template.setPhone(teacher.getPhone());
-            template.setEmail(teacher.getEmail());
+            template.setPhone(teacher.getUserPhone() != null ? teacher.getUserPhone() : teacher.getPhone());
+            template.setEmail(teacher.getUserEmail() != null ? teacher.getUserEmail() : teacher.getEmail());
             template.setSchoolName(teacher.getSchoolName());
             template.setDepartment(teacher.getDepartment());
             template.setTitle(teacher.getTitle());
             template.setEducation(teacher.getEducation());
-            template.setSpecialty(teacher.getSpecialty());
-            template.setEntryDate(teacher.getEntryDate() != null ? teacher.getEntryDate().format(dateFormatter) : "");
+            template.setSpecialty(teacher.getSpecialization());
             template.setAddress(teacher.getAddress());
             template.setDescription(teacher.getDescription());
             exportData.add(template);
@@ -383,10 +382,13 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
                 Teacher teacher = new Teacher();
                 teacher.setTeacherNo(data.getTeacherNo());
                 teacher.setSchoolId(schoolId);
+                teacher.setName(data.getRealName());
+                teacher.setPhone(data.getPhone());
+                teacher.setEmail(data.getEmail());
                 teacher.setDepartment(data.getDepartment());
                 teacher.setTitle(data.getTitle());
                 teacher.setEducation(data.getEducation());
-                teacher.setSpecialty(data.getSpecialty());
+                teacher.setSpecialization(data.getSpecialty());
                 teacher.setEntryDate(StrUtil.isNotBlank(data.getEntryDate()) ? LocalDate.parse(data.getEntryDate()) : null);
                 teacher.setIdCard(data.getIdCard());
                 teacher.setGender("男".equals(data.getGender()) ? 1 : "女".equals(data.getGender()) ? 2 : null);

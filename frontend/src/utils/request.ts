@@ -64,7 +64,7 @@ request.interceptors.response.use(
 
     const res = response.data as Result
 
-    // 如果是文件下载，直接返回
+    // 如果是文件下载，直接返回完整响应
     if (response.config.responseType === 'blob') {
       return response
     }

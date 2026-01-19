@@ -33,6 +33,9 @@ public class JobApplication implements Serializable {
     @ApiModelProperty(value = "学生ID")
     private Long studentId;
 
+    @ApiModelProperty(value = "企业ID")
+    private Long companyId;
+
     @ApiModelProperty(value = "简历ID")
     private Long resumeId;
 
@@ -48,10 +51,6 @@ public class JobApplication implements Serializable {
 
     @ApiModelProperty(value = "HR备注")
     private String hrRemark;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

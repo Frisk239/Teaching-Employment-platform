@@ -642,6 +642,13 @@ const handleMoreAction = async (command: string, row: any) => {
   }
 }
 
+// 格式化日期时间为后端期望的格式 (yyyy-MM-dd HH:mm)
+const formatDateTimeForBackend = (dateTime: string): string => {
+  if (!dateTime) return ''
+  // 移除秒部分，从 "yyyy-MM-dd HH:mm:ss" 转换为 "yyyy-MM-dd HH:mm"
+  return dateTime.replace(/:\d{2}$/, '')
+}
+
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
@@ -652,7 +659,7 @@ const handleSubmit = async () => {
         applicationId: formData.value.applicationId,
         round: formData.value.round!,
         interviewType: formData.value.interviewType!,
-        interviewTime: formData.value.interviewTime!,
+        interviewTime: formatDateTimeForBackend(formData.value.interviewTime!),
         location: formData.value.location,
         meetingLink: formData.value.meetingLink,
         interviewer: formData.value.interviewer!,
@@ -673,7 +680,7 @@ const handleSubmit = async () => {
     } else if (dialogMode.value === 'reschedule') {
       await interviewApi.reschedule({
         id: formData.value.id!,
-        interviewTime: formData.value.interviewTime!,
+        interviewTime: formatDateTimeForBackend(formData.value.interviewTime!),
         location: formData.value.location,
         meetingLink: formData.value.meetingLink
       })
