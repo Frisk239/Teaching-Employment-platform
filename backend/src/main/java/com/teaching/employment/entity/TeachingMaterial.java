@@ -27,7 +27,7 @@ public class TeachingMaterial implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "资料名称")
-    private String materialName;
+    private String title;
 
     @ApiModelProperty(value = "资料类型：ppt-video-document-image-other")
     private String materialType;
@@ -64,10 +64,6 @@ public class TeachingMaterial implements Serializable {
 
     @ApiModelProperty(value = "状态：active-激活 inactive-停用")
     private String status;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

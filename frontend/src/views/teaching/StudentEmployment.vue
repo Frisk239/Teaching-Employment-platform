@@ -151,31 +151,31 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="申请数" width="100" align="center">
+        <el-table-column label="申请数" width="120" align="center">
           <template #default="{ row }">
-            <el-badge :value="row.applicationCount" :max="99" type="primary">
-              <template #default>
+            <div class="count-badge">
+              <el-badge :value="row.applicationCount" :max="99" type="primary" class="custom-badge">
                 <el-icon><Document /></el-icon>
-              </template>
-            </el-badge>
+              </el-badge>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column label="面试数" width="100" align="center">
+        <el-table-column label="面试数" width="120" align="center">
           <template #default="{ row }">
-            <el-badge :value="row.interviewCount" :max="99" type="warning">
-              <template #default>
+            <div class="count-badge">
+              <el-badge :value="row.interviewCount" :max="99" type="warning" class="custom-badge">
                 <el-icon><ChatDotRound /></el-icon>
-              </template>
-            </el-badge>
+              </el-badge>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column label="Offer数" width="100" align="center">
+        <el-table-column label="Offer数" width="120" align="center">
           <template #default="{ row }">
-            <el-badge :value="row.offerCount" :max="99" type="success">
-              <template #default>
+            <div class="count-badge">
+              <el-badge :value="row.offerCount" :max="99" type="success" class="custom-badge">
                 <el-icon><Trophy /></el-icon>
-              </template>
-            </el-badge>
+              </el-badge>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="phone" label="联系电话" width="130" />
@@ -700,6 +700,25 @@ onMounted(() => {
           color: #909399;
           margin-top: 4px;
         }
+      }
+    }
+  }
+
+  // Badge样式
+  .count-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 0;
+
+    :deep(.custom-badge) {
+      .el-badge__content {
+        right: 10px;
+        top: 6px;
+      }
+
+      .el-icon {
+        font-size: 18px;
       }
     }
   }

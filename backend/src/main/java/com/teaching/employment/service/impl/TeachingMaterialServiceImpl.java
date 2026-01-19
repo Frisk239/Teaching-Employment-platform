@@ -53,7 +53,7 @@ public class TeachingMaterialServiceImpl extends ServiceImpl<TeachingMaterialMap
         }
 
         if (StrUtil.isNotBlank(keyword)) {
-            wrapper.and(w -> w.like(TeachingMaterial::getMaterialName, keyword)
+            wrapper.and(w -> w.like(TeachingMaterial::getTitle, keyword)
                     .or()
                     .like(TeachingMaterial::getDescription, keyword)
                     .or()

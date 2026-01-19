@@ -5,7 +5,7 @@ import request, { http } from '@/utils/request'
 
 export interface TeachingMaterial {
   id?: number
-  materialName: string
+  title: string
   materialType: string
   fileUrl: string
   fileSize?: number
@@ -55,7 +55,7 @@ export const teachingMaterialApi = {
    * 上传教学资料
    */
   upload: (data: FormData) => {
-    return http.post<any>('/teaching-material/upload', data)
+    return http.upload<any>('/teaching-material/upload', data)
   },
 
   /**

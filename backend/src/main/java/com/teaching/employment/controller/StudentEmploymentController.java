@@ -35,6 +35,7 @@ public class StudentEmploymentController {
     private final WrittenTestService writtenTestService;
     private final PositionService positionService;
     private final CompanyService companyService;
+    private final UserService userService;
 
     /**
      * 获取就业统计数据
@@ -280,13 +281,14 @@ public class StudentEmploymentController {
 
         // 获取用户真实姓名
         if (student.getUserId() != null) {
-            User user = new User();
-            user.setId(student.getUserId());
-            // 注意：这里需要通过UserService获取，暂时使用userId作为标识
-            // 实际应该查询user表获取realName
-            vo.setRealName("学生" + student.getId()); // 临时方案
+            User user = userService.getById(student.getUserId());
+            if (user != null && user.getRealName() != null) {
+                vo.setRealName(user.getRealName());
+            } else {
+                vo.setRealName(student.getRealName() != null ? student.getRealName() : "学生" + student.getId());
+            }
         } else {
-            vo.setRealName("学生" + student.getId());
+            vo.setRealName(student.getRealName() != null ? student.getRealName() : "学生" + student.getId());
         }
 
         vo.setClassName(student.getClassName());

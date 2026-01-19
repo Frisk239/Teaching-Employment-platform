@@ -65,6 +65,7 @@ com\teaching\employment\utils\ExcelUtil$TeacherImportTemplate.class
 com\teaching\employment\mapper\StudentExamRecordMapper.class
 com\teaching\employment\service\CourseService.class
 com\teaching\employment\controller\StudentExamRecordController.class
+com\teaching\employment\service\TeachingPlanService.class
 com\teaching\employment\service\DashboardService.class
 com\teaching\employment\mapper\HomeworkSubmissionMapper.class
 com\teaching\employment\service\impl\MenuServiceImpl.class
@@ -77,6 +78,7 @@ com\teaching\employment\service\impl\StudentResumeServiceImpl.class
 com\teaching\employment\service\impl\UserServiceImpl.class
 com\teaching\employment\service\StudentProjectService.class
 com\teaching\employment\service\PositionService.class
+com\teaching\employment\mapper\TeachingPlanMapper.class
 com\teaching\employment\service\impl\TeachingMaterialServiceImpl.class
 com\teaching\employment\service\StudentSkillService.class
 com\teaching\employment\service\CourseStudentService.class
@@ -93,6 +95,7 @@ com\teaching\employment\controller\TeachingMaterialController.class
 com\teaching\employment\service\StatisticsService.class
 com\teaching\employment\service\StudentPreferenceService.class
 com\teaching\employment\entity\RolePermissionRelation.class
+com\teaching\employment\service\impl\TeachingPlanServiceImpl.class
 com\teaching\employment\service\StudentEducationService.class
 com\example\teaching\employment\platform\model\dto\DailyReportDTO.class
 com\teaching\employment\model\dto\DashboardStatsDTO.class
@@ -210,10 +213,13 @@ com\teaching\employment\service\StudentCourseService.class
 com\teaching\employment\controller\UserController$ChangePasswordRequest.class
 com\teaching\employment\service\impl\ExamServiceImpl.class
 com\example\teaching\employment\platform\model\dto\StudentAttentionDTO.class
+com\teaching\employment\entity\TeachingPlan.class
 com\teaching\employment\service\NotificationService.class
+com\teaching\employment\dto\TeachingPlanVO.class
 com\teaching\employment\mapper\CompanyMapper.class
 com\teaching\employment\config\WebMvcConfig.class
 com\teaching\employment\service\impl\DashboardServiceImpl.class
+com\teaching\employment\controller\TeachingPlanController.class
 com\teaching\employment\mapper\StudentProjectMapper.class
 com\teaching\employment\entity\Offer.class
 com\teaching\employment\entity\Menu.class

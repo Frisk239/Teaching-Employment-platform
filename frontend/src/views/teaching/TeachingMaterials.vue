@@ -146,8 +146,8 @@
             </div>
 
             <!-- 资料名称 -->
-            <div class="material-name" :title="material.materialName">
-              {{ material.materialName }}
+            <div class="material-name" :title="material.title">
+              {{ material.title }}
             </div>
 
             <!-- 资料信息 -->
@@ -280,8 +280,8 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item label="资料名称" prop="materialName">
-          <el-input v-model="uploadForm.materialName" placeholder="请输入资料名称" />
+        <el-form-item label="资料名称" prop="title">
+          <el-input v-model="uploadForm.title" placeholder="请输入资料名称" />
         </el-form-item>
 
         <el-form-item label="资料类型" prop="materialType">
@@ -349,7 +349,7 @@
           <h4 class="section-title">基本信息</h4>
           <el-descriptions :column="2" border>
             <el-descriptions-item label="资料名称">
-              {{ currentMaterial.materialName }}
+              {{ currentMaterial.title }}
             </el-descriptions-item>
             <el-descriptions-item label="资料类型">
               <el-tag :type="getMaterialTypeColor(currentMaterial.materialType)" size="small">
@@ -426,8 +426,8 @@
         :rules="editRules"
         label-width="100px"
       >
-        <el-form-item label="资料名称" prop="materialName">
-          <el-input v-model="editForm.materialName" />
+        <el-form-item label="资料名称" prop="title">
+          <el-input v-model="editForm.title" />
         </el-form-item>
 
         <el-form-item label="分类标签" prop="category">
@@ -491,6 +491,7 @@ import {
   formatFileSize,
   getMaterialTypeLabel
 } from '@/api/teachingMaterial'
+import { getCoursesByTeacherApi } from '@/api/course'
 import type { UploadFile, UploadRawFile } from 'element-plus'
 import type { FormInstance, FormRules, UploadInstance } from 'element-plus'
 
@@ -552,7 +553,7 @@ const pagination = reactive({
 // 上传表单
 const uploadForm = reactive({
   file: null as File | null,
-  materialName: '',
+  title: '',
   materialType: '',
   courseId: undefined as number | undefined,
   category: '',
@@ -564,7 +565,7 @@ const uploadForm = reactive({
 // 编辑表单
 const editForm = reactive({
   id: 0,
-  materialName: '',
+  title: '',
   category: '',
   tags: '',
   description: '',
@@ -574,12 +575,12 @@ const editForm = reactive({
 // 表单验证规则
 const uploadRules: FormRules = {
   file: [{ required: true, message: '请选择文件', trigger: 'change' }],
-  materialName: [{ required: true, message: '请输入资料名称', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入资料名称', trigger: 'blur' }],
   materialType: [{ required: true, message: '请选择资料类型', trigger: 'change' }]
 }
 
 const editRules: FormRules = {
-  materialName: [{ required: true, message: '请输入资料名称', trigger: 'blur' }]
+  title: [{ required: true, message: '请输入资料名称', trigger: 'blur' }]
 }
 
 // 获取资料列表
@@ -631,6 +632,20 @@ const updateStats = () => {
   }
 }
 
+// 获取课程列表
+const fetchCourses = async () => {
+  if (!teacherId.value) {
+    return
+  }
+
+  try {
+    const response = await getCoursesByTeacherApi(teacherId.value) as any
+    courses.value = response || []
+  } catch (error) {
+    console.error('获取课程列表失败:', error)
+  }
+}
+
 // 获取资料类型颜色
 const getMaterialTypeColor = (type: string): string => {
   const colorMap: Record<string, string> = {
@@ -659,7 +674,7 @@ const getMaterialTypeIcon = (type: string): any => {
 const handleUpload = () => {
   Object.assign(uploadForm, {
     file: null,
-    materialName: '',
+    title: '',
     materialType: '',
     courseId: undefined,
     category: '',
@@ -675,8 +690,8 @@ const handleUpload = () => {
 const handleFileChange = (file: UploadFile) => {
   uploadForm.file = file.raw
   // 自动填充资料名称（如果未填写）
-  if (!uploadForm.materialName) {
-    uploadForm.materialName = file.name.replace(/\.[^/.]+$/, '')
+  if (!uploadForm.title) {
+    uploadForm.title = file.name.replace(/\.[^/.]+$/, '')
   }
 }
 
@@ -699,7 +714,7 @@ const handleUploadSubmit = async () => {
 
     const formData = new FormData()
     formData.append('file', uploadForm.file)
-    formData.append('materialName', uploadForm.materialName)
+    formData.append('title', uploadForm.title)
     formData.append('materialType', uploadForm.materialType)
     formData.append('teacherId', teacherId.value!.toString())
     if (uploadForm.courseId) {
@@ -734,8 +749,13 @@ const handleViewDetail = (material: TeachingMaterial) => {
 const handleDownload = (material: TeachingMaterial) => {
   // 记录下载
   teachingMaterialApi.recordDownload(material.id!)
+
+  // 构建完整的下载URL
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+  const downloadUrl = baseUrl + material.fileUrl
+
   // 打开下载链接
-  window.open(material.fileUrl, '_blank')
+  window.open(downloadUrl, '_blank')
 }
 
 // 编辑资料
@@ -743,7 +763,7 @@ const handleMoreAction = (command: string, material: TeachingMaterial) => {
   if (command === 'edit') {
     Object.assign(editForm, {
       id: material.id!,
-      materialName: material.materialName,
+      title: material.title,
       category: material.category || '',
       tags: material.tags || '',
       description: material.description || '',
@@ -776,7 +796,7 @@ const handleEditSubmit = async () => {
 // 删除资料
 const handleDelete = async (material: TeachingMaterial) => {
   try {
-    await ElMessageBox.confirm(`确定删除资料"${material.materialName}"吗？`, '确认删除', {
+    await ElMessageBox.confirm(`确定删除资料"${material.title}"吗？`, '确认删除', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -815,6 +835,7 @@ const handleReset = () => {
 // 初始化
 onMounted(() => {
   fetchData()
+  fetchCourses()
 })
 </script>
 

@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +37,9 @@ public class TeachingMaterialController {
 
     private final TeachingMaterialService teachingMaterialService;
 
+    @Value("${file.upload.path:uploads}")
+    private String uploadPath;
+
     /**
      * 分页查询教学资料列表
      */
@@ -61,7 +65,7 @@ public class TeachingMaterialController {
     @ApiOperation("上传教学资料")
     public Result<Map<String, Object>> uploadMaterial(
             @ApiParam("资料文件") @RequestParam("file") MultipartFile file,
-            @ApiParam("资料名称") @RequestParam("materialName") String materialName,
+            @ApiParam("资料名称") @RequestParam("title") String title,
             @ApiParam("资料类型") @RequestParam("materialType") String materialType,
             @ApiParam("课程ID") @RequestParam(required = false) Long courseId,
             @ApiParam("教师ID") @RequestParam Long teacherId,
@@ -70,31 +74,31 @@ public class TeachingMaterialController {
             @ApiParam("资料描述") @RequestParam(required = false) String description,
             @ApiParam("是否公开") @RequestParam(defaultValue = "0") Integer isPublic) {
         try {
-            // 创建上传目录
-            String uploadDir = "uploads/materials/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            // 生成唯一文件名
+            // 生成文件路径：materials/yyyyMM/UUID.ext
+            String dateFolder = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+            String uuid = UUID.randomUUID().toString();
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename != null && originalFilename.contains(".")
                     ? originalFilename.substring(originalFilename.lastIndexOf("."))
                     : "";
-            String fileName = UUID.randomUUID().toString() + extension;
-            String filePath = uploadPath.resolve(fileName).toString();
+            String fileName = uuid + extension;
+
+            // 相对路径：materials/202601/uuid.pdf
+            String relativePath = "materials/" + dateFolder + "/" + fileName;
+
+            // 构建完整路径并创建目录
+            Path targetPath = Paths.get(uploadPath, relativePath);
+            Files.createDirectories(targetPath.getParent());
 
             // 保存文件
-            File destFile = new File(filePath);
-            file.transferTo(destFile);
+            file.transferTo(targetPath.toFile());
 
-            // 构建文件URL（相对路径）
-            String fileUrl = "/" + uploadDir + "/" + fileName;
+            // 构建文件URL（相对路径，以 /uploads 开头用于访问）
+            String fileUrl = "/uploads/" + relativePath.replace("\\", "/");
 
             // 创建教学资料记录
             TeachingMaterial material = new TeachingMaterial();
-            material.setMaterialName(materialName);
+            material.setTitle(title);
             material.setMaterialType(materialType);
             material.setFileUrl(fileUrl);
             material.setFileSize(file.getSize());
