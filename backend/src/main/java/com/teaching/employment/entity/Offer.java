@@ -78,6 +78,7 @@ public class Offer implements Serializable {
     private LocalDateTime emailSendTime;
 
     @ApiModelProperty(value = "附件URL（Offer PDF）")
+    @TableField("offer_file_url")
     private String attachmentUrl;
 
     @ApiModelProperty(value = "备注")

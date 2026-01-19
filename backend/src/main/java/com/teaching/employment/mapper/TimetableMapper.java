@@ -22,8 +22,7 @@ public interface TimetableMapper extends BaseMapper<Timetable> {
      */
     @Select("SELECT * FROM t_timetable " +
             "WHERE student_id = #{studentId} " +
-            "AND is_deleted = 0 " +
-            "ORDER BY day_of_week, period")
+            "ORDER BY day_of_week, start_period")
     List<Timetable> selectByStudentId(@Param("studentId") Long studentId);
 
     /**
@@ -31,10 +30,9 @@ public interface TimetableMapper extends BaseMapper<Timetable> {
      */
     @Select("SELECT * FROM t_timetable " +
             "WHERE student_id = #{studentId} " +
-            "AND is_deleted = 0 " +
             "AND semester = #{semester} " +
-            "AND academic_year = #{academicYear} " +
-            "ORDER BY day_of_week, period")
+            "AND school_year = #{academicYear} " +
+            "ORDER BY day_of_week, start_period")
     List<Timetable> selectByStudentIdAndTerm(
             @Param("studentId") Long studentId,
             @Param("semester") String semester,

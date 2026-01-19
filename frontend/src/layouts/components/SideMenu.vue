@@ -417,14 +417,25 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
-  // 我的课程（学员专用）
+  // 我的课程（学员专用 - 课程列表）
   {
     id: 40,
     name: '我的课程',
-    path: '/teaching/my-courses',
-    icon: Collection,
+    path: '/teaching/course-list',
+    icon: DocumentAdd,
     parentId: 7,
     sort: 11,
+    status: '1',
+    type: '2',
+  },
+  // 课程表（学员专用）
+  {
+    id: 41,
+    name: '课程表',
+    path: '/teaching/my-courses',
+    icon: Edit,
+    parentId: 7,
+    sort: 12,
     status: '1',
     type: '2',
   },
@@ -537,6 +548,7 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/dashboard',
     '/notifications/system-notices',
     '/teaching',
+    '/teaching/course-list',
     '/teaching/my-courses',
     '/teaching/assignments',
     '/teaching/my-daily-reports',

@@ -178,7 +178,7 @@
             >
               <div class="position-header">
                 <span class="position-name">{{ position.positionName }}</span>
-                <span class="position-salary">{{ position.salaryMin }}k-{{ position.salaryMax }}k</span>
+                <span class="position-salary">{{ Math.round(position.salaryMin / 1000) }}k-{{ Math.round(position.salaryMax / 1000) }}k</span>
               </div>
               <div class="position-info">
                 <el-tag size="small" type="info">{{ position.city }}</el-tag>

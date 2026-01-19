@@ -16,12 +16,12 @@ export interface WrittenTest {
   totalScore?: number
   status: 'pending' | 'ongoing' | 'completed' | 'missed'
   comment?: string
-  isDeleted?: number
   createTime?: string
   updateTime?: string
   // 关联字段
   studentName?: string
   positionName?: string
+  companyName?: string
   application?: any
   position?: any
   student?: any

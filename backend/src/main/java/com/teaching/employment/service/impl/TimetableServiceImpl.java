@@ -69,12 +69,12 @@ public class TimetableServiceImpl implements TimetableService {
 
         for (Timetable timetable : timetables) {
             Integer dayOfWeek = timetable.getDayOfWeek();
-            Integer period = timetable.getPeriod();
+            Integer startPeriod = timetable.getStartPeriod();
 
-            if (dayOfWeek != null && period != null && dayOfWeek >= 1 && dayOfWeek <= 7) {
+            if (dayOfWeek != null && startPeriod != null && dayOfWeek >= 1 && dayOfWeek <= 7) {
                 Map<Integer, Timetable> dayMap = grid.get(dayOfWeek);
                 if (dayMap != null) {
-                    dayMap.put(period, timetable);
+                    dayMap.put(startPeriod, timetable);
                 }
             }
         }
@@ -166,8 +166,16 @@ public class TimetableServiceImpl implements TimetableService {
             throw new BusinessException("星期几必须在1-7之间");
         }
 
-        if (timetable.getPeriod() == null || timetable.getPeriod() < 1 || timetable.getPeriod() > 12) {
-            throw new BusinessException("节次必须在1-12之间");
+        if (timetable.getStartPeriod() == null || timetable.getStartPeriod() < 1 || timetable.getStartPeriod() > 12) {
+            throw new BusinessException("开始节次必须在1-12之间");
+        }
+
+        if (timetable.getEndPeriod() == null || timetable.getEndPeriod() < 1 || timetable.getEndPeriod() > 12) {
+            throw new BusinessException("结束节次必须在1-12之间");
+        }
+
+        if (timetable.getStartPeriod() > timetable.getEndPeriod()) {
+            throw new BusinessException("开始节次不能大于结束节次");
         }
 
         // 验证课程是否存在

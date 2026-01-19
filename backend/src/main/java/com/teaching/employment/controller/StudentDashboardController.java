@@ -57,6 +57,13 @@ public class StudentDashboardController {
                 .filter(c -> "active".equals(c.getStatus()))
                 .count();
 
+        // 计算已完成课程的总学分
+        double totalCredits = courses.stream()
+                .filter(c -> "completed".equals(c.getStatus()))
+                .map(c -> c.getCredit() != null ? c.getCredit().doubleValue() : 0.0)
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
         // 作业统计
         com.baomidou.mybatisplus.core.metadata.IPage<Homework> homeworkPage = homeworkService.getHomeworkByStudentId(1, Integer.MAX_VALUE, studentId);
         long pendingHomework = homeworkPage.getRecords().stream()
@@ -101,6 +108,7 @@ public class StudentDashboardController {
         data.put("totalApplications", totalApplications);
         data.put("interviewCount", interviewCount);
         data.put("offerCount", offerCount);
+        data.put("totalCredits", totalCredits);
 
         return Result.ok(data);
     }

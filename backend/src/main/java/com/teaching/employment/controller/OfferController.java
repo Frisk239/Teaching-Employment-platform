@@ -89,7 +89,7 @@ public class OfferController {
     @GetMapping("/{id}")
     @ApiOperation("根据ID查询Offer")
     public Result<Offer> getOfferById(@PathVariable Long id) {
-        Offer offer = offerService.getById(id);
+        Offer offer = offerService.getOfferWithDetails(id);
         return Result.ok(offer);
     }
 

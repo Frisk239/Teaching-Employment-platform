@@ -98,4 +98,10 @@ public class WrittenTest implements Serializable {
      */
     @TableField(exist = false)
     private String positionName;
+
+    /**
+     * 企业名称
+     */
+    @TableField(exist = false)
+    private String companyName;
 }

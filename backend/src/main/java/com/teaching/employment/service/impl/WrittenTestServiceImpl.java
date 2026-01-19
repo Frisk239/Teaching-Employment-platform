@@ -29,6 +29,7 @@ public class WrittenTestServiceImpl extends ServiceImpl<WrittenTestMapper, Writt
     private final PositionService positionService;
     private final StudentService studentService;
     private final UserService userService;
+    private final CompanyService companyService;
 
     @Override
     public IPage<WrittenTest> getWrittenTestPage(Integer current, Integer size, Long applicationId, Long positionId,
@@ -213,11 +214,18 @@ public class WrittenTestServiceImpl extends ServiceImpl<WrittenTestMapper, Writt
             }
         }
 
-        // 填充职位名称
+        // 填充职位名称和企业名称
         if (test.getPositionId() != null) {
             Position position = positionService.getById(test.getPositionId());
             if (position != null) {
                 test.setPositionName(position.getPositionName());
+                // 填充企业名称
+                if (position.getCompanyId() != null) {
+                    Company company = companyService.getById(position.getCompanyId());
+                    if (company != null) {
+                        test.setCompanyName(company.getCompanyName());
+                    }
+                }
             }
         }
 

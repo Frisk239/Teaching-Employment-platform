@@ -48,18 +48,13 @@ public class HomeworkSubmission implements Serializable {
     private String status;
 
     @ApiModelProperty(value = "提交时间")
-    @TableField("submit_date")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime submitTime;
 
     @ApiModelProperty(value = "批改时间")
-    @TableField("grade_time")
+    @TableField(exist = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime gradeTime;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

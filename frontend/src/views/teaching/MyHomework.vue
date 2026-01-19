@@ -599,9 +599,11 @@ const loadHomeworkList = async () => {
             const submissionResponse = await axios.get(
               `/homework-submission/homework/${homework.id}/student/${studentId}`
             )
+            // 检查是否是有效的提交对象（必须有id字段）
+            const isValidSubmission = submissionResponse && typeof submissionResponse === 'object' && 'id' in submissionResponse
             return {
               ...homework,
-              submission: submissionResponse || null,
+              submission: isValidSubmission ? submissionResponse : null,
               courseName: homework.course?.courseName || '未知课程'
             }
           } catch (e) {

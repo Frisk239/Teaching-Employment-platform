@@ -59,6 +59,14 @@ public interface OfferService extends IService<Offer> {
     Offer getOfferByApplicationId(Long applicationId);
 
     /**
+     * 根据ID查询Offer（包含关联信息）
+     *
+     * @param id Offer ID
+     * @return Offer信息（包含企业名称等关联字段）
+     */
+    Offer getOfferWithDetails(Long id);
+
+    /**
      * 创建并发送Offer
      *
      * @param applicationId    申请ID

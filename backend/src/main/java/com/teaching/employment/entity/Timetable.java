@@ -34,32 +34,30 @@ public class Timetable implements Serializable {
     @ApiModelProperty(value = "课程ID")
     private Long courseId;
 
-    @ApiModelProperty(value = "星期几（1-7，1=周一）")
-    private Integer dayOfWeek;
-
-    @ApiModelProperty(value = "节次（1-12）")
-    private Integer period;
+    @ApiModelProperty(value = "教师ID")
+    private Long teacherId;
 
     @ApiModelProperty(value = "教室ID")
     private Long classroomId;
 
-    @ApiModelProperty(value = "开始时间")
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime startTime;
+    @ApiModelProperty(value = "周数")
+    private Integer weekNumber;
 
-    @ApiModelProperty(value = "结束时间")
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime endTime;
+    @ApiModelProperty(value = "星期几（1-7，1=周一）")
+    private Integer dayOfWeek;
+
+    @ApiModelProperty(value = "开始节次")
+    private Integer startPeriod;
+
+    @ApiModelProperty(value = "结束节次")
+    private Integer endPeriod;
 
     @ApiModelProperty(value = "学期（如：2024-2025-1）")
     private String semester;
 
     @ApiModelProperty(value = "学年（如：2024-2025）")
+    @TableField("school_year")
     private String academicYear;
-
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

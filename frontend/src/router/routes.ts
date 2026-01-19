@@ -244,14 +244,14 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
-          // 我的课程（学员专用 - 课程表）
+          // 课程表（学员专用）
           {
             path: '/teaching/my-courses',
             name: 'TeachingMyCourses',
             component: () => import('@/views/teaching/MyTimetable.vue'),
             meta: {
-              title: '我的课程',
-              icon: 'Reading',
+              title: '课程表',
+              icon: 'Calendar',
               roles: ['user'],
             },
           },
@@ -266,16 +266,15 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
-          // 课程列表（学员专用）
+          // 我的课程（学员专用）
           {
             path: '/teaching/course-list',
             name: 'TeachingCourseList',
             component: () => import('@/views/course/MyCourses.vue'),
             meta: {
-              title: '课程列表',
-              icon: 'List',
+              title: '我的课程',
+              icon: 'Reading',
               roles: ['user'],
-              hidden: true,
             },
           },
           // 教学资料管理（教师专用）

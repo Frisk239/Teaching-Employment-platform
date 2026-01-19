@@ -72,7 +72,35 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
 
         wrapper.orderByDesc(Offer::getCreateTime);
 
-        return offerMapper.selectPage(page, wrapper);
+        IPage<Offer> resultPage = offerMapper.selectPage(page, wrapper);
+
+        // 填充关联信息
+        resultPage.getRecords().forEach(this::fillRelatedInfo);
+
+        return resultPage;
+    }
+
+    /**
+     * 填充Offer的关联信息
+     */
+    private void fillRelatedInfo(Offer offer) {
+        // 填充企业信息
+        if (offer.getCompanyId() != null) {
+            Company company = companyService.getById(offer.getCompanyId());
+            if (company != null) {
+                offer.setCompanyName(company.getCompanyName());
+                offer.setCompany(company);
+            }
+        }
+
+        // 填充学生信息
+        if (offer.getStudentId() != null) {
+            Student student = studentService.getById(offer.getStudentId());
+            if (student != null) {
+                offer.setStudentName(student.getRealName());
+                offer.setStudentEmail(student.getEmail());
+            }
+        }
     }
 
     @Override
@@ -91,6 +119,15 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
         wrapper.eq(Offer::getApplicationId, applicationId);
 
         return offerMapper.selectOne(wrapper);
+    }
+
+    @Override
+    public Offer getOfferWithDetails(Long id) {
+        Offer offer = offerMapper.selectById(id);
+        if (offer != null) {
+            fillRelatedInfo(offer);
+        }
+        return offer;
     }
 
     @Override
@@ -206,8 +243,10 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
         boolean result = offerMapper.updateById(offer) > 0;
 
         if (result) {
-            // 更新申请状态为已入职
-            jobApplicationService.updateApplicationStatus(offer.getApplicationId(), "hired", "hired");
+            // 更新申请状态为已入职（如果有关联的申请）
+            if (offer.getApplicationId() != null) {
+                jobApplicationService.updateApplicationStatus(offer.getApplicationId(), "hired", "hired");
+            }
         }
 
         return result;
@@ -230,10 +269,10 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
         boolean result = offerMapper.updateById(offer) > 0;
 
         if (result) {
-            // 更新申请状态
-            jobApplicationService.updateApplicationStatus(offer.getApplicationId(), "declined", null);
-            // 减少职位已招人数
-            positionService.getById(offer.getPositionId());
+            // 更新申请状态（如果有关联的申请）
+            if (offer.getApplicationId() != null) {
+                jobApplicationService.updateApplicationStatus(offer.getApplicationId(), "declined", null);
+            }
         }
 
         return result;
@@ -260,8 +299,10 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
         boolean result = offerMapper.updateById(offer) > 0;
 
         if (result) {
-            // 更新申请状态
-            jobApplicationService.updateApplicationStatus(offer.getApplicationId(), "rejected", null);
+            // 更新申请状态（如果有关联的申请）
+            if (offer.getApplicationId() != null) {
+                jobApplicationService.updateApplicationStatus(offer.getApplicationId(), "rejected", null);
+            }
         }
 
         return result;

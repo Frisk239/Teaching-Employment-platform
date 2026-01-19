@@ -47,7 +47,7 @@ public class Homework implements Serializable {
     private String attachmentUrl;
 
     @ApiModelProperty(value = "截止日期")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime deadline;
 
     @ApiModelProperty(value = "满分")
