@@ -115,7 +115,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="city" label="所在城市" width="120" />
-        <el-table-column prop="contactName" label="联系人" width="100" />
+        <el-table-column prop="contactPerson" label="联系人" width="100" />
         <el-table-column prop="contactPhone" label="联系电话" width="130" />
         <el-table-column prop="verifyStatus" label="认证状态" width="100" align="center">
           <template #default="{ row }">
@@ -257,8 +257,8 @@
         <el-divider content-position="left">联系信息</el-divider>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="联系人" prop="contactName">
-              <el-input v-model="formData.contactName" placeholder="请输入联系人姓名" />
+            <el-form-item label="联系人" prop="contactPerson">
+              <el-input v-model="formData.contactPerson" placeholder="请输入联系人姓名" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -358,7 +358,7 @@
           {{ currentCompany.address || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="联系人">
-          {{ currentCompany.contactName }}
+          {{ currentCompany.contactPerson }}
         </el-descriptions-item>
         <el-descriptions-item label="职位">
           {{ currentCompany.contactPosition }}
@@ -535,7 +535,7 @@ const formRules: FormRules = {
   scale: [{ required: true, message: '请选择企业规模', trigger: 'change' }],
   stage: [{ required: true, message: '请选择发展阶段', trigger: 'change' }],
   city: [{ required: true, message: '请输入所在城市', trigger: 'blur' }],
-  contactName: [{ required: true, message: '请输入联系人姓名', trigger: 'blur' }],
+  contactPerson: [{ required: true, message: '请输入联系人姓名', trigger: 'blur' }],
   contactPhone: [
     { required: true, message: '请输入联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
@@ -633,7 +633,7 @@ const handleAdd = () => {
     description: '',
     benefits: '',
     website: '',
-    contactName: '',
+    contactPerson: '',
     contactPosition: '',
     contactPhone: '',
     contactEmail: '',
@@ -659,7 +659,7 @@ const handleEdit = (row: Company) => {
     description: row.description || '',
     benefits: row.benefits || '',
     website: row.website || '',
-    contactName: row.contactName || '',
+    contactPerson: row.contactPerson || '',
     contactPosition: row.contactPosition || '',
     contactPhone: row.contactPhone || '',
     contactEmail: row.contactEmail || '',

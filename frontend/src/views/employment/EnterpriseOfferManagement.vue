@@ -112,16 +112,7 @@
 
         <el-table-column prop="offerNo" label="Offer编号" width="150" />
 
-        <el-table-column prop="studentName" label="学员姓名" width="120">
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center; gap: 8px">
-              <el-avatar :size="32" :src="row.studentAvatar">
-                {{ row.studentName?.charAt(0) }}
-              </el-avatar>
-              <span>{{ row.studentName }}</span>
-            </div>
-          </template>
-        </el-table-column>
+        <el-table-column prop="studentName" label="学员姓名" width="120" />
 
         <el-table-column prop="positionName" label="职位名称" width="150" />
 
@@ -344,12 +335,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   Plus, Refresh, Search, Download, Document, Clock, Select, User
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { useAuthStore } from '@/stores'
+
+const authStore = useAuthStore()
+const companyId = computed(() => authStore.companyId)
 
 // 统计数据
 const stats = ref({
@@ -413,7 +408,10 @@ const loadOffers = async () => {
   loading.value = true
   try {
     const response: any = await request.get('/offer/page', {
-      params: queryParams
+      params: {
+        ...queryParams,
+        companyId: companyId.value
+      }
     })
     offerList.value = response.records || []
     total.value = response.total || 0
@@ -427,8 +425,7 @@ const loadOffers = async () => {
 // 加载统计数据
 const loadStats = async () => {
   try {
-    // 这里使用企业的ID，实际应该从用户信息中获取
-    const response: any = await request.get('/offer/stats/company/1')
+    const response: any = await request.get(`/offer/stats/company/${companyId.value}`)
     stats.value = response
   } catch (error) {
     console.error('加载统计数据失败', error)
@@ -438,11 +435,12 @@ const loadStats = async () => {
 // 加载申请选项（面试通过的）
 const loadApplicationOptions = async () => {
   try {
-    const response: any = await request.get('/application/page', {
+    const response: any = await request.get('/job-application/page', {
       params: {
         current: 1,
         size: 1000,
-        status: 'interview_passed'
+        status: 'interview_passed',
+        companyId: companyId.value
       }
     })
     applicationOptions.value = response.records || []
@@ -560,13 +558,16 @@ const handleCancel = async (row: any) => {
 const handleReminder = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要发送提醒邮件吗？', '提示', {
-      type: 'info'
+      type: 'info',
+      confirmButtonText: '发送',
+      cancelButtonText: '取消'
     })
-    // 这里应该调用发送提醒的接口
-    ElMessage.success('提醒发送成功')
+    // TODO: 调用后端发送提醒邮件接口
+    // await request.post(`/offer/${row.id}/reminder`)
+    ElMessage.info('提醒功能开发中，请通过其他方式联系学员')
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('发送失败')
+      ElMessage.error('操作失败')
     }
   }
 }
@@ -640,12 +641,7 @@ onMounted(() => {
   }
 
   .table-card {
-    :deep(.el-table) {
-      .el-avatar {
-        background-color: #ecf5ff;
-        color: #409eff;
-      }
-    }
+    // 表格样式
   }
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="talent-pool-management">
     <!-- 统计卡片 -->
     <el-row :gutter="20" class="stats-row">
-      <el-col :span="6">
+      <el-col :span="8">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-icon" style="background: #ecf5ff; color: #409eff">
@@ -15,7 +15,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="8">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-icon" style="background: #f0f9ff; color: #67c23a">
@@ -28,20 +28,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon" style="background: #fdf6ec; color: #e6a23c">
-              <el-icon :size="28"><ChatDotRound /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.contactedCount || 0 }}</div>
-              <div class="stat-label">已联系</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
+      <el-col :span="8">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-icon" style="background: #fef0f0; color: #f56c6c">
@@ -93,7 +80,6 @@
             @change="loadTalentPool"
           >
             <el-option label="激活" value="active" />
-            <el-option label="已联系" value="contacted" />
             <el-option label="已锁定" value="locked" />
           </el-select>
 
@@ -228,9 +214,6 @@
             </el-button>
             <el-button link type="primary" size="small" @click="handleEditTags(row)">
               标签
-            </el-button>
-            <el-button link type="primary" size="small" @click="handleContact(row)">
-              联系
             </el-button>
             <el-button link type="danger" size="small" @click="handleDelete(row)">
               删除
@@ -386,48 +369,121 @@
       </template>
     </el-dialog>
 
-    <!-- 联系记录对话框 -->
+    <!-- 详情对话框 -->
     <el-dialog
-      v-model="contactDialogVisible"
-      title="标记联系记录"
-      width="500px"
+      v-model="detailDialogVisible"
+      title="人才详情"
+      width="800px"
     >
-      <el-form
-        ref="contactFormRef"
-        :model="contactForm"
-        label-width="100px"
-      >
-        <el-form-item label="联系方式" prop="contactMethod">
-          <el-radio-group v-model="contactForm.contactMethod">
-            <el-radio label="email">邮件</el-radio>
-            <el-radio label="phone">电话</el-radio>
-            <el-radio label="message">站内信</el-radio>
-            <el-radio label="interview">面试</el-radio>
-          </el-radio-group>
-        </el-form-item>
+      <div v-if="currentTalent" class="talent-detail">
+        <!-- 基本信息 -->
+        <div class="detail-section">
+          <h4 class="section-title">基本信息</h4>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item label="姓名">{{ currentTalent.studentName }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.studentPhone" label="手机号">{{ currentTalent.studentPhone }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.studentEmail" label="邮箱">{{ currentTalent.studentEmail }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.schoolName" label="学校">{{ currentTalent.schoolName }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.major" label="专业">{{ currentTalent.major }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.grade" label="年级">{{ currentTalent.grade }}</el-descriptions-item>
+          </el-descriptions>
+        </div>
 
-        <el-form-item label="下次联系" prop="nextContactDate">
-          <el-date-picker
-            v-model="contactForm.nextContactDate"
-            type="date"
-            placeholder="选择下次联系日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
-        </el-form-item>
-      </el-form>
+        <!-- 人才信息 -->
+        <div class="detail-section">
+          <h4 class="section-title">人才信息</h4>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item v-if="currentTalent.positionName" label="意向职位">{{ currentTalent.positionName }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.category" label="人才分类">
+              <el-tag :type="getCategoryType(currentTalent.category)" size="small">
+                {{ getCategoryText(currentTalent.category) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.experienceLevel" label="经验级别">
+              {{ getExperienceLevelText(currentTalent.experienceLevel) }}
+            </el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.education" label="学历">{{ currentTalent.education }}</el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.skillTags" label="技能标签" :span="2">
+              <div class="tag-list">
+                <el-tag
+                  v-for="(tag, index) in parseSkillTags(currentTalent.skillTags)"
+                  :key="index"
+                  size="small"
+                  style="margin-right: 5px; margin-bottom: 5px"
+                >
+                  {{ tag }}
+                </el-tag>
+              </div>
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
+
+        <!-- 期望信息 -->
+        <div class="detail-section" v-if="currentTalent.expectedSalaryMin || currentTalent.expectedSalaryMax || currentTalent.expectedCity">
+          <h4 class="section-title">期望信息</h4>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item v-if="currentTalent.expectedSalaryMin || currentTalent.expectedSalaryMax" label="期望薪资">
+              {{ currentTalent.expectedSalaryMin || '面议' }} - {{ currentTalent.expectedSalaryMax || '面议' }}
+            </el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.expectedCity" label="期望城市">{{ currentTalent.expectedCity }}</el-descriptions-item>
+          </el-descriptions>
+        </div>
+
+        <!-- 评级与状态 -->
+        <div class="detail-section">
+          <h4 class="section-title">评级与状态</h4>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item v-if="currentTalent.priority" label="优先级">
+              <el-tag :type="getPriorityType(currentTalent.priority)" size="small">
+                {{ getPriorityText(currentTalent.priority) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.status" label="状态">
+              <el-tag :type="getStatusType(currentTalent.status)" size="small">
+                {{ getStatusText(currentTalent.status) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.rating" label="评分">
+              <el-rate v-model="currentTalent.rating" disabled show-score />
+            </el-descriptions-item>
+            <el-descriptions-item v-if="currentTalent.source" label="来源">
+              {{ getSourceText(currentTalent.source) }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
+
+        <!-- 标签 -->
+        <div class="detail-section" v-if="currentTalent.tags">
+          <h4 class="section-title">人才标签</h4>
+          <div class="tag-list">
+            <el-tag
+              v-for="(tag, index) in currentTalent.tags.split(',').filter(t => t.trim())"
+              :key="index"
+              type="success"
+              size="small"
+              style="margin-right: 5px; margin-bottom: 5px"
+            >
+              {{ tag }}
+            </el-tag>
+          </div>
+        </div>
+
+        <!-- 备注 -->
+        <div class="detail-section" v-if="currentTalent.remark">
+          <h4 class="section-title">备注</h4>
+          <div class="remark-content">{{ currentTalent.remark }}</div>
+        </div>
+      </div>
 
       <template #footer>
-        <el-button @click="contactDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSaveContact">确定</el-button>
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   Plus, Refresh, Search, Delete, User, Star, ChatDotRound, Flag
@@ -436,6 +492,7 @@ import request from '@/utils/request'
 import { useAuthStore } from '@/stores'
 
 const authStore = useAuthStore()
+const companyId = computed(() => authStore.companyId)
 
 // 统计数据
 const stats = ref({
@@ -467,7 +524,7 @@ const selectedIds = ref<number[]>([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('添加人才')
 const tagsDialogVisible = ref(false)
-const contactDialogVisible = ref(false)
+const detailDialogVisible = ref(false)
 const submitting = ref(false)
 
 // 表单
@@ -492,12 +549,8 @@ const currentTags = ref<string[]>([])
 const newTag = ref('')
 const commonTags = ['Vue', 'React', 'TypeScript', 'Node.js', 'Java', 'Python', '应届生', '有经验']
 
-// 联系
-const contactFormRef = ref<FormInstance>()
-const contactForm = reactive({
-  contactMethod: 'email',
-  nextContactDate: ''
-})
+// 详情
+const currentTalent = ref<any>(null)
 
 // 学员选项
 const studentOptions = ref([])
@@ -509,7 +562,7 @@ const loadTalentPool = async () => {
     const response: any = await request.get('/talent-pool/page', {
       params: {
         ...queryParams,
-        companyId: authStore.user?.companyId
+        companyId: companyId.value
       }
     })
     talentList.value = response.records || []
@@ -524,9 +577,8 @@ const loadTalentPool = async () => {
 // 加载统计
 const loadStats = async () => {
   try {
-    const companyId = authStore.user?.companyId
-    if (!companyId) return
-    const response: any = await request.get(`/talent-pool/stats/company/${companyId}`)
+    if (!companyId.value) return
+    const response: any = await request.get(`/talent-pool/stats/company/${companyId.value}`)
     stats.value = response
   } catch (error) {
     console.error('加载统计失败', error)
@@ -539,7 +591,7 @@ const loadStudentOptions = async () => {
     const response: any = await request.get('/student/list', {
       params: { size: 1000 }
     })
-    studentOptions.value = response.records || []
+    studentOptions.value = response || []
   } catch (error) {
     console.error('加载学员失败', error)
   }
@@ -622,6 +674,43 @@ const getContactMethodText = (method: string) => {
   return textMap[method] || method
 }
 
+// 经验级别文本
+const getExperienceLevelText = (level: string) => {
+  const textMap: Record<string, string> = {
+    junior: '初级',
+    middle: '中级',
+    senior: '高级',
+    expert: '专家'
+  }
+  return textMap[level] || level
+}
+
+// 解析技能标签（支持JSON数组和逗号分隔）
+const parseSkillTags = (skillTags: string) => {
+  if (!skillTags) return []
+  try {
+    // 尝试解析 JSON 数组
+    const parsed = JSON.parse(skillTags)
+    if (Array.isArray(parsed)) {
+      return parsed
+    }
+  } catch {
+    // 解析失败，按逗号分隔
+    return skillTags.split(',').map(s => s.trim()).filter(s => s)
+  }
+  return []
+}
+
+// 来源文本
+const getSourceText = (source: string) => {
+  const textMap: Record<string, string> = {
+    manual: '手动添加',
+    application: '求职申请',
+    interview: '面试推荐'
+  }
+  return textMap[source] || source
+}
+
 // 选择变化
 const handleSelectionChange = (selection: any[]) => {
   selectedIds.value = selection.map(item => item.id)
@@ -645,7 +734,7 @@ const handleSubmit = async () => {
     try {
       await request.post('/talent-pool', {
         ...formData,
-        companyId: authStore.user?.companyId
+        companyId: companyId.value
       })
       ElMessage.success('添加成功')
       dialogVisible.value = false
@@ -671,9 +760,10 @@ const resetForm = () => {
   formRef.value?.resetFields()
 }
 
-// 查看
+// 查看详情
 const handleView = (row: any) => {
-  ElMessage.info('详情功能开发中')
+  currentTalent.value = row
+  detailDialogVisible.value = true
 }
 
 // 编辑标签
@@ -731,29 +821,6 @@ const handleRatingChange = async (row: any) => {
     ElMessage.success('评分更新成功')
   } catch (error: any) {
     ElMessage.error(error.response?.data?.message || '更新失败')
-  }
-}
-
-// 联系
-const handleContact = (row: any) => {
-  currentTalentId.value = row.id
-  contactForm.contactMethod = 'email'
-  contactForm.nextContactDate = ''
-  contactDialogVisible.value = true
-}
-
-// 保存联系
-const handleSaveContact = async () => {
-  try {
-    await request.post(`/talent-pool/${currentTalentId.value}/mark-contacted`, null, {
-      params: contactForm
-    })
-    ElMessage.success('标记成功')
-    contactDialogVisible.value = false
-    loadTalentPool()
-    loadStats()
-  } catch (error: any) {
-    ElMessage.error(error.response?.data?.message || '标记失败')
   }
 }
 
@@ -861,6 +928,37 @@ onMounted(() => {
       .el-avatar {
         background-color: #ecf5ff;
         color: #409eff;
+      }
+    }
+  }
+
+  // 详情对话框样式
+  .talent-detail {
+    .detail-section {
+      margin-bottom: 24px;
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0 0 12px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f0f0f0;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .remark-content {
+        padding: 12px;
+        background-color: #f5f7fa;
+        border-radius: 4px;
+        color: #606266;
+        line-height: 1.6;
+        white-space: pre-wrap;
       }
     }
   }

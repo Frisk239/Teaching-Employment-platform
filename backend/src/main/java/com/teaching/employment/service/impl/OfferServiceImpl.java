@@ -10,6 +10,7 @@ import com.teaching.employment.entity.Offer;
 import com.teaching.employment.entity.Position;
 import com.teaching.employment.entity.Student;
 import com.teaching.employment.entity.Company;
+import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.OfferMapper;
 import com.teaching.employment.service.CompanyService;
@@ -17,6 +18,7 @@ import com.teaching.employment.service.JobApplicationService;
 import com.teaching.employment.service.OfferService;
 import com.teaching.employment.service.PositionService;
 import com.teaching.employment.service.StudentService;
+import com.teaching.employment.service.UserService;
 import com.teaching.employment.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,7 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
     private final PositionService positionService;
     private final StudentService studentService;
     private final CompanyService companyService;
+    private final UserService userService;
     private final EmailUtil emailUtil;
 
     @Override
@@ -97,8 +100,20 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
         if (offer.getStudentId() != null) {
             Student student = studentService.getById(offer.getStudentId());
             if (student != null) {
-                offer.setStudentName(student.getRealName());
+                // 填充学生邮箱
                 offer.setStudentEmail(student.getEmail());
+
+                // 从User表填充学生真实姓名
+                if (student.getUserId() != null) {
+                    User user = userService.getById(student.getUserId());
+                    if (user != null && user.getRealName() != null) {
+                        offer.setStudentName(user.getRealName());
+                    } else {
+                        offer.setStudentName("学生" + student.getId());
+                    }
+                } else {
+                    offer.setStudentName("学生" + student.getId());
+                }
             }
         }
     }
@@ -194,9 +209,20 @@ public class OfferServiceImpl extends ServiceImpl<OfferMapper, Offer> implements
                 Company company = companyService.getById(position.getCompanyId());
                 String companyName = company != null ? company.getCompanyName() : "公司";
 
+                // 从User表获取学生真实姓名
+                String studentRealName = student.getEmail(); // 默认使用邮箱
+                if (student.getUserId() != null) {
+                    User user = userService.getById(student.getUserId());
+                    if (user != null && user.getRealName() != null) {
+                        studentRealName = user.getRealName();
+                    } else {
+                        studentRealName = "学生" + student.getId();
+                    }
+                }
+
                 boolean emailSent = emailUtil.sendOfferEmail(
                         student.getEmail(),
-                        student.getRealName(),
+                        studentRealName,
                         companyName,
                         positionName,
                         salary != null ? salary.doubleValue() : null,

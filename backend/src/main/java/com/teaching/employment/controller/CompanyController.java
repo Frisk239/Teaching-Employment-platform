@@ -84,9 +84,10 @@ public class CompanyController {
     /**
      * 更新企业
      */
-    @PutMapping
+    @PutMapping("/{id}")
     @ApiOperation("更新企业")
-    public Result<Void> updateCompany(@RequestBody Company company) {
+    public Result<Void> updateCompany(@PathVariable Long id, @RequestBody Company company) {
+        company.setId(id);
         boolean success = companyService.updateById(company);
         return success ? Result.ok("更新成功") : Result.error("更新失败");
     }

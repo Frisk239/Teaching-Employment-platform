@@ -18,7 +18,7 @@ export interface Company {
   description?: string
   benefits?: string
   website?: string
-  contactName?: string
+  contactPerson?: string
   contactPosition?: string
   contactPhone?: string
   contactEmail?: string

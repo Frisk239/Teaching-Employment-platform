@@ -59,6 +59,19 @@ public class StudentController {
     }
 
     /**
+     * 获取学员列表（不分页，用于下拉框选择）
+     */
+    @GetMapping("/list")
+    @ApiOperation("获取学员列表（不分页）")
+    public Result<List<Student>> getStudentList(
+            @ApiParam("每页大小") @RequestParam(defaultValue = "1000") Integer size,
+            @ApiParam("学校ID") @RequestParam(required = false) Long schoolId,
+            @ApiParam("关键词") @RequestParam(required = false) String keyword) {
+        IPage<Student> page = studentService.getStudentPage(1, size, schoolId, keyword);
+        return Result.ok(page.getRecords());
+    }
+
+    /**
      * 获取所有专业列表（用于下拉框筛选）
      */
     @GetMapping("/majors")
