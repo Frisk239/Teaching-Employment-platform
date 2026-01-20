@@ -89,4 +89,11 @@ export const statisticsApi = {
   getStatusDistribution: () => {
     return http.get<any>('/statistics/status-distribution')
   },
+
+  /**
+   * 获取Offer统计数据
+   */
+  getOfferStats: () => {
+    return http.get<any>('/statistics/offer-stats')
+  },
 }

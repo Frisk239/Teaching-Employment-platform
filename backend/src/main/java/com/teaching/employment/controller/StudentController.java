@@ -59,6 +59,16 @@ public class StudentController {
     }
 
     /**
+     * 获取所有专业列表（用于下拉框筛选）
+     */
+    @GetMapping("/majors")
+    @ApiOperation("获取所有专业列表")
+    public Result<List<String>> getMajorList() {
+        List<String> majors = studentService.getMajorList();
+        return Result.ok(majors);
+    }
+
+    /**
      * 根据ID查询学员
      */
     @GetMapping("/{id}")

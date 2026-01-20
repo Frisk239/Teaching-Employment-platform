@@ -288,6 +288,28 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
+          // 就业指导管理（学院负责人专用）
+          {
+            path: '/teaching/guidance-management',
+            name: 'GuidanceManagement',
+            component: () => import('@/views/teaching/GuidanceManagement.vue'),
+            meta: {
+              title: '就业指导',
+              icon: 'ChatDotRound',
+              roles: ['college_head', 'teacher'],
+            },
+          },
+          // 就业指导与推荐（学员专用）
+          {
+            path: '/student/guidance-recommendation',
+            name: 'StudentGuidanceRecommendation',
+            component: () => import('@/views/student/GuidanceAndRecommendation.vue'),
+            meta: {
+              title: '就业指导',
+              icon: 'ChatDotRound',
+              roles: ['user'],
+            },
+          },
           // 教学资料管理（教师专用）
           {
             path: '/teaching/teaching-materials',
@@ -388,6 +410,17 @@ export const routes: RouteRecordRaw[] = [
               title: '求职管理',
               icon: 'User',
               roles: ['admin', 'college_head', 'enterprise_contact'],
+            },
+          },
+          // 简历浏览（企业对接人专用）
+          {
+            path: '/employment/resume-review',
+            name: 'EmploymentResumeReview',
+            component: () => import('@/views/employment/ResumeReview.vue'),
+            meta: {
+              title: '简历浏览',
+              icon: 'View',
+              roles: ['enterprise_contact'],
             },
           },
           // 我的求职（学员专用）

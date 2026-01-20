@@ -1,6 +1,7 @@
 package com.teaching.employment.controller;
 
 import com.teaching.employment.common.Result;
+import com.teaching.employment.entity.Offer;
 import com.teaching.employment.service.CompanyService;
 import com.teaching.employment.service.JobApplicationService;
 import com.teaching.employment.service.OfferService;
@@ -278,5 +279,48 @@ public class StatisticsController {
     @ApiOperation("获取状态分布数据")
     public Result<?> getStatusDistribution() {
         return Result.ok(statisticsService.getStatusDistribution());
+    }
+
+    /**
+     * 获取全局Offer统计数据
+     */
+    @GetMapping("/offer-stats")
+    @ApiOperation("获取全局Offer统计数据")
+    public Result<Map<String, Object>> getOfferStats() {
+        Map<String, Object> data = new HashMap<>();
+
+        // 总Offer数
+        long totalOffers = offerService.count();
+
+        // 已接受Offer数
+        long acceptedOffers = offerService.lambdaQuery()
+                .eq(Offer::getStatus, "accepted")
+                .count();
+
+        // 已拒绝Offer数
+        long rejectedOffers = offerService.lambdaQuery()
+                .eq(Offer::getStatus, "rejected")
+                .count();
+
+        // 待处理Offer数
+        long pendingOffers = offerService.lambdaQuery()
+                .eq(Offer::getStatus, "pending")
+                .count();
+
+        // Offer接受率
+        double acceptRate = totalOffers > 0
+                ? new BigDecimal(acceptedOffers)
+                        .divide(new BigDecimal(totalOffers), 4, BigDecimal.ROUND_HALF_UP)
+                        .multiply(new BigDecimal(100))
+                        .doubleValue()
+                : 0.0;
+
+        data.put("totalOffers", totalOffers);
+        data.put("acceptedOffers", acceptedOffers);
+        data.put("rejectedOffers", rejectedOffers);
+        data.put("pendingOffers", pendingOffers);
+        data.put("acceptRate", acceptRate);
+
+        return Result.ok(data);
     }
 }

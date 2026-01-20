@@ -125,68 +125,61 @@
         </el-card>
       </el-col>
 
-      <!-- 右侧：待办事项 + 需要关注的学员 -->
+      <!-- 右侧：最新职位 + 本周Offer -->
       <el-col :span="8">
-        <!-- 待办事项 -->
-        <el-card shadow="hover" class="todo-card">
+        <!-- 最新职位 -->
+        <el-card shadow="hover" class="positions-card">
           <template #header>
-            <span>待办事项</span>
+            <span>最新职位</span>
           </template>
-          <div class="todo-list">
-            <div v-if="stats.pendingReports > 0" class="todo-item" @click="goToDailyReports">
-              <el-icon class="todo-icon" color="#409eff"><DocumentCopy /></el-icon>
-              <span class="todo-text">{{ stats.pendingReports }} 份日报待审阅</span>
+          <div class="position-list" v-loading="loading">
+            <div v-if="recentPositions.length === 0" class="empty-state">
+              <el-empty description="暂无职位" :image-size="60" />
             </div>
-            <div v-if="stats.seekingStudents > 0" class="todo-item" @click="goToStudentProfile">
-              <el-icon class="todo-icon" color="#67c23a"><User /></el-icon>
-              <span class="todo-text">{{ stats.seekingStudents }} 名学员正在求职</span>
-            </div>
-            <div v-if="stats.pendingOffers > 0" class="todo-item" @click="goToStatistics">
-              <el-icon class="todo-icon" color="#e6a23c"><Checked /></el-icon>
-              <span class="todo-text">{{ stats.pendingOffers }} 个Offer待确认</span>
-            </div>
-            <div v-if="stats.newStudents > 0" class="todo-item" @click="goToStudents">
-              <el-icon class="todo-icon" color="#f56c6c"><Avatar /></el-icon>
-              <span class="todo-text">{{ stats.newStudents }} 名新学员待安排</span>
-            </div>
-            <div v-if="!hasTodos" class="empty-todo">
-              <el-icon color="#67c23a" :size="32"><Select /></el-icon>
-              <span>暂无待办事项</span>
+            <div v-else>
+              <div
+                v-for="position in recentPositions"
+                :key="position.id"
+                class="position-item"
+                @click="viewPositionDetail(position)"
+              >
+                <div class="position-header">
+                  <div class="position-name">{{ position.positionName }}</div>
+                  <el-tag size="small" type="success">{{ position.city }}</el-tag>
+                </div>
+                <div class="position-company">{{ position.companyName }}</div>
+                <div class="position-salary">¥{{ position.salaryMin }}-{{ position.salaryMax }} / {{ position.salaryUnit }}</div>
+              </div>
             </div>
           </div>
         </el-card>
 
-        <!-- 需要关注的学员 -->
-        <el-card shadow="hover" class="attention-card">
+        <!-- 本周Offer -->
+        <el-card shadow="hover" class="offers-card">
           <template #header>
             <div class="card-header">
-              <span>需要关注的学员</span>
-              <el-button link type="primary" @click="goToStudentProfile">更多</el-button>
+              <span>本周Offer</span>
+              <el-button link type="primary" @click="goToStatistics">就业统计</el-button>
             </div>
           </template>
-          <div class="student-list" v-loading="loading">
-            <div v-if="attentionStudents.length === 0" class="empty-state">
-              <el-empty description="暂无数据" :image-size="60" />
+          <div class="offer-list" v-loading="loading">
+            <div v-if="weeklyOffers.length === 0" class="empty-state">
+              <el-empty description="本周暂无新Offer" :image-size="60" />
             </div>
             <div v-else>
               <div
-                v-for="student in attentionStudents"
-                :key="student.id"
-                class="student-item"
-                @click="viewStudentDetail(student)"
+                v-for="offer in weeklyOffers"
+                :key="offer.id"
+                class="offer-item"
               >
-                <div class="student-info">
-                  <el-avatar :size="36">{{ student.realName?.charAt(0) }}</el-avatar>
-                  <div class="info-text">
-                    <div class="name">{{ student.realName }}</div>
-                    <div class="detail">{{ student.major }}</div>
-                    <div class="status">
-                      <el-tag :type="getStudentStatusType(student.seekingStatus)" size="small">
-                        {{ getStudentStatusText(student.seekingStatus) }}
-                      </el-tag>
-                    </div>
+                <div class="offer-header">
+                  <el-icon color="#67c23a" :size="20"><Checked /></el-icon>
+                  <div class="offer-info">
+                    <div class="offer-student">{{ offer.studentName }}</div>
+                    <div class="offer-company">{{ offer.companyName }}</div>
                   </div>
                 </div>
+                <div class="offer-salary">¥{{ offer.salary }}/月</div>
               </div>
             </div>
           </div>
@@ -231,19 +224,14 @@ const stats = ref({
   newStudents: 0
 })
 
-// 是否有待办事项
-const hasTodos = computed(() => {
-  return stats.value.pendingReports > 0 ||
-         stats.value.seekingStudents > 0 ||
-         stats.value.pendingOffers > 0 ||
-         stats.value.newStudents > 0
-})
-
 // 最新日报
 const recentReports = ref([])
 
-// 需要关注的学员
-const attentionStudents = ref([])
+// 最新职位
+const recentPositions = ref([])
+
+// 本周Offer
+const weeklyOffers = ref([])
 
 // 加载统计数据
 const loadStats = async () => {
@@ -284,16 +272,30 @@ const loadRecentReports = async () => {
   }
 }
 
-// 加载需要关注的学员
-const loadAttentionStudents = async () => {
+// 加载最新职位
+const loadRecentPositions = async () => {
   try {
-    const response: any = await request.get('/dashboard/college/students/attention', {
-      params: { limit: 10 }
+    const response: any = await request.get('/position/page', {
+      params: { current: 1, size: 5 }
     })
-    attentionStudents.value = response || []
+    recentPositions.value = response.records || []
   } catch (error) {
-    console.error('加载学员失败', error)
-    attentionStudents.value = []
+    console.error('加载职位失败', error)
+    recentPositions.value = []
+  }
+}
+
+// 加载本周Offer
+const loadWeeklyOffers = async () => {
+  try {
+    // 获取本周的Offer
+    const response: any = await request.get('/offer/page', {
+      params: { current: 1, size: 10 }
+    })
+    weeklyOffers.value = response.records || []
+  } catch (error) {
+    console.error('加载Offer失败', error)
+    weeklyOffers.value = []
   }
 }
 
@@ -321,27 +323,6 @@ const getReportStatusText = (status: string) => {
   return textMap[status] || status
 }
 
-// 学员状态类型
-const getStudentStatusType = (status: string) => {
-  const typeMap: Record<string, string> = {
-    employed: 'success',
-    seeking: 'warning',
-    actively_seeking: 'danger',
-    admitted: 'info'
-  }
-  return typeMap[status] || 'info'
-}
-
-const getStudentStatusText = (status: string) => {
-  const textMap: Record<string, string> = {
-    employed: '已就业',
-    seeking: '求职中',
-    actively_seeking: '正在求职',
-    admitted: '已录取'
-  }
-  return textMap[status] || status
-}
-
 // 导航方法
 const goToTeachers = () => router.push('/teaching/teachers')
 const goToCourses = () => router.push('/teaching/courses')
@@ -349,16 +330,17 @@ const goToStudents = () => router.push('/teaching/students')
 const goToDailyReports = () => router.push('/teaching/daily-reports')
 const goToStudentProfile = () => router.push('/teaching/student-profile')
 const goToStatistics = () => router.push('/employment/statistics')
+const goToPositions = () => router.push('/employment/position-publishing')
 
-const viewStudentDetail = (student: any) => {
-  router.push('/teaching/student-profile')
-  ElMessage.info('查看学员详情')
+const viewPositionDetail = (position: any) => {
+  ElMessage.info(`查看职位：${position.positionName}`)
 }
 
 onMounted(() => {
   loadStats()
   loadRecentReports()
-  loadAttentionStudents()
+  loadRecentPositions()
+  loadWeeklyOffers()
 })
 </script>
 
@@ -406,8 +388,8 @@ onMounted(() => {
 .content-row {
   .action-card,
   .report-card,
-  .todo-card,
-  .attention-card {
+  .positions-card,
+  .offers-card {
     margin-bottom: 20px;
 
     &:last-child {
@@ -436,66 +418,15 @@ onMounted(() => {
   }
 }
 
-.todo-card {
-  .todo-list {
-    min-height: 150px;
-
-    .todo-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:hover {
-        background-color: #f5f7fa;
-      }
-
-      &:not(:last-child) {
-        border-bottom: 1px solid #ebeef5;
-      }
-
-      .todo-icon {
-        font-size: 20px;
-        flex-shrink: 0;
-      }
-
-      .todo-text {
-        flex: 1;
-        color: #606266;
-        font-size: 14px;
-      }
-    }
-
-    .empty-todo {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 30px 0;
-      color: #67c23a;
-
-      span {
-        font-size: 14px;
-        color: #909399;
-      }
-    }
-  }
-}
-
-.attention-card {
-  .student-list {
+.positions-card {
+  .position-list {
     min-height: 200px;
 
     .empty-state {
       padding: 20px 0;
     }
 
-    .student-item {
-      display: flex;
-      align-items: center;
+    .position-item {
       padding: 12px;
       border-radius: 8px;
       cursor: pointer;
@@ -509,39 +440,79 @@ onMounted(() => {
         border-bottom: 1px solid #ebeef5;
       }
 
-      .student-info {
+      .position-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+
+        .position-name {
+          font-weight: 500;
+          color: #303133;
+          font-size: 14px;
+        }
+      }
+
+      .position-company {
+        font-size: 12px;
+        color: #909399;
+        margin-bottom: 6px;
+      }
+
+      .position-salary {
+        font-size: 13px;
+        color: #67c23a;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.offers-card {
+  .offer-list {
+    min-height: 200px;
+
+    .empty-state {
+      padding: 20px 0;
+    }
+
+    .offer-item {
+      padding: 12px;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid #ebeef5;
+      }
+
+      .offer-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        flex: 1;
-        min-width: 0;
+        gap: 10px;
+        margin-bottom: 8px;
 
-        .info-text {
+        .offer-info {
           flex: 1;
-          min-width: 0;
 
-          .name {
+          .offer-student {
             font-weight: 500;
             color: #303133;
+            font-size: 14px;
             margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
           }
 
-          .detail {
+          .offer-company {
             font-size: 12px;
-            color: #606266;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
-          .status {
-            font-size: 11px;
+            color: #909399;
           }
         }
+      }
+
+      .offer-salary {
+        font-size: 13px;
+        color: #67c23a;
+        font-weight: 500;
+        text-align: right;
       }
     }
   }

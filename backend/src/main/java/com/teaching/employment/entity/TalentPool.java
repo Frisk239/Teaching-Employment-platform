@@ -96,10 +96,6 @@ public class TalentPool implements Serializable {
     @ApiModelProperty(value = "联系次数")
     private Integer contactCount;
 
-    @ApiModelProperty(value = "是否删除：1-已删除 0-未删除")
-    @TableLogic
-    private Integer isDeleted;
-
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

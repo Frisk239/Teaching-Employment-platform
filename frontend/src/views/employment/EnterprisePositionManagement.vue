@@ -556,7 +556,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   Plus,
@@ -580,6 +580,10 @@ import {
   DataLine
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { useAuthStore } from '@/stores'
+
+const authStore = useAuthStore()
+const companyId = computed(() => authStore.companyId)
 
 interface Position {
   id?: number
@@ -686,9 +690,12 @@ const formRules: FormRules = {
 const loadPositions = async () => {
   loading.value = true
   try {
-    const response: any = await request.get('/position/page', {
-      params: queryParams
-    })
+    // 添加 companyId 过滤 - 企业对接人只能看到自己企业的职位
+    const params = {
+      ...queryParams,
+      companyId: companyId.value
+    }
+    const response: any = await request.get('/position/page', { params })
     positionList.value = response.records || []
     total.value = response.total || 0
   } catch (error: any) {
@@ -701,13 +708,23 @@ const loadPositions = async () => {
 // 加载统计数据
 const loadStats = async () => {
   try {
-    // TODO: 调用企业统计数据API
-    // 这里先使用前端计算
+    // 获取所有职位数据用于统计（不限制分页大小）
+    const response: any = await request.get('/position/page', {
+      params: {
+        current: 1,
+        size: 1000,  // 获取所有职位
+        companyId: companyId.value  // 只统计本企业的职位
+      }
+    })
+
+    const allPositions = response.records || []
+
+    // 计算统计数据
     stats.value = {
-      totalPositions: total.value,
-      activePositions: positionList.value.filter(p => p.status === 'active').length,
-      totalApplications: positionList.value.reduce((sum, p) => sum + (p.applicationCount || 0), 0),
-      totalHired: positionList.value.reduce((sum, p) => sum + (p.hiredCount || 0), 0)
+      totalPositions: response.total || 0,  // 使用分页的总数
+      activePositions: allPositions.filter(p => p.status === 'active').length,
+      totalApplications: allPositions.reduce((sum: number, p: Position) => sum + (p.applicationCount || 0), 0),
+      totalHired: allPositions.reduce((sum: number, p: Position) => sum + (p.hiredCount || 0), 0)
     }
   } catch (error: any) {
     console.error('加载统计数据失败:', error)
@@ -745,7 +762,8 @@ const handleAdd = () => {
     requirements: '',
     techStack: '',
     recruitCount: 1,
-    status: 'draft'
+    status: 'draft',
+    companyId: companyId.value  // 添加当前登录企业的ID
   })
   dialogVisible.value = true
 }
@@ -789,7 +807,8 @@ const handlePublish = async (id: number) => {
   try {
     await request.post(`/position/${id}/publish`)
     ElMessage.success('发布成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()  // 更新统计
   } catch (error: any) {
     ElMessage.error(error.response?.data?.message || '发布失败')
   }
@@ -800,7 +819,8 @@ const handlePause = async (id: number) => {
   try {
     await request.post(`/position/${id}/pause`)
     ElMessage.success('暂停成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()  // 更新统计
   } catch (error: any) {
     ElMessage.error(error.response?.data?.message || '暂停失败')
   }
@@ -811,7 +831,8 @@ const handleClose = async (id: number) => {
   try {
     await request.post(`/position/${id}/close`)
     ElMessage.success('关闭成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()  // 更新统计
   } catch (error: any) {
     ElMessage.error(error.response?.data?.message || '关闭失败')
   }
@@ -825,7 +846,8 @@ const handleDelete = async (id: number) => {
     })
     await request.delete(`/position/${id}`)
     ElMessage.success('删除成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()  // 更新统计
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error(error.response?.data?.message || '删除失败')
@@ -841,7 +863,8 @@ const handleBatchPublish = async () => {
     })
     // TODO: 调用批量发布API
     ElMessage.success('批量发布成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()
   } catch (error) {
     // 用户取消
   }
@@ -855,7 +878,8 @@ const handleBatchPause = async () => {
     })
     // TODO: 调用批量暂停API
     ElMessage.success('批量暂停成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()
   } catch (error) {
     // 用户取消
   }
@@ -869,7 +893,8 @@ const handleBatchClose = async () => {
     })
     // TODO: 调用批量关闭API
     ElMessage.success('批量关闭成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()
   } catch (error) {
     // 用户取消
   }
@@ -883,7 +908,8 @@ const handleBatchDelete = async () => {
     })
     // TODO: 调用批量删除API
     ElMessage.success('批量删除成功')
-    loadPositions()
+    await loadPositions()
+    await loadStats()
   } catch (error) {
     // 用户取消
   }
@@ -909,18 +935,25 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
+    // 确保 companyId 存在（新增时需要）
+    const submitData = {
+      ...formData,
+      companyId: formData.companyId || companyId.value
+    }
+
     if (formData.id) {
       // 更新
-      await request.put('/position', formData)
+      await request.put('/position', submitData)
       ElMessage.success('更新成功')
     } else {
       // 新增
-      await request.post('/position', formData)
+      await request.post('/position', submitData)
       ElMessage.success('新增成功')
     }
 
     dialogVisible.value = false
-    loadPositions()
+    await loadPositions()
+    await loadStats()  // 更新统计
   } catch (error: any) {
     if (error !== false) {
       ElMessage.error(error.response?.data?.message || '操作失败')
@@ -1013,9 +1046,9 @@ const disabledDate = (date: Date) => {
 }
 
 // 初始化
-onMounted(() => {
-  loadPositions()
-  loadStats()
+onMounted(async () => {
+  await loadPositions()  // 等待职位列表加载完成
+  await loadStats()      // 然后再加载统计数据
 })
 </script>
 

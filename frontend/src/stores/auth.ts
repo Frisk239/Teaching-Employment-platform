@@ -32,6 +32,9 @@ export const useAuthStore = defineStore('auth', () => {
   const userName = computed(() => user.value?.realName || user.value?.username || '')
   const userAvatar = computed(() => user.value?.avatar || '')
   const permissions = computed(() => user.value?.permissions || [])
+  const studentId = computed(() => user.value?.studentId || null)
+  const teacherId = computed(() => user.value?.teacherId || null)
+  const companyId = computed(() => user.value?.companyId || null)
 
   // 方法
 
@@ -277,6 +280,9 @@ export const useAuthStore = defineStore('auth', () => {
     userName,
     userAvatar,
     permissions,
+    studentId,
+    teacherId,
+    companyId,
 
     // 方法
     login,

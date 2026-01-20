@@ -138,11 +138,17 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
                     // 填充学生电话
                     application.setStudentPhone(student.getPhone());
 
-                    // 填充学生真实姓名
+                    // 填充学生真实姓名和简历URL
                     if (student.getUserId() != null) {
                         User user = userService.getById(student.getUserId());
-                        if (user != null && user.getRealName() != null) {
-                            application.setStudentName(user.getRealName());
+                        if (user != null) {
+                            if (user.getRealName() != null) {
+                                application.setStudentName(user.getRealName());
+                            } else {
+                                application.setStudentName("学生" + student.getId());
+                            }
+                            // 从User表获取简历URL
+                            application.setResumeUrl(user.getResumeUrl());
                         } else {
                             application.setStudentName("学生" + student.getId());
                         }
@@ -355,11 +361,17 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationMapper,
                 // 填充学生电话
                 application.setStudentPhone(student.getPhone());
 
-                // 填充学生真实姓名
+                // 填充学生真实姓名和简历URL
                 if (student.getUserId() != null) {
                     User user = userService.getById(student.getUserId());
-                    if (user != null && user.getRealName() != null) {
-                        application.setStudentName(user.getRealName());
+                    if (user != null) {
+                        if (user.getRealName() != null) {
+                            application.setStudentName(user.getRealName());
+                        } else {
+                            application.setStudentName("学生" + student.getId());
+                        }
+                        // 从User表获取简历URL
+                        application.setResumeUrl(user.getResumeUrl());
                     } else {
                         application.setStudentName("学生" + student.getId());
                     }

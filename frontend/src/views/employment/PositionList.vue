@@ -329,7 +329,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Star,
   ArrowRight,
@@ -346,9 +346,16 @@ import {
   Document,
 } from '@element-plus/icons-vue'
 import { getPositionPageApi, getPositionByIdApi, type Position } from '@/api/position'
+import { applicationApi } from '@/api/application'
+import { getStudentByIdApi } from '@/api/student'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
+// 当前学生信息（包含简历URL）
+const currentStudent = ref<any>(null)
 
 // 搜索表单
 const searchForm = reactive({
@@ -566,10 +573,63 @@ const handleViewDetailOpen = async () => {
 }
 
 // 投递简历
-const handleApply = (position: Position) => {
-  // TODO: 跳转到投递页面或打开投递对话框
-  ElMessage.info('投递功能开发中...')
-  // router.push(`/employment/apply/${position.id}`)
+const handleApply = async (position: Position) => {
+  try {
+    // 检查学生ID是否存在
+    const studentId = authStore.studentId
+    if (!studentId) {
+      ElMessage.error('无法获取学生信息，请重新登录')
+      return
+    }
+
+    // 获取学生的完整信息（包括简历URL）
+    const studentInfo: any = await getStudentByIdApi(studentId)
+    const studentResumeUrl = studentInfo?.resumeUrl
+
+    if (!studentResumeUrl) {
+      await ElMessageBox.confirm(
+        '您还没有上传简历，请先上传简历后再投递岗位。',
+        '提示',
+        {
+          confirmButtonText: '去上传',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      )
+      router.push('/student/student-profile')
+      return
+    }
+
+    // 确认投递
+    await ElMessageBox.confirm(
+      `确定要投递【${position.companyName}】的【${position.positionName}】岗位吗？`,
+      '确认投递',
+      {
+        confirmButtonText: '确定投递',
+        cancelButtonText: '取消',
+        type: 'info',
+      }
+    )
+
+    // 调用投递API
+    await applicationApi.submit({
+      studentId: studentId,
+      positionId: position.id!,
+      companyId: position.companyId,
+      // 保留临时字段以便后端填充关联数据
+      studentName: authStore.userName || '',
+      companyName: position.companyName || '',
+      positionName: position.positionName,
+    })
+
+    ElMessage.success('投递成功！企业将在3个工作日内处理您的简历')
+    // 刷新列表（如果需要显示投递状态）
+    fetchData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error?.message || '投递失败，请稍后重试')
+    }
+  }
 }
 
 onMounted(() => {

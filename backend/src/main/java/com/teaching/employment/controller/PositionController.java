@@ -28,6 +28,16 @@ public class PositionController {
     private final PositionService positionService;
 
     /**
+     * 获取所有职位列表（用于推荐职位下拉框）
+     */
+    @GetMapping("/list")
+    @ApiOperation("获取所有职位列表")
+    public Result<java.util.List<Position>> getPositionList() {
+        java.util.List<Position> list = positionService.getPositionsWithCompany();
+        return Result.ok(list);
+    }
+
+    /**
      * 分页查询职位列表
      */
     @GetMapping("/page")

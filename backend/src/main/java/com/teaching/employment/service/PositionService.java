@@ -16,6 +16,13 @@ import java.util.Map;
 public interface PositionService extends IService<Position> {
 
     /**
+     * 获取所有职位列表（包含公司名称）
+     *
+     * @return 职位列表
+     */
+    java.util.List<Position> getPositionsWithCompany();
+
+    /**
      * 分页查询职位列表
      *
      * @param current    当前页

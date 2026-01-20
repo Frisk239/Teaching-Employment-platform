@@ -136,4 +136,41 @@ public class Student implements Serializable {
      */
     @TableField(exist = false)
     private String realName;
+
+    /**
+     * 简历URL（来自用户表，关联查询时使用）
+     */
+    @TableField(exist = false)
+    private String resumeUrl;
+
+    /**
+     * 就业状态（统计数据，不映射到数据库字段）
+     * employed: 已就业, seeking: 求职中, admitted: 已录取, further: 继续深造
+     */
+    @TableField(exist = false)
+    private String employmentStatus;
+
+    /**
+     * 求职申请数量（统计数据，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private Integer applicationCount;
+
+    /**
+     * 笔试数量（统计数据，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private Integer writtenTestCount;
+
+    /**
+     * 面试数量（统计数据，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private Integer interviewCount;
+
+    /**
+     * Offer数量（统计数据，不映射到数据库字段）
+     */
+    @TableField(exist = false)
+    private Integer offerCount;
 }

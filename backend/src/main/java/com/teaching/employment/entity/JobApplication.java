@@ -47,6 +47,7 @@ public class JobApplication implements Serializable {
 
     @ApiModelProperty(value = "申请时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime applicationTime;
 
     @ApiModelProperty(value = "HR备注")
@@ -95,6 +96,12 @@ public class JobApplication implements Serializable {
      */
     @TableField(exist = false)
     private String studentPhone;
+
+    /**
+     * 学生简历URL（从学生信息中获取）
+     */
+    @TableField(exist = false)
+    private String resumeUrl;
 
     /**
      * 企业名称

@@ -24,6 +24,7 @@ com\teaching\employment\utils\ExcelUtil$StudentImportTemplate.class
 com\teaching\employment\service\TeachingMaterialService.class
 com\teaching\employment\service\TalentPoolService.class
 com\teaching\employment\controller\PermissionController.class
+com\teaching\employment\service\PositionRecommendationService.class
 com\teaching\employment\service\impl\PositionServiceImpl.class
 com\teaching\employment\service\RoleMenuRelationService.class
 com\teaching\employment\entity\WrittenTest.class
@@ -43,6 +44,7 @@ com\teaching\employment\controller\HomeworkSubmissionController.class
 com\teaching\employment\mapper\EducationMapper.class
 com\teaching\employment\service\impl\CourseStudentServiceImpl.class
 com\teaching\employment\entity\DailyReport.class
+com\teaching\employment\service\impl\PositionRecommendationServiceImpl.class
 com\teaching\employment\service\impl\WrittenTestServiceImpl.class
 com\teaching\employment\service\impl\PermissionServiceImpl.class
 com\teaching\employment\entity\CourseRecord.class
@@ -53,7 +55,9 @@ com\teaching\employment\utils\JwtUtil.class
 com\teaching\employment\mapper\StudentMapper.class
 com\teaching\employment\mapper\NotificationMapper.class
 com\teaching\employment\mapper\TalentPoolMapper.class
+com\teaching\employment\service\GuidanceRecordService.class
 com\teaching\employment\EmploymentPlatformApplication.class
+com\teaching\employment\entity\GuidanceRecord.class
 com\teaching\employment\utils\ExcelUtil$TeacherExportTemplate.class
 com\teaching\employment\service\impl\RoleServiceImpl.class
 com\teaching\employment\controller\FileUploadController.class
@@ -76,6 +80,7 @@ com\teaching\employment\mapper\RolePermissionRelationMapper.class
 com\teaching\employment\controller\StudentEmploymentController$StudentEmploymentVO.class
 com\teaching\employment\service\impl\StudentResumeServiceImpl.class
 com\teaching\employment\service\impl\UserServiceImpl.class
+com\teaching\employment\controller\PositionRecommendationController.class
 com\teaching\employment\service\StudentProjectService.class
 com\teaching\employment\service\PositionService.class
 com\teaching\employment\mapper\TeachingPlanMapper.class
@@ -99,8 +104,10 @@ com\teaching\employment\service\impl\TeachingPlanServiceImpl.class
 com\teaching\employment\service\StudentEducationService.class
 com\example\teaching\employment\platform\model\dto\DailyReportDTO.class
 com\teaching\employment\model\dto\DashboardStatsDTO.class
+com\teaching\employment\service\impl\GuidanceRecordServiceImpl.class
 com\teaching\employment\entity\JobApplication.class
 com\teaching\employment\service\InternshipService.class
+com\teaching\employment\entity\PositionRecommendation.class
 com\teaching\employment\service\impl\SchoolServiceImpl.class
 com\teaching\employment\mapper\UserActivityMapper.class
 com\teaching\employment\entity\HomeworkSubmission.class
@@ -131,6 +138,7 @@ com\teaching\employment\mapper\CourseStudentMapper.class
 com\teaching\employment\mapper\StudentCourseMapper.class
 com\teaching\employment\constants\RoleConstants.class
 com\teaching\employment\mapper\RoleMapper.class
+com\teaching\employment\mapper\GuidanceRecordMapper.class
 com\teaching\employment\service\impl\TeacherServiceImpl.class
 com\teaching\employment\controller\TimetableController.class
 com\teaching\employment\entity\Question.class
@@ -230,6 +238,8 @@ com\teaching\employment\service\SchoolService.class
 com\teaching\employment\service\impl\QuestionServiceImpl.class
 com\teaching\employment\controller\JobApplicationController.class
 com\teaching\employment\service\impl\StudentServiceImpl.class
+com\teaching\employment\controller\GuidanceRecordController.class
+com\teaching\employment\mapper\PositionRecommendationMapper.class
 com\teaching\employment\controller\CourseController.class
 com\teaching\employment\service\impl\HomeworkServiceImpl.class
 com\teaching\employment\enums\ApplicationStatusEnum.class

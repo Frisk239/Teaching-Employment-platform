@@ -7,9 +7,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teaching.employment.entity.School;
 import com.teaching.employment.entity.Student;
+import com.teaching.employment.entity.StudentResume;
 import com.teaching.employment.entity.User;
 import com.teaching.employment.exception.BusinessException;
+import com.teaching.employment.mapper.InterviewMapper;
+import com.teaching.employment.mapper.JobApplicationMapper;
+import com.teaching.employment.mapper.OfferMapper;
 import com.teaching.employment.mapper.StudentMapper;
+import com.teaching.employment.mapper.StudentResumeMapper;
+import com.teaching.employment.mapper.WrittenTestMapper;
 import com.teaching.employment.service.SchoolService;
 import com.teaching.employment.service.StudentService;
 import com.teaching.employment.service.UserService;
@@ -38,8 +44,13 @@ import java.util.List;
 public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> implements StudentService {
 
     private final StudentMapper studentMapper;
+    private final StudentResumeMapper studentResumeMapper;
     private final UserService userService;
     private final SchoolService schoolService;
+    private final JobApplicationMapper jobApplicationMapper;
+    private final WrittenTestMapper writtenTestMapper;
+    private final InterviewMapper interviewMapper;
+    private final OfferMapper offerMapper;
 
     @Override
     public IPage<Student> getStudentPage(Integer current, Integer size, Long schoolId, String keyword) {
@@ -74,7 +85,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
     }
 
     /**
-     * 填充学员的关联数据(学校名称、用户姓名)
+     * 填充学员的关联数据(学校名称、用户姓名、简历URL)
      */
     private void fillRelatedData(List<Student> students) {
         if (students == null || students.isEmpty()) {
@@ -109,25 +120,112 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
             schoolMap = java.util.Map.of();
         }
 
-        // 批量查询用户信息
-        final java.util.Map<Long, String> userMap;
+        // 批量查询用户信息（包含简历URL）
+        final java.util.Map<Long, User> userMap;
         if (!userIds.isEmpty()) {
             List<User> users = userService.listByIds(userIds);
             System.out.println("========== DEBUG: 查询到 " + users.size() + " 条用户记录 ==========");
             userMap = users.stream()
-                    .collect(java.util.stream.Collectors.toMap(User::getId, User::getRealName));
+                    .collect(java.util.stream.Collectors.toMap(User::getId, user -> user));
         } else {
             userMap = java.util.Map.of();
         }
 
-        System.out.println("========== DEBUG: schoolMap=" + schoolMap + ", userMap=" + userMap + " ==========");
+        System.out.println("========== DEBUG: schoolMap=" + schoolMap + ", userMap.size=" + userMap.size() + " ==========");
+
+        // 批量查询简历信息
+        List<Long> studentIds = students.stream()
+                .map(Student::getId)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        final java.util.Map<Long, String> resumeMap;
+        if (!studentIds.isEmpty()) {
+            LambdaQueryWrapper<StudentResume> resumeWrapper = new LambdaQueryWrapper<>();
+            resumeWrapper.in(StudentResume::getStudentId, studentIds);
+            resumeWrapper.orderByDesc(StudentResume::getUploadTime);
+            List<StudentResume> resumes = studentResumeMapper.selectList(resumeWrapper);
+
+            // 每个学员取最新的一份简历
+            resumeMap = new java.util.HashMap<>();
+            resumes.forEach(resume -> {
+                if (!resumeMap.containsKey(resume.getStudentId())) {
+                    resumeMap.put(resume.getStudentId(), resume.getFileUrl());
+                }
+            });
+        } else {
+            resumeMap = new java.util.HashMap<>();
+        }
+
+        // 统计每个学员的求职进度数据
+        java.util.Map<Long, Integer> applicationCountMap = new java.util.HashMap<>();
+        java.util.Map<Long, Integer> writtenTestCountMap = new java.util.HashMap<>();
+        java.util.Map<Long, Integer> interviewCountMap = new java.util.HashMap<>();
+        java.util.Map<Long, Integer> offerCountMap = new java.util.HashMap<>();
+
+        if (!studentIds.isEmpty()) {
+            // 统计求职申请数量
+            LambdaQueryWrapper<com.teaching.employment.entity.JobApplication> appWrapper = new LambdaQueryWrapper<>();
+            appWrapper.in(com.teaching.employment.entity.JobApplication::getStudentId, studentIds);
+            appWrapper.select(com.teaching.employment.entity.JobApplication::getStudentId);
+            List<com.teaching.employment.entity.JobApplication> applications = jobApplicationMapper.selectList(appWrapper);
+            applications.forEach(app -> {
+                applicationCountMap.put(app.getStudentId(), applicationCountMap.getOrDefault(app.getStudentId(), 0) + 1);
+            });
+
+            // 统计笔试数量
+            LambdaQueryWrapper<com.teaching.employment.entity.WrittenTest> writtenWrapper = new LambdaQueryWrapper<>();
+            writtenWrapper.in(com.teaching.employment.entity.WrittenTest::getStudentId, studentIds);
+            List<com.teaching.employment.entity.WrittenTest> writtenTests = writtenTestMapper.selectList(writtenWrapper);
+            writtenTests.forEach(test -> {
+                writtenTestCountMap.put(test.getStudentId(), writtenTestCountMap.getOrDefault(test.getStudentId(), 0) + 1);
+            });
+
+            // 统计面试数量
+            LambdaQueryWrapper<com.teaching.employment.entity.Interview> interviewWrapper = new LambdaQueryWrapper<>();
+            interviewWrapper.in(com.teaching.employment.entity.Interview::getStudentId, studentIds);
+            List<com.teaching.employment.entity.Interview> interviews = interviewMapper.selectList(interviewWrapper);
+            interviews.forEach(interview -> {
+                interviewCountMap.put(interview.getStudentId(), interviewCountMap.getOrDefault(interview.getStudentId(), 0) + 1);
+            });
+
+            // 统计Offer数量
+            LambdaQueryWrapper<com.teaching.employment.entity.Offer> offerWrapper = new LambdaQueryWrapper<>();
+            offerWrapper.in(com.teaching.employment.entity.Offer::getStudentId, studentIds);
+            List<com.teaching.employment.entity.Offer> offers = offerMapper.selectList(offerWrapper);
+            offers.forEach(offer -> {
+                offerCountMap.put(offer.getStudentId(), offerCountMap.getOrDefault(offer.getStudentId(), 0) + 1);
+            });
+        }
 
         // 填充数据到学员对象
         students.forEach(student -> {
             student.setSchoolName(schoolMap.get(student.getSchoolId()));
-            String realName = userMap.get(student.getUserId());
-            student.setRealName(realName);
-            student.setName(realName); // 同时设置name字段,供前端下拉框使用
+            User user = userMap.get(student.getUserId());
+            if (user != null) {
+                student.setRealName(user.getRealName());
+                student.setName(user.getRealName()); // 同时设置name字段,供前端下拉框使用
+            }
+            // 设置简历URL（从t_student_resume表查询）
+            student.setResumeUrl(resumeMap.get(student.getId()));
+
+            // 设置求职统计数据
+            student.setApplicationCount(applicationCountMap.getOrDefault(student.getId(), 0));
+            student.setWrittenTestCount(writtenTestCountMap.getOrDefault(student.getId(), 0));
+            student.setInterviewCount(interviewCountMap.getOrDefault(student.getId(), 0));
+            student.setOfferCount(offerCountMap.getOrDefault(student.getId(), 0));
+
+            // 根据Offer数量判断就业状态
+            int offerCount = offerCountMap.getOrDefault(student.getId(), 0);
+            if (offerCount > 0) {
+                student.setEmploymentStatus("employed"); // 已就业
+            } else if (interviewCountMap.getOrDefault(student.getId(), 0) > 0) {
+                student.setEmploymentStatus("admitted"); // 已录取（面试中）
+            } else if (applicationCountMap.getOrDefault(student.getId(), 0) > 0) {
+                student.setEmploymentStatus("seeking"); // 求职中
+            } else {
+                student.setEmploymentStatus(""); // 未开始求职
+            }
         });
 
         System.out.println("========== DEBUG: 填充完成 ==========");
@@ -307,5 +405,17 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
 
         // 导出到Excel
         ExcelUtil.export(response, "学员数据", exportData, ExcelUtil.StudentExportTemplate.class);
+    }
+
+    @Override
+    public List<String> getMajorList() {
+        // 查询所有不重复的专业列表
+        return studentMapper.selectList(new LambdaQueryWrapper<>())
+                .stream()
+                .map(Student::getMajor)
+                .filter(major -> StrUtil.isNotBlank(major))
+                .distinct()
+                .sorted()
+                .collect(java.util.stream.Collectors.toList());
     }
 }

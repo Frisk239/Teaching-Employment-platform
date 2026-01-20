@@ -36,6 +36,13 @@ public class PositionServiceImpl extends ServiceImpl<PositionMapper, Position> i
     private final CompanyMapper companyMapper;
 
     @Override
+    public List<Position> getPositionsWithCompany() {
+        List<Position> positions = positionMapper.selectList(new LambdaQueryWrapper<>());
+        fillCompanyNames(positions);
+        return positions;
+    }
+
+    @Override
     public IPage<Position> getPositionPage(Integer current, Integer size, Long companyId, String positionType,
                                             String city, String education, String status, String keyword,
                                             BigDecimal salaryMin, BigDecimal salaryMax) {

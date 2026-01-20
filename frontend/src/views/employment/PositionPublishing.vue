@@ -30,9 +30,9 @@
           <div class="form-card-body">
             <div class="form-grid">
               <!-- 职位名称 -->
-              <el-form-item label="职位名称" prop="name" class="form-item-group">
+              <el-form-item label="职位名称" prop="positionName" class="form-item-group">
                 <el-input
-                  v-model="positionForm.name"
+                  v-model="positionForm.positionName"
                   placeholder="请输入职位名称，如：Java开发工程师"
                   clearable
                   maxlength="50"
@@ -44,25 +44,23 @@
                 </el-input>
               </el-form-item>
 
-              <!-- 职位类别 -->
-              <el-form-item label="职位类别" prop="category" class="form-item-group">
+              <!-- 职位性质 -->
+              <el-form-item label="职位性质" prop="positionType" class="form-item-group">
                 <el-select
-                  v-model="positionForm.category"
-                  placeholder="请选择职位类别"
+                  v-model="positionForm.positionType"
+                  placeholder="请选择职位性质"
                   style="width: 100%;"
                 >
-                  <el-option label="技术研发" value="tech"></el-option>
-                  <el-option label="产品设计" value="product"></el-option>
-                  <el-option label="运营管理" value="operation"></el-option>
-                  <el-option label="市场销售" value="marketing"></el-option>
-                  <el-option label="职能支持" value="support"></el-option>
+                  <el-option label="全职" value="fulltime"></el-option>
+                  <el-option label="兼职" value="parttime"></el-option>
+                  <el-option label="实习" value="internship"></el-option>
                 </el-select>
               </el-form-item>
 
               <!-- 工作地点 -->
-              <el-form-item label="工作地点" prop="location" class="form-item-group">
+              <el-form-item label="工作地点" prop="city" class="form-item-group">
                 <el-input
-                  v-model="positionForm.location"
+                  v-model="positionForm.city"
                   placeholder="请输入工作地点，如：北京市朝阳区"
                   clearable
                 >
@@ -84,16 +82,23 @@
               </el-form-item>
 
               <!-- 薪资范围 -->
-              <el-form-item label="薪资范围" prop="salaryRange" class="form-item-group">
-                <el-input
-                  v-model="positionForm.salaryRange"
-                  placeholder="请输入薪资范围，如：10K-15K"
-                  clearable
-                >
-                  <template #prefix>
-                    <el-icon><Coin /></el-icon>
-                  </template>
-                </el-input>
+              <el-form-item label="最低薪资" prop="salaryMin" class="form-item-group">
+                <el-input-number
+                  v-model="positionForm.salaryMin"
+                  :min="0"
+                  :step="1000"
+                  style="width: 100%;"
+                />
+              </el-form-item>
+
+              <!-- 最高薪资 -->
+              <el-form-item label="最高薪资" prop="salaryMax" class="form-item-group">
+                <el-input-number
+                  v-model="positionForm.salaryMax"
+                  :min="0"
+                  :step="1000"
+                  style="width: 100%;"
+                />
               </el-form-item>
 
               <!-- 学历要求 -->
@@ -103,8 +108,8 @@
                   placeholder="请选择学历要求"
                   style="width: 100%;"
                 >
-                  <el-option label="不限" value="any"></el-option>
-                  <el-option label="大专" value="college"></el-option>
+                  <el-option label="不限" value="unlimited"></el-option>
+                  <el-option label="大专" value="junior_college"></el-option>
                   <el-option label="本科" value="bachelor"></el-option>
                   <el-option label="硕士" value="master"></el-option>
                   <el-option label="博士" value="doctor"></el-option>
@@ -113,22 +118,15 @@
 
               <!-- 工作经验 -->
               <el-form-item label="工作经验" prop="experience" class="form-item-group">
-                <el-select
+                <el-input
                   v-model="positionForm.experience"
-                  placeholder="请选择工作经验要求"
-                  style="width: 100%;"
-                >
-                  <el-option label="不限" value="any"></el-option>
-                  <el-option label="应届生" value="fresh"></el-option>
-                  <el-option label="1年以下" value="1year"></el-option>
-                  <el-option label="1-3年" value="1-3years"></el-option>
-                  <el-option label="3-5年" value="3-5years"></el-option>
-                  <el-option label="5年以上" value="5years+"></el-option>
-                </el-select>
+                  placeholder="如：1-3年、3-5年、不限"
+                  clearable
+                />
               </el-form-item>
 
               <!-- 所属企业 -->
-              <el-form-item label="所属企业" prop="companyId" class="form-item-group">
+              <el-form-item label="所属企业" prop="companyId" class="form-item-group" style="grid-column: 1 / -1;">
                 <el-select
                   v-model="positionForm.companyId"
                   placeholder="请选择所属企业"
@@ -138,22 +136,13 @@
                   <el-option
                     v-for="company in companies"
                     :key="company.id"
-                    :label="company.name"
+                    :label="company.companyName"
                     :value="company.id"
                   >
-                    <span style="float: left;">{{ company.name }}</span>
+                    <span style="float: left;">{{ company.companyName }}</span>
                     <span style="float: right; color: var(--text-muted); font-size: 13px;">{{ company.industry }}</span>
                   </el-option>
                 </el-select>
-              </el-form-item>
-
-              <!-- 职位性质 -->
-              <el-form-item label="职位性质" prop="jobType" class="form-item-group">
-                <el-radio-group v-model="positionForm.jobType">
-                  <el-radio value="fulltime">全职</el-radio>
-                  <el-radio value="parttime">兼职</el-radio>
-                  <el-radio value="intern">实习</el-radio>
-                </el-radio-group>
               </el-form-item>
             </div>
           </div>
@@ -192,91 +181,17 @@
               ></el-input>
             </el-form-item>
 
-            <!-- 福利待遇标签 -->
-            <el-form-item label="福利待遇" prop="benefits" class="form-item-group">
-              <div class="tag-input-container" @click="focusTagInput">
-                <el-tag
-                  v-for="tag in positionForm.benefits"
-                  :key="tag"
-                  closable
-                  @close="removeBenefit(tag)"
-                  style="margin: 0;"
-                >
-                  {{ tag }}
-                </el-tag>
-                <el-input
-                  v-if="tagInputVisible"
-                  ref="tagInputRef"
-                  v-model="tagInputValue"
-                  size="small"
-                  style="width: 120px;"
-                  @blur="handleTagInputConfirm"
-                  @keyup.enter="handleTagInputConfirm"
-                ></el-input>
-                <el-button
-                  v-else
-                  size="small"
-                  @click="showTagInput"
-                >
-                  + 添加福利
-                </el-button>
-              </div>
-              <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">
-                常见福利：五险一金、带薪年假、员工旅游、节日福利、定期体检、餐补交通补等
-              </div>
+            <!-- 技术栈 -->
+            <el-form-item label="技术栈" prop="techStack" class="form-item-group">
+              <el-input
+                v-model="positionForm.techStack"
+                type="textarea"
+                :rows="3"
+                placeholder="请列出职位所需的技术栈，如：Java, Spring Boot, MySQL, Redis等（用逗号分隔）"
+                maxlength="500"
+                show-word-limit
+              ></el-input>
             </el-form-item>
-          </div>
-        </div>
-
-        <!-- 发布设置卡片 -->
-        <div class="form-card">
-          <div class="form-card-header">
-            <h2 class="form-card-title">
-              <el-icon><Setting /></el-icon>
-              发布设置
-            </h2>
-          </div>
-          <div class="form-card-body">
-            <div class="form-grid">
-              <!-- 联系人 -->
-              <el-form-item label="联系人" prop="contactName" class="form-item-group">
-                <el-input
-                  v-model="positionForm.contactName"
-                  placeholder="请输入联系人姓名"
-                  clearable
-                >
-                  <template #prefix>
-                    <el-icon><User /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <!-- 联系电话 -->
-              <el-form-item label="联系电话" prop="contactPhone" class="form-item-group">
-                <el-input
-                  v-model="positionForm.contactPhone"
-                  placeholder="请输入联系电话"
-                  clearable
-                >
-                  <template #prefix>
-                    <el-icon><Phone /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <!-- 联系邮箱 -->
-              <el-form-item label="联系邮箱" prop="contactEmail" class="form-item-group" style="grid-column: 1 / -1;">
-                <el-input
-                  v-model="positionForm.contactEmail"
-                  placeholder="请输入联系邮箱"
-                  clearable
-                >
-                  <template #prefix>
-                    <el-icon><Message /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-            </div>
           </div>
         </div>
       </el-form>
@@ -311,39 +226,29 @@
       <div v-if="previewData" style="padding: 1rem;">
         <div style="margin-bottom: 1.5rem;">
           <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
-            {{ previewData.name }}
+            {{ previewData.positionName }}
           </h2>
           <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-            <el-tag type="primary">{{ previewData.location }}</el-tag>
-            <el-tag type="success">{{ previewData.salaryRange }}</el-tag>
+            <el-tag type="primary">{{ previewData.city }}</el-tag>
+            <el-tag type="success">¥{{ previewData.salaryMin }}-{{ previewData.salaryMax }} / {{ previewData.salaryUnit === 'month' ? '月' : previewData.salaryUnit }}</el-tag>
             <el-tag>{{ getEducationLabel(previewData.education) }}</el-tag>
-            <el-tag>{{ getExperienceLabel(previewData.experience) }}</el-tag>
+            <el-tag>{{ previewData.experience }}</el-tag>
           </div>
         </div>
 
         <div style="margin-bottom: 1.5rem;">
           <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">职位描述</h3>
-          <div style="line-height: 1.8; color: var(--text-secondary);">{{ previewData.description }}</div>
+          <div style="line-height: 1.8; color: var(--text-secondary); white-space: pre-wrap;">{{ previewData.description }}</div>
         </div>
 
         <div style="margin-bottom: 1.5rem;">
           <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">岗位要求</h3>
-          <div style="line-height: 1.8; color: var(--text-secondary);">{{ previewData.requirements }}</div>
+          <div style="line-height: 1.8; color: var(--text-secondary); white-space: pre-wrap;">{{ previewData.requirements }}</div>
         </div>
 
-        <div v-if="previewData.benefits && previewData.benefits.length > 0" style="margin-bottom: 1.5rem;">
-          <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">福利待遇</h3>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <el-tag v-for="benefit in previewData.benefits" :key="benefit" type="success">{{ benefit }}</el-tag>
-          </div>
-        </div>
-
-        <div style="padding: 1rem; background: oklch(0.98 0.005 240); border-radius: 0.5rem;">
-          <div style="font-size: 0.875rem; color: var(--text-secondary);">
-            <div><strong>联系人：</strong>{{ previewData.contactName }}</div>
-            <div><strong>联系电话：</strong>{{ previewData.contactPhone }}</div>
-            <div><strong>联系邮箱：</strong>{{ previewData.contactEmail }}</div>
-          </div>
+        <div v-if="previewData.techStack" style="margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">技术栈</h3>
+          <div style="line-height: 1.8; color: var(--text-secondary);">{{ previewData.techStack }}</div>
         </div>
       </div>
       <template #footer>
@@ -355,62 +260,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick } from 'vue'
+import { ref, reactive, nextTick, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { recruitmentApi } from '@/api'
+import { createPositionApi } from '@/api/position'
+import { getCompanyListApi, type Company } from '@/api/company'
 
 // 表单引用
 const positionFormRef = ref()
-const tagInputRef = ref()
 
 // 加载状态
 const draftSaving = ref(false)
 const publishing = ref(false)
 
-// 标签输入
-const tagInputVisible = ref(false)
-const tagInputValue = ref('')
-
 // 预览对话框
 const previewDialogVisible = ref(false)
 const previewData = ref(null)
 
+// 企业列表
+const companies = ref<Company[]>([])
+
 // 职位表单数据
 const positionForm = reactive({
-  name: '',
-  category: '',
-  location: '',
+  positionName: '',
+  positionType: 'fulltime',
+  city: '',
   recruitCount: 1,
-  salaryRange: '',
+  salaryMin: undefined as number | undefined,
+  salaryMax: undefined as number | undefined,
+  salaryUnit: 'month',
   education: '',
   experience: '',
-  companyId: '',
-  jobType: 'fulltime',
+  companyId: undefined as number | undefined,
   description: '',
   requirements: '',
-  benefits: [] as string[],
-  contactName: '',
-  contactPhone: '',
-  contactEmail: ''
+  techStack: '',
+  status: 'active'
 })
 
 // 表单验证规则
 const formRules = {
-  name: [
+  positionName: [
     { required: true, message: '请输入职位名称', trigger: 'blur' },
     { min: 2, max: 50, message: '职位名称长度在 2 到 50 个字符', trigger: 'blur' }
   ],
-  category: [
-    { required: true, message: '请选择职位类别', trigger: 'change' }
-  ],
-  location: [
+  city: [
     { required: true, message: '请输入工作地点', trigger: 'blur' }
   ],
   recruitCount: [
     { required: true, message: '请输入招聘人数', trigger: 'blur' }
   ],
-  salaryRange: [
-    { required: true, message: '请输入薪资范围', trigger: 'blur' }
+  salaryMin: [
+    { required: true, message: '请输入最低薪资', trigger: 'blur' }
+  ],
+  salaryMax: [
+    { required: true, message: '请输入最高薪资', trigger: 'blur' }
   ],
   education: [
     { required: true, message: '请选择学历要求', trigger: 'change' }
@@ -421,7 +324,7 @@ const formRules = {
   companyId: [
     { required: true, message: '请选择所属企业', trigger: 'change' }
   ],
-  jobType: [
+  positionType: [
     { required: true, message: '请选择职位性质', trigger: 'change' }
   ],
   description: [
@@ -431,65 +334,24 @@ const formRules = {
   requirements: [
     { required: true, message: '请输入岗位要求', trigger: 'blur' },
     { min: 20, message: '岗位要求至少 20 个字符', trigger: 'blur' }
-  ],
-  contactName: [
-    { required: true, message: '请输入联系人', trigger: 'blur' }
-  ],
-  contactPhone: [
-    { required: true, message: '请输入联系电话', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-  ],
-  contactEmail: [
-    { required: true, message: '请输入联系邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
   ]
 }
 
-// 企业列表
-const companies = ref([
-  { id: 1, name: '阿里巴巴', industry: '互联网' },
-  { id: 2, name: '腾讯科技', industry: '互联网' },
-  { id: 3, name: '字节跳动', industry: '互联网' },
-  { id: 4, name: '华为技术', industry: '通信技术' },
-  { id: 5, name: '京东集团', industry: '电子商务' }
-])
-
-// 标签输入相关方法
-const focusTagInput = () => {
-  if (!tagInputVisible.value) {
-    showTagInput()
-  }
-}
-
-const showTagInput = () => {
-  tagInputVisible.value = true
-  nextTick(() => {
-    tagInputRef.value?.focus()
-  })
-}
-
-const handleTagInputConfirm = () => {
-  if (tagInputValue.value) {
-    if (!positionForm.benefits.includes(tagInputValue.value)) {
-      positionForm.benefits.push(tagInputValue.value)
-    }
-    tagInputValue.value = ''
-  }
-  tagInputVisible.value = false
-}
-
-const removeBenefit = (tag: string) => {
-  const index = positionForm.benefits.indexOf(tag)
-  if (index > -1) {
-    positionForm.benefits.splice(index, 1)
+// 加载企业列表
+const loadCompanies = async () => {
+  try {
+    const data: any = await getCompanyListApi({ status: 1 })
+    companies.value = data || []
+  } catch (error) {
+    console.error('加载企业列表失败', error)
   }
 }
 
 // 获取标签文本
 const getEducationLabel = (value: string) => {
   const map: Record<string, string> = {
-    'any': '不限',
-    'college': '大专',
+    'unlimited': '不限',
+    'junior_college': '大专',
     'bachelor': '本科',
     'master': '硕士',
     'doctor': '博士'
@@ -497,27 +359,24 @@ const getEducationLabel = (value: string) => {
   return map[value] || value
 }
 
-const getExperienceLabel = (value: string) => {
-  const map: Record<string, string> = {
-    'any': '不限',
-    'fresh': '应届生',
-    '1year': '1年以下',
-    '1-3years': '1-3年',
-    '3-5years': '3-5年',
-    '5years+': '5年以上'
-  }
-  return map[value] || value
-}
-
 // 保存草稿
 const handleSaveDraft = async () => {
   try {
+    await positionFormRef.value?.validate()
     draftSaving.value = true
-    // TODO: 调用后端 API 保存草稿
-    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // 设置为草稿状态
+    const draftData = { ...positionForm, status: 'draft' }
+
+    await createPositionApi(draftData)
     ElMessage.success('草稿保存成功!')
-  } catch (error) {
-    ElMessage.error('保存草稿失败,请重试')
+
+    // 重置表单
+    positionFormRef.value?.resetFields()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error('保存草稿失败: ' + (error.message || '未知错误'))
+    }
   } finally {
     draftSaving.value = false
   }
@@ -551,13 +410,16 @@ const handlePublish = async () => {
 
     publishing.value = true
 
-    // TODO: 调用后端 API 发布职位
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // 调用后端 API 发布职位
+    await createPositionApi(positionForm)
 
     ElMessage.success('职位发布成功!')
-  } catch (error) {
+
+    // 重置表单
+    positionFormRef.value?.resetFields()
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('发布失败,请重试')
+      ElMessage.error('发布失败: ' + (error.message || '未知错误'))
     }
   } finally {
     publishing.value = false
@@ -584,12 +446,16 @@ const handleCancel = async () => {
     )
 
     positionFormRef.value?.resetFields()
-    positionForm.benefits = []
     ElMessage.info('已取消')
   } catch (error) {
     // 用户点击"继续编辑"
   }
 }
+
+// 页面加载时获取企业列表
+onMounted(() => {
+  loadCompanies()
+})
 </script>
 
 <style scoped lang="scss">

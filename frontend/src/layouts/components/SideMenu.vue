@@ -72,6 +72,7 @@ import {
   Star,
   Folder,
   TrendCharts,
+  View,
 } from '@element-plus/icons-vue'
 
 interface MenuItem {
@@ -263,6 +264,17 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
+  // 就业指导（学员专用）
+  {
+    id: 44,
+    name: '就业指导',
+    path: '/student/guidance-recommendation',
+    icon: ChatDotRound,
+    parentId: 7,
+    sort: 9,
+    status: '1',
+    type: '2',
+  },
   // 教学资料管理（教师专用）
   {
     id: 36,
@@ -307,6 +319,17 @@ const allMenus: MenuItem[] = [
     status: '1',
     type: '2',
   },
+  // 就业指导（学院负责人专用）
+  {
+    id: 43,
+    name: '就业指导',
+    path: '/teaching/guidance-management',
+    icon: ChatDotRound,
+    parentId: 7,
+    sort: 12,
+    status: '1',
+    type: '2',
+  },
   // 就业管理目录
   {
     id: 16,
@@ -348,6 +371,28 @@ const allMenus: MenuItem[] = [
     icon: User,
     parentId: 16,
     sort: 4,
+    status: '1',
+    type: '2',
+  },
+  // 简历浏览（企业对接人专用）
+  {
+    id: 46,
+    name: '简历浏览',
+    path: '/employment/resume-review',
+    icon: View,
+    parentId: 16,
+    sort: 16,
+    status: '1',
+    type: '2',
+  },
+  // 岗位列表（学员专用）
+  {
+    id: 45,
+    name: '岗位列表',
+    path: '/employment/positions',
+    icon: Briefcase,
+    parentId: 16,
+    sort: 11,
     status: '1',
     type: '2',
   },
@@ -540,6 +585,7 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/teachers',
     '/teaching/daily-reports',
     '/teaching/student-profile',
+    '/teaching/guidance-management',
     '/teaching/teaching-plan',
     '/employment',
     '/employment/statistics',
@@ -565,7 +611,9 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/teaching/my-courses',
     '/teaching/assignments',
     '/teaching/my-daily-reports',
+    '/student/guidance-recommendation',
     '/employment',
+    '/employment/positions',
     '/employment/my-applications',
     '/employment/my-written-tests',
     '/employment/my-interviews',
@@ -578,6 +626,7 @@ const roleMenuPermissions: Record<string, string[]> = {
     '/employment',
     '/employment/enterprise-positions',
     '/employment/applications',
+    '/employment/resume-review',
     '/employment/written-tests',
     '/employment/interviews',
     '/employment/enterprise-offers',

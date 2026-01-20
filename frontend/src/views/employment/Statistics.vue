@@ -127,10 +127,8 @@
               <div class="header-actions">
                 <el-select v-model="filterStatus" placeholder="全部状态" style="width: 120px; margin-right: 12px" @change="loadStudentStats">
                   <el-option label="全部" value="" />
-                  <el-option label="已就业" value="employed" />
-                  <el-option label="求职中" value="seeking" />
                   <el-option label="已录取" value="admitted" />
-                  <el-option label="继续深造" value="further" />
+                  <el-option label="求职中" value="seeking" />
                 </el-select>
                 <el-button :icon="Refresh" @click="loadStudentStats">刷新</el-button>
               </div>
@@ -331,7 +329,8 @@ import {
   TrendCharts,
   Refresh
 } from '@element-plus/icons-vue'
-import request from '@/utils/request'
+import { statisticsApi } from '@/api/statistics'
+import { studentEmploymentApi } from '@/api/studentEmployment'
 
 const router = useRouter()
 
@@ -380,52 +379,66 @@ const studentList = ref([])
 const currentStudent = ref<any>(null)
 
 // 热门企业
-const topCompanies = ref([
-  { id: 1, companyName: '腾讯科技', count: 12 },
-  { id: 2, companyName: '阿里巴巴', count: 8 },
-  { id: 3, companyName: '字节跳动', count: 6 },
-  { id: 4, companyName: '美团', count: 5 },
-  { id: 5, companyName: '京东', count: 3 }
-])
+const topCompanies = ref<any[]>([])
 
 // 加载统计数据
 const loadStats = async () => {
   try {
     loading.value = true
 
-    // 获取学员总数
-    const studentsRes: any = await request.get('/student/page', {
-      params: { current: 1, size: 1 }
-    }).catch(() => ({ total: 0 }))
+    // 并行加载所有统计数据
+    const [employmentStatusRes, funnelRes, companyRankingRes, offerStatsRes] = await Promise.allSettled([
+      statisticsApi.getEmploymentStatusDistribution(),
+      statisticsApi.getFunnelData(),
+      statisticsApi.getCompanyRanking(5),
+      statisticsApi.getOfferStats()
+    ])
 
-    stats.value.totalStudents = studentsRes.total || 0
-
-    // TODO: 从实际API获取统计数据
-    stats.value = {
-      ...stats.value,
-      employedCount: 45,
-      seekingCount: 28,
-      employmentRate: 61.5
+    // 处理就业状态分布数据
+    if (employmentStatusRes.status === 'fulfilled') {
+      const statusData = employmentStatusRes.value || {}
+      stats.value = {
+        totalStudents: statusData.total || 0,
+        employedCount: statusData.已就业 || 0,
+        seekingCount: statusData.求职中 || 0,
+        employmentRate: statusData.total > 0
+          ? Math.round((statusData.已就业 / statusData.total) * 1000) / 10
+          : 0
+      }
     }
 
-    funnel.value = {
-      applications: 150,
-      testPassed: 95,
-      interviewPassed: 58,
-      offers: 35,
-      acceptedOffers: 28
+    // 处理求职漏斗数据
+    if (funnelRes.status === 'fulfilled') {
+      const funnelData = funnelRes.value || []
+      if (funnelData.length > 0) {
+        funnel.value = {
+          applications: funnelData.find((item: any) => item.name === '简历投递')?.value || 0,
+          testPassed: funnelData.find((item: any) => item.name === '筛选通过')?.value || 0,
+          interviewPassed: funnelData.find((item: any) => item.name === '进入面试')?.value || 0,
+          offers: funnelData.find((item: any) => item.name === '收到Offer')?.value || 0,
+          acceptedOffers: funnelData.find((item: any) => item.name === '收到Offer')?.value || 0
+        }
+      }
     }
 
-    offerStats.value = {
-      totalOffers: 35,
-      acceptedOffers: 28,
-      rejectedOffers: 5,
-      pendingOffers: 2,
-      acceptRate: 80
+    // 处理热门企业数据 - 字段映射: hireCount -> count
+    if (companyRankingRes.status === 'fulfilled') {
+      const companies = companyRankingRes.value || []
+      topCompanies.value = companies.map((company: any) => ({
+        id: company.companyId,
+        companyName: company.companyName,
+        count: company.hireCount // 字段映射
+      }))
+    }
+
+    // 处理Offer统计数据
+    if (offerStatsRes.status === 'fulfilled') {
+      offerStats.value = offerStatsRes.value || offerStats.value
     }
 
   } catch (error) {
     console.error('加载统计数据失败', error)
+    ElMessage.error('加载统计数据失败')
   } finally {
     loading.value = false
   }
@@ -436,55 +449,90 @@ const loadStudentStats = async () => {
   try {
     loading.value = true
 
-    // TODO: 根据筛选条件加载学员数据
-    // 这里使用模拟数据
-    const mockData = [
-      {
-        id: 1,
-        studentName: '张三',
-        major: '软件工程',
-        employmentStatus: 'employed',
-        applicationCount: 15,
-        testCount: 5,
-        interviewCount: 3,
-        offerCount: 2,
-        latestActivity: '接受腾讯Offer',
-        latestActivityTime: '2026-01-17'
-      },
-      {
-        id: 2,
-        studentName: '李四',
-        major: '计算机科学',
-        employmentStatus: 'seeking',
-        applicationCount: 8,
-        testCount: 3,
-        interviewCount: 1,
-        offerCount: 0,
-        latestActivity: '完成美团面试',
-        latestActivityTime: '2026-01-16'
-      },
-      {
-        id: 3,
-        studentName: '王五',
-        major: '软件工程',
-        employmentStatus: 'admitted',
-        applicationCount: 12,
-        testCount: 4,
-        interviewCount: 2,
-        offerCount: 1,
-        latestActivity: '通过字节面试',
-        latestActivityTime: '2026-01-15'
-      }
-    ]
+    // 对于"求职中"这种包含多个状态的选项，需要获取所有数据然后前端过滤
+    const shouldGetAllData = filterStatus.value === 'seeking'
 
-    studentList.value = mockData
-    total.value = mockData.length
+    const res = await studentEmploymentApi.getPage({
+      current: pagination.current,
+      size: pagination.size,
+      employmentStatus: shouldGetAllData ? undefined : mapFilterStatusToBackend(filterStatus.value)
+    })
+
+    if (res) {
+      let records = res.records || []
+
+      // 如果选择了"求职中"，需要在前端过滤（因为后端只支持单个状态）
+      if (filterStatus.value === 'seeking') {
+        records = records.filter((item: any) =>
+          item.employmentStatus === 'applied' ||
+          item.employmentStatus === 'interviewing' ||
+          item.employmentStatus === 'not_started'
+        )
+      }
+
+      // 转换数据格式以适配前端
+      studentList.value = records.map((item: any) => ({
+        id: item.id,
+        studentName: item.realName,
+        major: item.major,
+        employmentStatus: mapEmploymentStatus(item.employmentStatus),
+        applicationCount: item.applicationCount || 0,
+        testCount: 0, // TODO: 后续可以从后端获取笔试数统计
+        interviewCount: item.interviewCount || 0,
+        offerCount: item.offerCount || 0,
+        latestActivity: getLatestActivity(item.employmentStatus),
+        latestActivityTime: '-' // TODO: 后续可以从后端获取最新活动时间
+      }))
+
+      total.value = filterStatus.value === 'seeking' ? records.length : (res.total || 0)
+    } else {
+      studentList.value = []
+      total.value = 0
+    }
 
   } catch (error) {
     console.error('加载学员列表失败', error)
+    ElMessage.error('加载学员列表失败')
+    studentList.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
+}
+
+// 映射后端就业状态到前端
+const mapEmploymentStatus = (backendStatus: string): string => {
+  const statusMap: Record<string, string> = {
+    'hired': 'employed',         // 已入职 -> 已就业
+    'offered': 'admitted',       // 已获Offer -> 已录取
+    'interviewing': 'seeking',   // 面试中 -> 求职中
+    'applied': 'seeking',        // 求职中 -> 求职中
+    'not_started': 'seeking'     // 未开始 -> 求职中
+  }
+  return statusMap[backendStatus] || 'seeking'
+}
+
+// 映射前端筛选值到后端
+const mapFilterStatusToBackend = (frontendStatus: string): string | undefined => {
+  const statusMap: Record<string, string> = {
+    'employed': 'hired',         // 已就业 -> 已入职
+    'admitted': 'offered',       // 已录取 -> 已获Offer
+    'seeking': 'applied',        // 求职中 -> 求职中（使用applied，因为求职中包括applied和interviewing）
+    'further': undefined         // 继续深造 -> 暂不支持
+  }
+  return statusMap[frontendStatus]
+}
+
+// 获取最新活动描述
+const getLatestActivity = (status: string): string => {
+  const activityMap: Record<string, string> = {
+    'hired': '已入职',
+    'offered': '已收到Offer',
+    'interviewing': '面试进行中',
+    'applied': '求职中',
+    'not_started': '未开始求职'
+  }
+  return activityMap[status] || '暂无动态'
 }
 
 // 计算漏斗百分比
@@ -538,28 +586,43 @@ const getOfferStatusText = (status: string) => {
 const viewStudent = async (row: any) => {
   currentStudent.value = {
     ...row,
-    offers: [
-      {
-        companyName: '腾讯科技',
-        positionName: 'Java后端工程师',
-        salary: '18000',
-        salaryUnit: 'month',
-        status: 'accepted'
-      },
-      {
-        companyName: '阿里巴巴',
-        positionName: '前端开发工程师',
-        salary: '20000',
-        salaryUnit: 'month',
-        status: 'rejected'
-      }
-    ]
+    offers: [] // 将在loadStudentDetail中加载
   }
   detailDialogVisible.value = true
 }
 
 const loadStudentDetail = async () => {
-  // TODO: 加载学员详细信息
+  if (!currentStudent.value?.id) return
+
+  try {
+    detailLoading.value = true
+    const res = await studentEmploymentApi.getDetail(currentStudent.value.id)
+
+    if (res) {
+      const data = res
+
+      // 更新学员基本信息
+      if (data.student) {
+        currentStudent.value.phone = data.student.phone
+      }
+
+      // 更新Offer列表
+      if (data.offers && Array.isArray(data.offers)) {
+        currentStudent.value.offers = data.offers.map((offer: any) => ({
+          companyName: offer.companyName,
+          positionName: offer.positionName,
+          salary: offer.salary?.toString() || '0',
+          salaryUnit: offer.salaryUnit || 'month',
+          status: offer.status
+        }))
+      }
+    }
+  } catch (error) {
+    console.error('加载学员详情失败', error)
+    ElMessage.error('加载学员详情失败')
+  } finally {
+    detailLoading.value = false
+  }
 }
 
 // 就业指导

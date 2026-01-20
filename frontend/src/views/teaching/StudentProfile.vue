@@ -21,9 +21,12 @@
             @change="loadStudentList"
           >
             <el-option label="全部专业" value="" />
-            <el-option label="软件工程" value="软件工程" />
-            <el-option label="计算机科学" value="计算机科学" />
-            <el-option label="信息安全" value="信息安全" />
+            <el-option
+              v-for="major in majorList"
+              :key="major"
+              :label="major"
+              :value="major"
+            />
           </el-select>
           <el-select
             v-model="filterEmployment"
@@ -315,6 +318,52 @@
             </div>
           </el-tab-pane>
 
+          <!-- 教育经历 -->
+          <el-tab-pane label="教育经历" name="education">
+            <div class="education-detail">
+              <el-descriptions v-if="currentStudent.education && currentStudent.education.length > 0" :column="1" border>
+                <el-descriptions-item
+                  v-for="(edu, index) in currentStudent.education"
+                  :key="index"
+                  :label="edu.school || '教育经历'"
+                >
+                  <div>
+                    <div style="font-weight: 500; margin-bottom: 4px;">
+                      {{ edu.major }} · {{ edu.degree }}
+                    </div>
+                    <div style="color: #909399; font-size: 13px;">
+                      {{ edu.startDate }} - {{ edu.endDate }}
+                    </div>
+                    <div v-if="edu.description" style="margin-top: 8px; color: #606266; font-size: 13px;">
+                      {{ edu.description }}
+                    </div>
+                  </div>
+                </el-descriptions-item>
+              </el-descriptions>
+              <el-empty v-else description="暂无教育经历" :image-size="60" />
+            </div>
+          </el-tab-pane>
+
+          <!-- 课程成绩 -->
+          <el-tab-pane label="课程成绩" name="courses">
+            <div class="courses-detail">
+              <el-table v-if="currentStudent.courses && currentStudent.courses.length > 0" :data="currentStudent.courses" size="small" stripe>
+                <el-table-column prop="courseName" label="课程名称" width="200" />
+                <el-table-column prop="credit" label="学分" width="80" align="center" />
+                <el-table-column prop="score" label="成绩" width="80" align="center">
+                  <template #default="{ row }">
+                    <el-tag :type="getScoreType(row.score)" size="small">
+                      {{ row.score }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="semester" label="学期" width="120" />
+                <el-table-column prop="teacherName" label="授课教师" />
+              </el-table>
+              <el-empty v-else description="暂无课程成绩" :image-size="60" />
+            </div>
+          </el-tab-pane>
+
           <!-- 就业指导记录 -->
           <el-tab-pane label="指导记录" name="guidance">
             <div class="guidance-detail">
@@ -409,6 +458,91 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 简历预览对话框 -->
+    <el-dialog
+      v-model="resumePreviewDialogVisible"
+      title="简历预览"
+      width="80%"
+      top="5vh"
+      @close="closeResumePreview"
+    >
+      <div v-loading="pdfLoading" element-loading-text="加载中..." style="min-height: 600px">
+        <div v-if="pdfError" style="text-align: center; padding: 50px">
+          <el-empty description="PDF加载失败"></el-empty>
+          <el-button type="primary" @click="resumePreviewDialogVisible = false">关闭</el-button>
+        </div>
+        <VuePdfEmbed
+          v-if="resumePreviewUrl && !pdfError"
+          :source="resumePreviewUrl"
+          @loaded="handlePdfLoaded"
+          @error="handlePdfError"
+          style="width: 100%; height: 700px"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="resumePreviewDialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="downloadResume" v-if="resumePreviewUrl">
+          下载简历
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 添加指导记录对话框 -->
+    <el-dialog
+      v-model="guidanceDialogVisible"
+      title="添加指导记录"
+      width="600px"
+    >
+      <el-form label-width="100px">
+        <el-form-item label="指导类型" required>
+          <el-select v-model="guidanceForm.guidanceType" placeholder="请选择指导类型" style="width: 100%">
+            <el-option
+              v-for="option in guidanceTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="指导时间" required>
+          <el-date-picker
+            v-model="guidanceForm.guidanceDate"
+            type="datetime"
+            placeholder="选择指导时间"
+            format="YYYY-MM-DD HH:mm"
+            value-format="YYYY-MM-DD HH:mm"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="指导地点">
+          <el-input v-model="guidanceForm.location" placeholder="如：线上、办公室A201等" />
+        </el-form-item>
+        <el-form-item label="指导内容" required>
+          <el-input
+            v-model="guidanceForm.content"
+            type="textarea"
+            :rows="5"
+            placeholder="请详细描述指导内容..."
+          />
+        </el-form-item>
+        <el-form-item label="后续跟进">
+          <el-input
+            v-model="guidanceForm.nextAction"
+            type="textarea"
+            :rows="3"
+            placeholder="后续需要跟进的事项（可选）"
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="guidanceDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitGuidance" :loading="guidanceSubmitting">
+          确认添加
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -424,6 +558,24 @@ import {
   Plus
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { useAuthStore } from '@/stores/auth'
+import {
+  getMajorListApi,
+  getStudentByIdApi,
+  getStudentSkillsApi,
+  getStudentProjectsApi,
+  getStudentPreferenceApi,
+  getStudentCoursesApi,
+  getStudentEducationApi,
+  getStudentPageApi
+} from '@/api/student'
+import { getPositionListApi } from '@/api/position'
+import {
+  createRecommendationApi,
+  createGuidanceApi,
+  getGuidanceListByStudentApi
+} from '@/api/guidance'
+import VuePdfEmbed from 'vue-pdf-embed'
 
 const router = useRouter()
 
@@ -431,7 +583,14 @@ const loading = ref(false)
 const detailLoading = ref(false)
 const profileDialogVisible = ref(false)
 const recommendDialogVisible = ref(false)
+const resumePreviewDialogVisible = ref(false)
+const resumePreviewUrl = ref('')
+const pdfLoading = ref(true)
+const pdfError = ref(false)
 const recommending = ref(false)
+
+// 专业列表
+const majorList = ref<string[]>([])
 
 // 搜索和筛选
 const searchKeyword = ref('')
@@ -460,79 +619,66 @@ const recommendForm = reactive({
 // 可推荐的职位
 const availablePositions = ref([])
 
+// 指导记录表单
+const guidanceForm = reactive({
+  guidanceType: '',
+  content: '',
+  nextAction: '',
+  guidanceDate: '',
+  location: ''
+})
+
+// 指导记录对话框
+const guidanceDialogVisible = ref(false)
+const guidanceSubmitting = ref(false)
+
+// 指导类型选项
+const guidanceTypeOptions = [
+  { label: '职业规划', value: 'career_planning' },
+  { label: '简历指导', value: 'resume_guidance' },
+  { label: '面试指导', value: 'interview_guidance' },
+  { label: '技能提升', value: 'skill_improvement' },
+  { label: '心理辅导', value: 'psychological_counseling' },
+  { label: '其他', value: 'other' }
+]
+
 // 加载学员列表
 const loadStudentList = async () => {
   try {
     loading.value = true
 
-    // TODO: 根据筛选条件加载学员数据
-    const mockData = [
-      {
-        id: 1,
-        realName: '张三',
-        studentNo: '2021001',
-        major: '软件工程',
-        grade: '2021级',
-        className: '软工2101',
-        gender: 1,
-        birthDate: '2003-05-15',
-        phone: '13800138001',
-        email: 'zhangsan@example.com',
-        idCard: '110101200305151234',
-        enrollmentDate: '2021-09-01',
-        employmentStatus: 'employed',
-        applicationCount: 15,
-        testCount: 5,
-        interviewCount: 3,
-        offerCount: 2,
-        skills: ['Java', 'Spring Boot', 'MySQL', 'Vue.js'],
-        projects: [
-          {
-            name: '电商管理系统',
-            description: '基于Spring Boot和Vue的电商后台管理系统',
-            period: '2023.09 - 2023.12',
-            role: '后端开发',
-            technologies: ['Java', 'Spring Boot', 'MyBatis', 'MySQL']
-          }
-        ],
-        guidanceRecords: []
-      },
-      {
-        id: 2,
-        realName: '李四',
-        studentNo: '2021002',
-        major: '计算机科学',
-        grade: '2021级',
-        className: '计科2101',
-        gender: 2,
-        phone: '13800138002',
-        email: 'lisi@example.com',
-        employmentStatus: 'seeking',
-        applicationCount: 8,
-        testCount: 3,
-        interviewCount: 1,
-        offerCount: 0
-      },
-      {
-        id: 3,
-        realName: '王五',
-        studentNo: '2021003',
-        major: '软件工程',
-        grade: '2021级',
-        className: '软工2102',
-        gender: 1,
-        phone: '13800138003',
-        email: 'wangwu@example.com',
-        employmentStatus: 'admitted',
-        applicationCount: 12,
-        testCount: 4,
-        interviewCount: 2,
-        offerCount: 1
-      }
-    ]
+    // 调用后端API获取学员数据
+    const data: any = await getStudentPageApi({
+      current: pagination.current,
+      size: pagination.size,
+      schoolId: undefined,
+      keyword: undefined
+    })
 
-    studentList.value = mockData
-    total.value = mockData.length
+    let filteredData = data.records || []
+
+    // 按专业筛选
+    if (filterMajor.value) {
+      filteredData = filteredData.filter((student: any) => student.major === filterMajor.value)
+    }
+
+    // 按就业状态筛选
+    if (filterEmployment.value) {
+      filteredData = filteredData.filter((student: any) => student.employmentStatus === filterEmployment.value)
+    }
+
+    // 按关键词搜索
+    if (searchKeyword.value) {
+      const keyword = searchKeyword.value.toLowerCase()
+      filteredData = filteredData.filter((student: any) =>
+        student.realName.toLowerCase().includes(keyword) ||
+        student.major.toLowerCase().includes(keyword) ||
+        student.studentNo.toLowerCase().includes(keyword)
+      )
+    }
+
+    studentList.value = filteredData
+    total.value = data.total || 0
 
   } catch (error) {
     console.error('加载学员列表失败', error)
@@ -545,30 +691,38 @@ const loadStudentList = async () => {
 const loadStudentDetail = async () => {
   try {
     detailLoading.value = true
-    // TODO: 加载学员详细信息
-    if (currentStudent.value) {
-      // 模拟添加Offer数据
-      currentStudent.value.offers = [
-        {
-          companyName: '腾讯科技',
-          positionName: 'Java后端工程师',
-          salary: '18000',
-          salaryUnit: 'month',
-          city: '深圳',
-          status: 'accepted'
-        },
-        {
-          companyName: '阿里巴巴',
-          positionName: '全栈工程师',
-          salary: '20000',
-          salaryUnit: 'month',
-          city: '杭州',
-          status: 'rejected'
-        }
-      ]
+
+    if (!currentStudent.value?.id) {
+      return
     }
+
+    // 并行加载学员的各种详细信息
+    const [skills, projects, preference, courses, education] = await Promise.all([
+      getStudentSkillsApi(currentStudent.value.id).catch(() => []),
+      getStudentProjectsApi(currentStudent.value.id).catch(() => []),
+      getStudentPreferenceApi(currentStudent.value.id).catch(() => ({})),
+      getStudentCoursesApi(currentStudent.value.id).catch(() => []),
+      getStudentEducationApi(currentStudent.value.id).catch(() => [])
+    ])
+
+    // 更新当前学员对象的详细信息
+    currentStudent.value.skills = skills || []
+    currentStudent.value.projects = projects || []
+    currentStudent.value.preference = preference || {}
+    currentStudent.value.courses = courses || []
+    currentStudent.value.education = education || []
+
+    // 求职偏好映射到显示字段
+    if (preference) {
+      currentStudent.value.targetPosition = preference.targetPosition || ''
+      currentStudent.value.expectedCity = preference.expectedCity || ''
+      currentStudent.value.expectedSalaryMin = preference.expectedSalaryMin || ''
+      currentStudent.value.expectedSalaryMax = preference.expectedSalaryMax || ''
+    }
+
   } catch (error) {
     console.error('加载学员详情失败', error)
+    ElMessage.error('加载学员详情失败')
   } finally {
     detailLoading.value = false
   }
@@ -583,32 +737,57 @@ const viewStudentProfile = (row: any) => {
 
 // 查看简历
 const viewResume = (row: any) => {
-  ElMessage.info('简历查看功能开发中')
+  if (!row.resumeUrl) {
+    ElMessage.warning('该学员尚未上传简历')
+    return
+  }
+  // 设置当前预览的简历URL和显示对话框
+  resumePreviewUrl.value = row.resumeUrl
+  resumePreviewDialogVisible.value = true
+  pdfLoading.value = true
+  pdfError.value = false
+}
+
+// PDF加载完成
+const handlePdfLoaded = () => {
+  pdfLoading.value = false
+}
+
+// PDF加载失败
+const handlePdfError = () => {
+  pdfLoading.value = false
+  pdfError.value = true
+  ElMessage.error('PDF加载失败')
+}
+
+// 关闭简历预览
+const closeResumePreview = () => {
+  resumePreviewDialogVisible.value = false
+  resumePreviewUrl.value = ''
+  pdfLoading.value = true
+  pdfError.value = false
+}
+
+// 下载简历
+const downloadResume = () => {
+  if (resumePreviewUrl.value) {
+    window.open(resumePreviewUrl.value, '_blank')
+  }
 }
 
 // 推荐职位
-const recommendPosition = (row: any) => {
+const recommendPosition = async (row: any) => {
   currentStudent.value = row
-  // 加载可推荐的职位
-  availablePositions.value = [
-    {
-      id: 13,
-      companyName: '腾讯科技',
-      positionName: 'Java后端工程师',
-      city: '深圳',
-      salaryMin: 15000,
-      salaryMax: 22000
-    },
-    {
-      id: 14,
-      companyName: '字节跳动',
-      positionName: '前端开发工程师',
-      city: '北京',
-      salaryMin: 18000,
-      salaryMax: 25000
-    }
-  ]
-  recommendDialogVisible.value = true
+
+  try {
+    // 从API加载所有可推荐的职位
+    const positions: any = await getPositionListApi()
+    availablePositions.value = positions || []
+    recommendDialogVisible.value = true
+  } catch (error) {
+    console.error('加载职位列表失败', error)
+    ElMessage.error('加载职位列表失败')
+  }
 }
 
 // 提交推荐
@@ -618,9 +797,25 @@ const submitRecommend = async () => {
     return
   }
 
+  if (!currentStudent.value) {
+    ElMessage.warning('请先选择学员')
+    return
+  }
+
   try {
     recommending.value = true
-    // TODO: 调用推荐API
+    // 从authStore获取teacherId
+    const authStore = useAuthStore()
+    const teacherId = authStore.teacherId
+
+    await createRecommendationApi({
+      studentId: currentStudent.value.id,
+      positionId: recommendForm.positionId,
+      teacherId: teacherId || 0,
+      reason: recommendForm.reason,
+      remark: recommendForm.remark
+    })
+
     ElMessage.success('推荐成功')
     recommendDialogVisible.value = false
 
@@ -637,7 +832,65 @@ const submitRecommend = async () => {
 
 // 添加指导记录
 const addGuidance = () => {
-  ElMessage.info('添加指导记录功能开发中')
+  // 设置默认指导时间为当前时间
+  const now = new Date()
+  guidanceForm.guidanceDate = now.toISOString().slice(0, 16) // 格式化为 yyyy-MM-dd HH:mm
+  guidanceDialogVisible.value = true
+}
+
+// 提交指导记录
+const submitGuidance = async () => {
+  if (!guidanceForm.guidanceType) {
+    ElMessage.warning('请选择指导类型')
+    return
+  }
+
+  if (!guidanceForm.content) {
+    ElMessage.warning('请填写指导内容')
+    return
+  }
+
+  if (!currentStudent.value) {
+    ElMessage.warning('请先选择学员')
+    return
+  }
+
+  try {
+    guidanceSubmitting.value = true
+    // 从authStore获取teacherId
+    const authStore = useAuthStore()
+    const teacherId = authStore.teacherId
+
+    await createGuidanceApi({
+      studentId: currentStudent.value.id,
+      teacherId: teacherId || 0,
+      guidanceType: guidanceForm.guidanceType,
+      content: guidanceForm.content,
+      nextAction: guidanceForm.nextAction,
+      guidanceDate: guidanceForm.guidanceDate + ':00',
+      location: guidanceForm.location
+    })
+
+    ElMessage.success('添加成功')
+    guidanceDialogVisible.value = false
+
+    // 重置表单
+    guidanceForm.guidanceType = ''
+    guidanceForm.content = ''
+    guidanceForm.nextAction = ''
+    guidanceForm.guidanceDate = ''
+    guidanceForm.location = ''
+
+    // 重新加载学员详情以显示新增的指导记录
+    if (currentStudent.value.id) {
+      const guidances: any = await getGuidanceListByStudentApi(currentStudent.value.id)
+      currentStudent.value.guidanceRecords = guidances || []
+    }
+  } catch (error) {
+    ElMessage.error('添加失败')
+  } finally {
+    guidanceSubmitting.value = false
+  }
 }
 
 // 就业状态类型
@@ -681,6 +934,15 @@ const getOfferStatusText = (status: string) => {
   return textMap[status] || status
 }
 
+// 成绩类型
+const getScoreType = (score: number) => {
+  if (score >= 90) return 'success' // 优秀 - 绿色
+  if (score >= 80) return '' // 良好 - 默认
+  if (score >= 70) return 'warning' // 中等 - 橙色
+  if (score >= 60) return 'info' // 及格 - 灰色
+  return 'danger' // 不及格 - 红色
+}
+
 // 身份证脱敏
 const maskIdCard = (idCard: string) => {
   if (!idCard || idCard.length < 8) return idCard
@@ -688,8 +950,19 @@ const maskIdCard = (idCard: string) => {
 }
 
 onMounted(() => {
+  loadMajorList()
   loadStudentList()
 })
+
+// 加载专业列表
+const loadMajorList = async () => {
+  try {
+    const data: any = await getMajorListApi()
+    majorList.value = data || []
+  } catch (error) {
+    console.error('加载专业列表失败', error)
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -804,5 +1077,22 @@ onMounted(() => {
       color: #909399;
     }
   }
+}
+
+.resume-preview-container {
+  height: 70vh;
+
+  .resume-preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+}
+
+.resume-empty {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

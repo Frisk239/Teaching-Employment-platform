@@ -16,6 +16,7 @@ export interface Student {
   enrollmentDate?: string
   status?: number
   avatar?: string
+  resumeUrl?: string  // 简历URL
   createTime?: string
   updateTime?: string
 }
@@ -150,4 +151,11 @@ export function getStudentCoursesApi(studentId: number) {
  */
 export function getStudentEducationApi(studentId: number) {
   return http.get(`/student/${studentId}/education`)
+}
+
+/**
+ * 获取所有专业列表（用于下拉框筛选）
+ */
+export function getMajorListApi() {
+  return http.get<string[]>('/student/majors')
 }
