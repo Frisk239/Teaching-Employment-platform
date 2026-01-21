@@ -34,11 +34,11 @@ public class ExamController {
     public Result<IPage<Exam>> getExamPage(
             @ApiParam("当前页") @RequestParam(defaultValue = "1") Integer current,
             @ApiParam("每页大小") @RequestParam(defaultValue = "10") Integer size,
-            @ApiParam("课程ID") @RequestParam(required = false) Long courseId,
             @ApiParam("考试类型") @RequestParam(required = false) String examType,
+            @ApiParam("关联ID") @RequestParam(required = false) Long refId,
             @ApiParam("状态") @RequestParam(required = false) String status,
             @ApiParam("关键词") @RequestParam(required = false) String keyword) {
-        IPage<Exam> page = examService.getExamPage(current, size, courseId, examType, status, keyword);
+        IPage<Exam> page = examService.getExamPage(current, size, examType, refId, status, keyword);
         return Result.ok(page);
     }
 
@@ -83,12 +83,14 @@ public class ExamController {
     }
 
     /**
-     * 根据课程ID查询考试列表
+     * 根据关联ID查询考试列表（课程或企业职位）
      */
-    @GetMapping("/course/{courseId}")
-    @ApiOperation("根据课程ID查询考试列表")
-    public Result<List<Exam>> getExamsByCourseId(@PathVariable Long courseId) {
-        List<Exam> exams = examService.getExamsByCourseId(courseId);
+    @GetMapping("/ref/{examType}/{refId}")
+    @ApiOperation("根据关联ID查询考试列表")
+    public Result<List<Exam>> getExamsByRefId(
+            @PathVariable String examType,
+            @PathVariable Long refId) {
+        List<Exam> exams = examService.getExamsByRefId(examType, refId);
         return Result.ok(exams);
     }
 
@@ -120,16 +122,6 @@ public class ExamController {
     public Result<Void> publishExam(@PathVariable Long id) {
         boolean success = examService.publishExam(id);
         return success ? Result.ok("发布成功") : Result.error("发布失败");
-    }
-
-    /**
-     * 开始考试
-     */
-    @PostMapping("/{id}/start")
-    @ApiOperation("开始考试")
-    public Result<Void> startExam(@PathVariable Long id) {
-        boolean success = examService.startExam(id);
-        return success ? Result.ok("考试已开始") : Result.error("开始失败");
     }
 
     /**

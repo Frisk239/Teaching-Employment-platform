@@ -40,7 +40,7 @@
           <div class="position-meta">
             <div class="meta-item">
               <el-icon><Location /></el-icon>
-              <span>{{ position.workCity }}</span>
+              <span>{{ position.city }}</span>
             </div>
             <div class="meta-item salary">
               <el-icon><Coin /></el-icon>
@@ -74,7 +74,7 @@
 
         <el-form-item label="工作城市">
           <el-select
-            v-model="searchForm.workCity"
+            v-model="searchForm.city"
             placeholder="全部城市"
             clearable
             filterable
@@ -186,7 +186,7 @@
             <div class="detail-tags">
               <div class="tag-item">
                 <el-icon><Location /></el-icon>
-                <span>{{ position.workCity }}</span>
+                <span>{{ position.city }}</span>
               </div>
               <div class="tag-item">
                 <el-icon><Reading /></el-icon>
@@ -253,7 +253,7 @@
     <el-dialog
       v-model="detailDialogVisible"
       :title="currentPosition?.positionName"
-      width="900px"
+      width="1200px"
       @open="handleViewDetailOpen"
     >
       <div v-if="currentPosition" class="position-detail">
@@ -267,7 +267,7 @@
             <span v-if="currentPosition.salaryUnit">/{{ currentPosition.salaryUnit }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="工作城市">
-            {{ currentPosition.workCity }}
+            {{ currentPosition.city }}
           </el-descriptions-item>
           <el-descriptions-item label="岗位类型">
             {{ getTypeText(currentPosition.positionType) }}
@@ -298,16 +298,16 @@
           {{ currentPosition.requirements || '暂无要求' }}
         </div>
 
-        <!-- 技术栈 -->
-        <el-divider content-position="left" v-if="currentPosition.techStack">技术栈</el-divider>
-        <div class="tech-stack-content" v-if="currentPosition.techStack">
-          <el-tag
-            v-for="(tech, index) in getTechStackList(currentPosition.techStack)"
-            :key="index"
-            class="tech-tag-large"
-          >
-            {{ tech }}
-          </el-tag>
+        <!-- 能力雷达图 -->
+        <el-divider content-position="left" v-if="radarData.length > 0">能力要求</el-divider>
+        <div class="radar-chart-container" v-if="radarData.length > 0">
+          <TechStackRadar
+            ref="radarChartRef"
+            :data="radarData"
+            :series="radarSeries"
+            width="100%"
+            height="600px"
+          />
         </div>
 
         <!-- 福利待遇 -->
@@ -348,11 +348,21 @@ import {
 import { getPositionPageApi, getPositionByIdApi, type Position } from '@/api/position'
 import { applicationApi } from '@/api/application'
 import { getStudentByIdApi } from '@/api/student'
+import {
+  parseCapabilityRadar,
+  type TechStackDimension,
+  type CapabilityRadarData
+} from '@/api/tech-stack'
+import TechStackRadar from '@/components/TechStackRadar.vue'
+import type { TechStackData, TechStackSeries } from '@/components/TechStackRadar.vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+// 雷达图组件引用
+const radarChartRef = ref<InstanceType<typeof TechStackRadar> | null>(null)
 
 // 当前学生信息（包含简历URL）
 const currentStudent = ref<any>(null)
@@ -360,7 +370,7 @@ const currentStudent = ref<any>(null)
 // 搜索表单
 const searchForm = reactive({
   positionName: '',
-  workCity: '',
+  city: '',
   positionType: '',
   educationRequire: '',
   salaryRange: '',
@@ -384,6 +394,33 @@ const isEmpty = computed(() => tableData.value.length === 0)
 // 岗位详情
 const detailDialogVisible = ref(false)
 const currentPosition = ref<Position | null>(null)
+
+// 计算雷达图数据
+const radarData = computed<TechStackData[]>(() => {
+  if (!currentPosition.value?.capabilityRadar) return []
+
+  try {
+    const radarInfo = parseCapabilityRadar(currentPosition.value.capabilityRadar)
+    return (radarInfo.dimensions || []).map(dim => ({
+      name: dim.name,
+      max: dim.max || 100,
+      value: dim.value || 0
+    }))
+  } catch (error) {
+    console.error('解析雷达图数据失败:', error)
+    return []
+  }
+})
+
+// 计算雷达图系列数据
+const radarSeries = computed<TechStackSeries[]>(() => {
+  if (radarData.value.length === 0) return []
+
+  return [{
+    name: '能力要求',
+    data: radarData.value.map(dim => dim.value)
+  }]
+})
 
 // 格式化薪资
 const formatSalary = (position: Position): string => {
@@ -500,7 +537,7 @@ const fetchData = async () => {
       current: pagination.current,
       size: pagination.size,
       positionName: searchForm.positionName || undefined,
-      workCity: searchForm.workCity || undefined,
+      city: searchForm.city || undefined,
       positionType: searchForm.positionType || undefined,
       educationRequire: searchForm.educationRequire || undefined,
       status: 'active',
@@ -533,7 +570,7 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   searchForm.positionName = ''
-  searchForm.workCity = ''
+  searchForm.city = ''
   searchForm.positionType = ''
   searchForm.educationRequire = ''
   searchForm.salaryRange = ''
@@ -544,7 +581,7 @@ const handleReset = () => {
 // 查看全部推荐
 const viewAllRecommended = () => {
   searchForm.positionName = ''
-  searchForm.workCity = ''
+  searchForm.city = ''
   searchForm.positionType = ''
   searchForm.educationRequire = ''
   searchForm.salaryRange = ''
@@ -566,6 +603,12 @@ const handleViewDetailOpen = async () => {
       // await increaseViewCountApi(currentPosition.value.id)
       const detail = await getPositionByIdApi(currentPosition.value.id)
       currentPosition.value = detail
+
+      // 延迟触发雷达图 resize，确保 Dialog 容器尺寸已确定
+      await nextTick()
+      setTimeout(() => {
+        radarChartRef.value?.resize()
+      }, 300) // 等待 Dialog 动画完成（Element Plus Dialog 默认动画时长约 300ms）
     } catch (error) {
       console.error('加载岗位详情失败:', error)
     }
@@ -1003,5 +1046,20 @@ onMounted(() => {
       }
     }
   }
+
+  .radar-chart-container {
+    margin: 2rem 0;
+    padding: 0;
+    background: oklch(0.99 0.005 240);
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 600px;
+  }
 }
+
+
+
 </style>

@@ -77,7 +77,7 @@ public class PositionController {
     @GetMapping("/{id}")
     @ApiOperation("根据ID查询职位")
     public Result<Position> getPositionById(@PathVariable Long id) {
-        Position position = positionService.getById(id);
+        Position position = positionService.getPositionByIdWithCompany(id);
         return Result.ok(position);
     }
 

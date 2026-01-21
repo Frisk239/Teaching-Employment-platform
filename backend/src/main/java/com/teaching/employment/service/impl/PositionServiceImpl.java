@@ -43,6 +43,15 @@ public class PositionServiceImpl extends ServiceImpl<PositionMapper, Position> i
     }
 
     @Override
+    public Position getPositionByIdWithCompany(Long id) {
+        Position position = positionMapper.selectById(id);
+        if (position != null) {
+            fillCompanyNames(java.util.Collections.singletonList(position));
+        }
+        return position;
+    }
+
+    @Override
     public IPage<Position> getPositionPage(Integer current, Integer size, Long companyId, String positionType,
                                             String city, String education, String status, String keyword,
                                             BigDecimal salaryMin, BigDecimal salaryMax) {

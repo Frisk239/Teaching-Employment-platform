@@ -181,16 +181,84 @@
               ></el-input>
             </el-form-item>
 
-            <!-- 技术栈 -->
-            <el-form-item label="技术栈" prop="techStack" class="form-item-group">
-              <el-input
-                v-model="positionForm.techStack"
-                type="textarea"
-                :rows="3"
-                placeholder="请列出职位所需的技术栈，如：Java, Spring Boot, MySQL, Redis等（用逗号分隔）"
-                maxlength="500"
-                show-word-limit
-              ></el-input>
+            <!-- 技术栈要求 -->
+            <el-form-item label="技术栈要求" class="form-item-group">
+              <div class="tech-stack-editor">
+                <!-- 技术栈模板选择 -->
+                <div class="template-selector">
+                  <el-icon magic="MagicStick" style="margin-right: 8px;"></el-icon>
+                  <span style="margin-right: 12px;">快速应用模板：</span>
+                  <el-select
+                    v-model="selectedTemplateId"
+                    placeholder="请选择技术栈模板"
+                    style="width: 300px;"
+                    @change="handleTemplateChange"
+                    clearable
+                  >
+                    <el-option
+                      v-for="template in techStackTemplates"
+                      :key="template.id"
+                      :label="template.templateName"
+                      :value="template.id"
+                    />
+                  </el-select>
+                </div>
+
+                <!-- 技能维度编辑器和雷达图预览 -->
+                <div v-if="capabilityDimensions.length > 0" class="dimension-section">
+                  <div class="dimension-editor">
+                    <h4 style="margin: 0 0 1rem 0; font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">
+                      <el-icon><Edit /></el-icon>
+                      设置能力要求（0-{{ capabilityDimensions[0]?.max || 100 }}）
+                    </h4>
+                    <div class="dimension-list">
+                      <div v-for="(dim, index) in capabilityDimensions" :key="index" class="dimension-item">
+                        <div class="dimension-header">
+                          <span class="dimension-name">{{ dim.name }}</span>
+                          <el-input-number
+                            v-model="dim.value"
+                            :min="0"
+                            :max="dim.max"
+                            :step="5"
+                            size="small"
+                            @change="handleDimensionValueChange"
+                          />
+                        </div>
+                        <el-slider
+                          v-model="dim.value"
+                          :min="0"
+                          :max="dim.max"
+                          :step="5"
+                          show-stops
+                          :show-tooltip="true"
+                          @change="handleDimensionValueChange"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="radar-preview">
+                    <h4 style="margin: 0 0 1rem 0; font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">
+                      <el-icon><View /></el-icon>
+                      能力雷达图预览
+                    </h4>
+                    <TechStackRadar
+                      :data="radarData"
+                      :series="radarSeries"
+                      width="100%"
+                      height="350px"
+                    />
+                  </div>
+                </div>
+
+                <!-- 无模板时的提示 -->
+                <div v-else class="empty-template-tip">
+                  <el-empty
+                    description="请选择技术栈模板开始设置职位能力要求"
+                    :image-size="100"
+                  />
+                </div>
+              </div>
             </el-form-item>
           </div>
         </div>
@@ -260,10 +328,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, onMounted } from 'vue'
+import { ref, reactive, nextTick, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createPositionApi } from '@/api/position'
 import { getCompanyListApi, type Company } from '@/api/company'
+import {
+  getTechStackTemplateListApi,
+  type TechStackTemplate,
+  type TechStackDimension,
+  type CapabilityRadarData,
+  parseTemplateDimensions,
+  stringifyCapabilityRadar,
+  parseCapabilityRadar
+} from '@/api/tech-stack'
+import TechStackRadar from '@/components/TechStackRadar.vue'
+import type { TechStackData, TechStackSeries } from '@/components/TechStackRadar.vue'
 
 // 表单引用
 const positionFormRef = ref()
@@ -278,6 +357,15 @@ const previewData = ref(null)
 
 // 企业列表
 const companies = ref<Company[]>([])
+
+// 技术栈模板列表
+const techStackTemplates = ref<TechStackTemplate[]>([])
+
+// 选中的技术栈模板 ID
+const selectedTemplateId = ref<number | undefined>(undefined)
+
+// 能力维度数据
+const capabilityDimensions = ref<TechStackDimension[]>([])
 
 // 职位表单数据
 const positionForm = reactive({
@@ -294,6 +382,7 @@ const positionForm = reactive({
   description: '',
   requirements: '',
   techStack: '',
+  capabilityRadar: undefined as string | undefined,
   status: 'active'
 })
 
@@ -335,6 +424,71 @@ const formRules = {
     { required: true, message: '请输入岗位要求', trigger: 'blur' },
     { min: 20, message: '岗位要求至少 20 个字符', trigger: 'blur' }
   ]
+}
+
+// 计算雷达图数据
+const radarData = computed<TechStackData[]>(() => {
+  return capabilityDimensions.value.map(dim => ({
+    name: dim.name,
+    max: dim.max,
+    value: dim.value || 0
+  }))
+})
+
+// 计算雷达图系列数据
+const radarSeries = computed<TechStackSeries[]>(() => {
+  if (capabilityDimensions.value.length === 0) return []
+
+  return [{
+    name: '能力要求',
+    data: capabilityDimensions.value.map(dim => dim.value || 0)
+  }]
+})
+
+// 加载技术栈模板列表
+const loadTechStackTemplates = async () => {
+  try {
+    const data = await getTechStackTemplateListApi()
+    techStackTemplates.value = data || []
+  } catch (error) {
+    console.error('加载技术栈模板失败', error)
+  }
+}
+
+// 处理技术栈模板选择
+const handleTemplateChange = (templateId: number) => {
+  const template = techStackTemplates.value.find(t => t.id === templateId)
+  if (template) {
+    // 解析模板的维度数据
+    capabilityDimensions.value = parseTemplateDimensions(template.dimensions)
+
+    // 生成技术栈字符串（逗号分隔的维度名称）
+    positionForm.techStack = capabilityDimensions.value
+      .map(dim => dim.name)
+      .join(', ')
+
+    // 更新能力雷达图数据
+    updateCapabilityRadar()
+  }
+}
+
+// 更新能力雷达图数据
+const updateCapabilityRadar = () => {
+  if (capabilityDimensions.value.length > 0) {
+    const radarData: CapabilityRadarData = {
+      dimensions: capabilityDimensions.value.map(dim => ({
+        name: dim.name,
+        max: dim.max,
+        value: dim.value || 50
+      }))
+    }
+    positionForm.capabilityRadar = stringifyCapabilityRadar(radarData)
+  }
+}
+
+// 处理技能维度值变化
+const handleDimensionValueChange = () => {
+  updateCapabilityRadar()
 }
 
 // 加载企业列表
@@ -452,9 +606,10 @@ const handleCancel = async () => {
   }
 }
 
-// 页面加载时获取企业列表
+// 页面加载时获取企业列表和技术栈模板
 onMounted(() => {
   loadCompanies()
+  loadTechStackTemplates()
 })
 </script>
 
@@ -555,5 +710,81 @@ onMounted(() => {
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
   margin-top: 1.5rem;
+}
+
+.tech-stack-editor {
+  width: 100%;
+
+  .template-selector {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: oklch(0.98 0.005 240);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+  }
+
+  .dimension-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .dimension-editor {
+    .dimension-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .dimension-item {
+      padding: 1rem;
+      background: oklch(0.99 0.005 240);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .dimension-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .dimension-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  .radar-preview {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: oklch(0.99 0.005 240);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .empty-template-tip {
+    padding: 2rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 1200px) {
+  .tech-stack-editor {
+    .dimension-section {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 </style>

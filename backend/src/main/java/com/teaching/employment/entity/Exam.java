@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -17,51 +18,48 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("t_exam")
-@ApiModel(description = "考试信息")
+@ApiModel(description = "试卷信息")
 public class Exam implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "考试ID")
+    @ApiModelProperty(value = "试卷ID")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @ApiModelProperty(value = "考试名称")
     private String examName;
 
-    @ApiModelProperty(value = "课程ID")
-    private Long courseId;
-
-    @ApiModelProperty(value = "考试类型：final-期末考试 mid-期中考试 quiz-随堂测试")
+    @ApiModelProperty(value = "考试类型：course-课程考试 company-企业笔试")
     private String examType;
 
-    @ApiModelProperty(value = "考试时长(分钟)")
+    @ApiModelProperty(value = "关联ID（课程ID或企业职位ID）")
+    private Long refId;
+
+    @ApiModelProperty(value = "考试时长（分钟）")
     private Integer duration;
 
-    @ApiModelProperty(value = "总分")
-    private Integer totalScore;
-
-    @ApiModelProperty(value = "及格分")
-    private Integer passingScore;
-
-    @ApiModelProperty(value = "开始时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "考试开始时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime startTime;
 
-    @ApiModelProperty(value = "结束时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "考试结束时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endTime;
 
-    @ApiModelProperty(value = "考试说明")
-    private String description;
+    @ApiModelProperty(value = "及格分数")
+    private BigDecimal passScore;
 
-    @ApiModelProperty(value = "是否随机出题：1-是 0-否")
-    private Integer isRandom;
+    @ApiModelProperty(value = "试卷总分")
+    private BigDecimal totalScore;
 
-    @ApiModelProperty(value = "题目数量")
-    private Integer questionCount;
+    @ApiModelProperty(value = "是否乱序题目：0-否 1-是")
+    private Integer shuffleQuestions;
 
-    @ApiModelProperty(value = "状态：draft-草稿 published-已发布 started-已进行中 ended-已结束")
+    @ApiModelProperty(value = "是否乱序选项：0-否 1-是")
+    private Integer shuffleOptions;
+
+    @ApiModelProperty(value = "状态：draft-草稿 published-已发布 ended-已结束")
     private String status;
 
     @ApiModelProperty(value = "创建时间")
@@ -72,15 +70,8 @@ public class Exam implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    /**
-     * 课程信息（关联查询时使用，不映射到数据库字段）
-     */
+    // 关联查询字段（不映射到数据库）
+    @ApiModelProperty(value = "课程/职位名称")
     @TableField(exist = false)
-    private Course course;
-
-    /**
-     * 课程名称
-     */
-    @TableField(exist = false)
-    private String courseName;
+    private String refName;
 }

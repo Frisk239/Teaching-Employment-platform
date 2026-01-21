@@ -266,6 +266,28 @@ export const routes: RouteRecordRaw[] = [
               roles: ['user'],
             },
           },
+          // 考试中心（学员专用）
+          {
+            path: '/student/exam-center',
+            name: 'ExamCenter',
+            component: () => import('@/views/student/ExamCenter.vue'),
+            meta: {
+              title: '考试中心',
+              icon: 'Document',
+              roles: ['user'],
+            },
+          },
+          // 考试作答（学员专用，隐藏菜单）
+          {
+            path: '/student/exam-taking/:recordId',
+            name: 'ExamTaking',
+            component: () => import('@/views/student/ExamTaking.vue'),
+            meta: {
+              title: '参加考试',
+              hidden: true,
+              roles: ['user'],
+            },
+          },
           // 我的课程（学员专用）
           {
             path: '/teaching/course-list',
@@ -340,6 +362,39 @@ export const routes: RouteRecordRaw[] = [
             meta: {
               title: '教学计划',
               icon: 'Document',
+              roles: ['teacher', 'college_head', 'admin'],
+            },
+          },
+          // 试卷管理（教师、学院负责人、管理员）
+          {
+            path: '/teaching/exam-management',
+            name: 'ExamManagement',
+            component: () => import('@/views/teaching/ExamManagement.vue'),
+            meta: {
+              title: '试卷管理',
+              icon: 'EditPen',
+              roles: ['teacher', 'college_head', 'admin'],
+            },
+          },
+          // 企业试卷管理（企业对接人）
+          {
+            path: '/employment/exam-management',
+            name: 'EmploymentExamManagement',
+            component: () => import('@/views/teaching/ExamManagement.vue'),
+            meta: {
+              title: '试卷管理',
+              icon: 'EditPen',
+              roles: ['enterprise_contact'],
+            },
+          },
+          // 考试批改（教师、学院负责人、管理员）
+          {
+            path: '/teaching/exam-grading',
+            name: 'ExamGrading',
+            component: () => import('@/views/teaching/ExamGrading.vue'),
+            meta: {
+              title: '考试批改',
+              icon: 'Checked',
               roles: ['teacher', 'college_head', 'admin'],
             },
           },

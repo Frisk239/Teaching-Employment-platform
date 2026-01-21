@@ -23,6 +23,14 @@ public interface PositionService extends IService<Position> {
     java.util.List<Position> getPositionsWithCompany();
 
     /**
+     * 根据ID查询职位（包含公司名称）
+     *
+     * @param id 职位ID
+     * @return 职位信息
+     */
+    Position getPositionByIdWithCompany(Long id);
+
+    /**
      * 分页查询职位列表
      *
      * @param current    当前页

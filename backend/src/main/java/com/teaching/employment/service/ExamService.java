@@ -17,12 +17,12 @@ public interface ExamService extends IService<Exam> {
     /**
      * 分页查询考试列表
      */
-    IPage<Exam> getExamPage(Integer current, Integer size, Long courseId, String examType, String status, String keyword);
+    IPage<Exam> getExamPage(Integer current, Integer size, String examType, Long refId, String status, String keyword);
 
     /**
-     * 根据课程ID查询考试列表
+     * 根据关联ID查询考试列表（课程或企业职位）
      */
-    List<Exam> getExamsByCourseId(Long courseId);
+    List<Exam> getExamsByRefId(String examType, Long refId);
 
     /**
      * 查询已发布的考试列表
@@ -40,17 +40,12 @@ public interface ExamService extends IService<Exam> {
     boolean publishExam(Long examId);
 
     /**
-     * 开始考试
-     */
-    boolean startExam(Long examId);
-
-    /**
      * 结束考试
      */
     boolean endExam(Long examId);
 
     /**
-     * 删除考试(软删除)
+     * 删除考试
      */
     boolean deleteExam(Long examId);
 }

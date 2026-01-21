@@ -16,6 +16,7 @@ export interface Position {
   description?: string
   requirements?: string
   techStack?: string
+  capabilityRadar?: string // 能力雷达图数据（JSON 字符串）
   recruitCount?: number
   hiredCount?: number
   applicationCount?: number

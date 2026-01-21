@@ -157,8 +157,8 @@ public class StudentExamRecordServiceImpl extends ServiceImpl<StudentExamRecordM
         record.setScore(BigDecimal.valueOf(totalScore));
 
         // 4. 判断是否及格
-        if (exam.getPassingScore() != null) {
-            record.setIsPassed(totalScore >= exam.getPassingScore() ? 1 : 0);
+        if (exam.getPassScore() != null) {
+            record.setIsPassed(totalScore >= exam.getPassScore().intValue() ? 1 : 0);
         }
 
         // 5. 更新状态

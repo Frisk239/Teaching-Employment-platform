@@ -5,10 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.teaching.employment.entity.Course;
 import com.teaching.employment.entity.Exam;
+import com.teaching.employment.entity.Position;
 import com.teaching.employment.exception.BusinessException;
 import com.teaching.employment.mapper.ExamMapper;
+import com.teaching.employment.service.CourseService;
 import com.teaching.employment.service.ExamService;
+import com.teaching.employment.service.PositionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,17 +30,19 @@ import java.util.List;
 public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements ExamService {
 
     private final ExamMapper examMapper;
+    private final CourseService courseService;
+    private final PositionService positionService;
 
     @Override
-    public IPage<Exam> getExamPage(Integer current, Integer size, Long courseId, String examType, String status, String keyword) {
+    public IPage<Exam> getExamPage(Integer current, Integer size, String examType, Long refId, String status, String keyword) {
         Page<Exam> page = new Page<>(current, size);
         LambdaQueryWrapper<Exam> wrapper = new LambdaQueryWrapper<>();
 
-        if (courseId != null) {
-            wrapper.eq(Exam::getCourseId, courseId);
-        }
         if (StrUtil.isNotBlank(examType)) {
             wrapper.eq(Exam::getExamType, examType);
+        }
+        if (refId != null) {
+            wrapper.eq(Exam::getRefId, refId);
         }
         if (StrUtil.isNotBlank(status)) {
             wrapper.eq(Exam::getStatus, status);
@@ -46,22 +52,101 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
         }
 
         wrapper.orderByDesc(Exam::getCreateTime);
-        return examMapper.selectPage(page, wrapper);
+        IPage<Exam> examPage = examMapper.selectPage(page, wrapper);
+
+        // 填充关联名称
+        for (Exam exam : examPage.getRecords()) {
+            if ("course".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Course course = courseService.getById(exam.getRefId());
+                if (course != null) {
+                    exam.setRefName(course.getCourseName());
+                }
+            } else if ("company".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Position position = positionService.getById(exam.getRefId());
+                if (position != null) {
+                    exam.setRefName(position.getPositionName());
+                }
+            }
+        }
+
+        return examPage;
     }
 
     @Override
-    public List<Exam> getExamsByCourseId(Long courseId) {
-        return examMapper.selectByCourseId(courseId);
+    public List<Exam> getExamsByRefId(String examType, Long refId) {
+        LambdaQueryWrapper<Exam> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Exam::getExamType, examType)
+               .eq(Exam::getRefId, refId);
+        List<Exam> exams = examMapper.selectList(wrapper);
+
+        // 填充关联名称
+        for (Exam exam : exams) {
+            if ("course".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Course course = courseService.getById(exam.getRefId());
+                if (course != null) {
+                    exam.setRefName(course.getCourseName());
+                }
+            } else if ("company".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Position position = positionService.getById(exam.getRefId());
+                if (position != null) {
+                    exam.setRefName(position.getPositionName());
+                }
+            }
+        }
+
+        return exams;
     }
 
     @Override
     public List<Exam> getPublishedExams() {
-        return examMapper.selectPublishedExams();
+        LambdaQueryWrapper<Exam> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Exam::getStatus, "published")
+               .ge(Exam::getEndTime, java.time.LocalDateTime.now())
+               .le(Exam::getStartTime, java.time.LocalDateTime.now());
+        List<Exam> exams = examMapper.selectList(wrapper);
+
+        // 填充关联名称
+        for (Exam exam : exams) {
+            if ("course".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Course course = courseService.getById(exam.getRefId());
+                if (course != null) {
+                    exam.setRefName(course.getCourseName());
+                }
+            } else if ("company".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Position position = positionService.getById(exam.getRefId());
+                if (position != null) {
+                    exam.setRefName(position.getPositionName());
+                }
+            }
+        }
+
+        return exams;
     }
 
     @Override
     public List<Exam> getOngoingExams() {
-        return examMapper.selectOngoingExams();
+        LambdaQueryWrapper<Exam> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Exam::getStatus, "published")
+               .ge(Exam::getEndTime, java.time.LocalDateTime.now())
+               .le(Exam::getStartTime, java.time.LocalDateTime.now());
+        List<Exam> exams = examMapper.selectList(wrapper);
+
+        // 填充关联名称
+        for (Exam exam : exams) {
+            if ("course".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Course course = courseService.getById(exam.getRefId());
+                if (course != null) {
+                    exam.setRefName(course.getCourseName());
+                }
+            } else if ("company".equals(exam.getExamType()) && exam.getRefId() != null) {
+                Position position = positionService.getById(exam.getRefId());
+                if (position != null) {
+                    exam.setRefName(position.getPositionName());
+                }
+            }
+        }
+
+        return exams;
     }
 
     @Override
@@ -77,22 +162,6 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
         }
 
         exam.setStatus("published");
-        return examMapper.updateById(exam) > 0;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean startExam(Long examId) {
-        Exam exam = examMapper.selectById(examId);
-        if (exam == null) {
-            throw new BusinessException("考试不存在");
-        }
-
-        if (!"published".equals(exam.getStatus())) {
-            throw new BusinessException("只有已发布的考试才能开始");
-        }
-
-        exam.setStatus("started");
         return examMapper.updateById(exam) > 0;
     }
 
