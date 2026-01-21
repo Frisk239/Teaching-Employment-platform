@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -38,10 +39,10 @@ public class ExamQuestionController {
     /**
      * 获取试卷的题目ID列表
      */
-    @GetMapping("/exam-question-ids")
+    @GetMapping("/exam/{examId}/question-ids")
     @ApiOperation("获取试卷的题目ID列表")
     public Result<List<Long>> getQuestionIdsByExamId(
-            @ApiParam(value = "试卷ID", required = true) @RequestParam Long examId) {
+            @ApiParam(value = "试卷ID", required = true) @PathVariable @NotNull Long examId) {
         List<Long> questionIds = examQuestionService.getQuestionIdsByExamId(examId);
         return Result.ok(questionIds);
     }

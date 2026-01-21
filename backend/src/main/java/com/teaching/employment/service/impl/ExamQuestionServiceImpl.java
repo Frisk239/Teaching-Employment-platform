@@ -58,6 +58,9 @@ public class ExamQuestionServiceImpl extends ServiceImpl<ExamQuestionMapper, Exa
 
     @Override
     public List<Long> getQuestionIdsByExamId(Long examId) {
+        if (examId == null) {
+            throw new IllegalArgumentException("试卷ID不能为空");
+        }
         LambdaQueryWrapper<ExamQuestion> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ExamQuestion::getExamId, examId);
         wrapper.select(ExamQuestion::getQuestionId);
